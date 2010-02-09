@@ -34,6 +34,7 @@ import org.proj4.ProjectionData;
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.RecSurface;
 import pik.clminputdata.tools.RecSurfaceDistance;
+import pik.clminputdata.tools.SymmetricMatrixBoolean;
 import ucar.ma2.InvalidRangeException;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionPoint;
@@ -94,7 +95,7 @@ class CityGMLConverterThread extends Thread {
 	private boolean isInStreetdir[][];
 
 	// arguments: building1, surface1, building2, surface2
-	private boolean[][][][] visible;
+	private SymmetricMatrixBoolean visible;
 
 	private ArrayList<String> NonPlanarList = new ArrayList<String>();
 
@@ -494,158 +495,137 @@ class CityGMLConverterThread extends Thread {
 		// System.out.println(globalWallSurfaceCounter +
 		// globalRoofSurfaceCounter);
 
-		// visible = new boolean[globalRoofSurfaceCounter
-		// + globalWallSurfaceCounter][globalRoofSurfaceCounter
-		// + globalWallSurfaceCounter];
+		visible = new SymmetricMatrixBoolean(globalRoofSurfaceCounter
+				+ globalWallSurfaceCounter, false);
 
 		// declare visible with smallest possible size
-		visible = new boolean[bCount + 1][][][];
+		// visible = new boolean[bCount + 1][][][];
+		// for (int i = 0; i <= bCount; i++) {
+		// visible[i] = new boolean[buildingSurfaces[i].length][][];
+		// for (int j = 0; j < buildingSurfaces[i].length; j++) {
+		// visible[i][j] = new boolean[bCount + 1][];
+		// for (int k = 0; k <= bCount; k++) {
+		// visible[i][j][k] = new boolean[buildingSurfaces[k].length];
+		// }
+		// }
+		// }
+
+		int wcount = -1;
+
+		// all walls and roofs, one side of visibility
 		for (int i = 0; i <= bCount; i++) {
-			visible[i] = new boolean[buildingSurfaces[i].length][][];
 			for (int j = 0; j < buildingSurfaces[i].length; j++) {
-				visible[i][j] = new boolean[bCount + 1][];
-				for (int k = 0; k <= bCount; k++) {
-					visible[i][j][k] = new boolean[buildingSurfaces[k].length];
+
+				wcount++;
+
+				int wrcount = -1;
+
+				// walls and roofs, other side of visibility
+				// the already analysed, visiblility is symmetric:
+				for (int k = 0; k < i; k++) {
+					// for (int l = 0; l < buildingSurfaces[k].length; l++) {
+					wrcount += buildingSurfaces[k].length;
+					// visible[i][j][k][l] = visible[k][l][i][j];
+					// }
 				}
-			}
-		}
 
-		// int wcount = -1;
+				// the new ones
+				for (int k = i; k <= bCount; k++) {
 
-		if (true) {
-
-			// all walls and roofs, one side of visibility
-			for (int i = 0; i <= bCount; i++) {
-				for (int j = 0; j < buildingSurfaces[i].length; j++) {
-
-					// wcount++;
-
-					// int wrcount = -1;
-
-					// walls and roofs, other side of visibility
-					// the already analysed, visiblility is symmetric:
-					if (i > 0) {
-						for (int k = 0; k < i; k++) {
-							for (int l = 0; l < buildingSurfaces[k].length; l++) {
-								// wrcount++;
-								visible[i][j][k][l] = visible[k][l][i][j];
-							}
+					// if buildings are too far away, skip:
+					double dist = pow(projD.x[i] - projD.x[k], 2)
+							+ pow(projD.y[i] - projD.y[k], 2);
+					if (dist > checkradiussq) {
+						for (int l = 0; l < buildingSurfaces[k].length; l++) {
+							wrcount++;
+							visible.set(wcount, wrcount, false);
 						}
+						continue;
 					}
 
-					// the new ones
-					for (int k = i; k <= bCount; k++) {
+					// distance is ok, so check every other surface
+					for (int l = 0; l < buildingSurfaces[k].length; l++) {
 
-						// if buidlings are too far away, skip:
-						double dist = pow(projD.x[i] - projD.x[k], 2)
-								+ pow(projD.y[i] - projD.y[k], 2);
-						if (dist > checkradiussq) {
-							for (int l = 0; l < buildingSurfaces[k].length; l++) {
-								// wrcount++;
-								visible[i][j][k][l] = false;
-							}
+						// System.out.println(buildingSurfaces.length);
+						// System.out.println(buildingSurfaces[k].length);
+
+						wrcount++;
+
+						if (i == k && j == l) {
+							visible.set(wcount, wrcount, false);
 							continue;
 						}
 
-						// distance is ok, so check every other surface
-						for (int l = 0; l < buildingSurfaces[k].length; l++) {
+						boolean vis = true;
 
-							// System.out.println(buildingSurfaces.length);
-							// System.out.println(buildingSurfaces[k].length);
+						// int yac=0;
 
-							// wrcount++;
+						// which to check
+						for (int m = 0; m <= bCount; m++) {
 
-							if (i == k && j == l) {
-								visible[i][j][k][l] = false;
+							// in principle, building to check should be on
+							// the
+							// connection between the starting and end
+							// building,
+							// so sum of distances - distance of buildings
+							// approx. 0, because of buildings larger radius
+							dist = sqrt(pow(projD.x[i] - projD.x[m], 2)
+									+ pow(projD.y[i] - projD.y[m], 2))
+									+ sqrt(pow(projD.x[k] - projD.x[m], 2)
+											+ pow(projD.y[k] - projD.y[m], 2))
+									- sqrt(pow(projD.x[i] - projD.x[k], 2)
+											+ pow(projD.y[i] - projD.y[k], 2));
+							if (dist > checkinway) {
+								// visible[wcount][wrcount] = false;
 								continue;
 							}
 
-							boolean vis = true;
+							for (int n = 0; n < buildingSurfaces[m].length; n++) {
 
-							// int yac=0;
-
-							// which to check
-							for (int m = 0; m <= bCount; m++) {
-
-								// in principle, building to check should be on
-								// the
-								// connection between the starting and end
-								// building,
-								// so sum of distances - distance of buildings
-								// approx. 0, because of buildings larger radius
-								dist = sqrt(pow(projD.x[i] - projD.x[m], 2)
-										+ pow(projD.y[i] - projD.y[m], 2))
-										+ sqrt(pow(projD.x[k] - projD.x[m], 2)
-												+ pow(projD.y[k] - projD.y[m],
-														2))
-										- sqrt(pow(projD.x[i] - projD.x[k], 2)
-												+ pow(projD.y[i] - projD.y[k],
-														2));
-								if (dist > checkinway) {
-									// visible[wcount][wrcount] = false;
+								if (i == m && j == n)
 									continue;
-								}
+								if (k == m && l == n)
+									continue;
 
-								for (int n = 0; n < buildingSurfaces[m].length; n++) {
+								// System.out.println(++yac);
 
-									if (i == m && j == n)
-										continue;
-									if (k == m && l == n)
-										continue;
-
-									// System.out.println(++yac);
-
-									// if (buildingSurfaces[k][l]==null) {
-									// System.out.println(bCount);
-									// System.out.println(buildingSurfaces[k].length);
-									// System.out.println(wallSurfaceCounter[k]);
-									// System.out.println(roofSurfaceCounter[k]);
-									// System.out.println(k);
-									// System.out.println(l);
+								// if (buildingSurfaces[k][l]==null) {
+								// System.out.println(bCount);
+								// System.out.println(buildingSurfaces[k].length);
+								// System.out.println(wallSurfaceCounter[k]);
+								// System.out.println(roofSurfaceCounter[k]);
+								// System.out.println(k);
+								// System.out.println(l);
+								// }
+								if (buildingSurfaces[m][n].contains(
+										buildingSurfaces[i][j].getCentroid(),
+										buildingSurfaces[k][l].getCentroid())) {
+									// System.out.println("=============================");
+									// System.out.println(buildingSurfaces[i][j].getCentroid());
+									// System.out.println(buildingSurfaces[k][l].getCentroid());
+									// System.out.println("+++++++++++++++++++++++++++++");
+									// for (Point3d point3d :
+									// buildingSurfaces[m][n].points) {
+									// System.out.println(point3d);
 									// }
-									if (buildingSurfaces[m][n].contains(
-											buildingSurfaces[i][j]
-													.getCentroid(),
-											buildingSurfaces[k][l]
-													.getCentroid())) {
-										// System.out.println("=============================");
-										// System.out.println(buildingSurfaces[i][j].getCentroid());
-										// System.out.println(buildingSurfaces[k][l].getCentroid());
-										// System.out.println("+++++++++++++++++++++++++++++");
-										// for (Point3d point3d :
-										// buildingSurfaces[m][n].points) {
-										// System.out.println(point3d);
-										// }
-										vis = false;
-										break;
-									} else {
-										// System.out.println("nicht im weg");
-									}
-								}
-								if (!vis) {
+									vis = false;
 									break;
+								} else {
+									// System.out.println("nicht im weg");
 								}
 							}
-
-							// System.out.println(vis);
-
-							visible[i][j][k][l] = vis;
-
+							if (!vis) {
+								break;
+							}
 						}
-					}
 
-				}
-			}
+						// System.out.println(vis);
 
-		} else {
-			for (int i = 0; i <= bCount; i++) {
-				for (int j = 0; j < buildingSurfaces[i].length; j++) {
-					for (int k = 0; k <= bCount; k++) {
-						for (int l = 0; l < buildingSurfaces[k].length; l++) {
-							visible[i][j][k][l] = true;
-						}
+						visible.set(wcount, wrcount, vis);
+
 					}
 				}
+
 			}
 		}
 
@@ -693,29 +673,30 @@ class CityGMLConverterThread extends Thread {
 			buildingFrac[iuc][irlat[i]][irlon[i]] += area[i];
 		}
 
+		wcount = -1;
 		// all walls, walls have to be the first in wallSurfaceCounter!!
 		for (int b = 0; b <= bCount; b++) {
 			for (int s = 0; s < wallSurfaceCounter[b]; s++) {
-				// wcount++;
+				wcount++;
 
 				if (buildingSurfaces[b][s].isHorizontal()) {
 					continue;
 				}
 
 				List<RecSurfaceDistance> dist = new LinkedList<RecSurfaceDistance>();
-				// int wrcount = -1;
+				int wrcount = -1;
 				// walls and roofs
 				for (int k = 0; k <= bCount; k++) {
 					if (b == k) {
-						// wrcount += buildingsurfaces[k].length;
+						wrcount += buildingSurfaces[k].length;
 						continue;
 					}
 
 					for (int l = 0; l < buildingSurfaces[k].length; l++) {
 
-						// wrcount++;
+						wrcount++;
 
-						if (visible[b][s][k][l]) {
+						if (visible.get(wcount, wrcount)) {
 
 							// System.out.println(testcounter++);
 
