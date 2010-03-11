@@ -85,8 +85,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	protected WritableField streetWidth;
 
-	protected WritableField buildingWidth;
-
 	private double streetSurfaceSum[][][][];
 
 	public WritableField streetLength;
@@ -196,12 +194,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
-
-		// building width
-		this.buildingWidth = new WritableField("BUILDING_WIDTH", ldim,
-				"building_width", "building width in grid cell", "m",
-				"rotated_pole");
-		toWrite.add(this.buildingWidth);
 
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
@@ -349,25 +341,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		buildingFrac.set(ind, buildingFrac.get(ind) + incr);
 	}
 
-	public void normBuildingFracAndCalcBuildingWidth()
-			throws InvalidRangeException {
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			for (int lat = 0; lat < getJe_tot(); lat++) {
-				for (int lon = 0; lon < getIe_tot(); lon++) {
-					Index ind = buildingFrac.getIndex();
-					ind.set(uc, lat, lon);
-
-					for (int sd = 0; sd < getNstreedir(); sd++) {
-						setBuildingWidth(uc, sd, lat, lon, buildingFrac.get(ind)
-								/ getStreetLength(sd, lat));
-					}
-
-					buildingFrac.set(ind, buildingFrac.get(ind) / getArea(lat));
-				}
-			}
-		}
-	}
-
 	public void normStreetWidth() throws InvalidRangeException {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int dir = 0; dir < getNstreedir(); dir++) {
@@ -420,42 +393,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	// lat, lon)
 	// + value);
 	// }
-
-	public void setBuildingWidth(int uc, int dir, int lat, int lon, double value) {
-		if (uc >= getNuclasses() || uc < 0) {
-			throw new IllegalArgumentException("uc not in range");
-		}
-		if (dir >= getNstreedir() || dir < 0) {
-			throw new IllegalArgumentException("dir not in range");
-		}
-		if (lat >= getJe_tot() || lat < 0) {
-			throw new IllegalArgumentException("lat not in range");
-		}
-		if (lon >= getIe_tot() || lon < 0) {
-			throw new IllegalArgumentException("lon not in range");
-		}
-
-		Index ind = buildingWidth.getIndex();
-		buildingWidth.set(ind.set(uc, dir, lat, lon), value);
-	}
-
-	public double getBuildingWidth(int uc, int dir, int lat, int lon) {
-		if (uc >= getNuclasses() || uc < 0) {
-			throw new IllegalArgumentException("uc not in range");
-		}
-		if (dir >= getNstreedir() || dir < 0) {
-			throw new IllegalArgumentException("dir not in range");
-		}
-		if (lat >= getJe_tot() || lat < 0) {
-			throw new IllegalArgumentException("lat not in range");
-		}
-		if (lon >= getIe_tot() || lon < 0) {
-			throw new IllegalArgumentException("lon not in range");
-		}
-
-		Index ind = buildingWidth.getIndex();
-		return buildingWidth.get(ind.set(uc, dir, lat, lon));
-	}
 
 	public void incStreetWidth(int uc, int dir, int lat, int lon, double value) {
 		if (uc >= getNuclasses() || uc < 0) {
