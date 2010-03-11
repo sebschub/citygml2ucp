@@ -145,14 +145,8 @@ public class CityGMLConverter {
 
 			// unmarshaller has to be in loop, otherwise memory is not freed
 			// (reference in unmarshaller?)
-			Unmarshaller um = jaxbCtx.createUnmarshaller();
-			// read the CityGML dataset and unmarshal it into a JAXBElement
-			// instance
-			// JAXBElement<?> featureElem = (JAXBElement<?>)
-			// um.unmarshal(new
-			// File(
-			// "../datasets/2000020000.gml"));
 
+			Unmarshaller um = jaxbCtx.createUnmarshaller();
 			JAXBElement<?> featureElem = (JAXBElement<?>) um.unmarshal(file);
 
 			// map the JAXBElement class to the citygml4j object model
@@ -160,6 +154,11 @@ public class CityGMLConverter {
 
 			CityGMLConverterThread cgmlct = new CityGMLConverterThread(uclm,
 					soldner, stats, cityModel, i, file.toString());
+
+			// everything that is need is now in cgmlct, rest can be deleted
+			cityModel = null;
+			featureElem = null;
+			um = null;
 
 			if (conf.nThreads > 1) {
 				exec.execute(cgmlct);
@@ -176,13 +175,7 @@ public class CityGMLConverter {
 				cgmlct.run();
 			}
 		}
-		// wait to finish for all threads
-		// if (multithreaded) {
-		// for (int i = 0; i < lThreads.size(); i++) {
-		// lThreads.get(i).join();
-		// }
-		// }
-
+		
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
