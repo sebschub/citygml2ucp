@@ -35,9 +35,9 @@ import static java.lang.Math.sqrt;
 
 class CityGMLConverterThread extends Thread {
 
-	private static double checkradiussq = 100 * 100;
-	private static double checkinway = 100;
-	private static double minDist = 2;
+	private final double checkradiussq;
+	private final double checkinway;
+	private final double minDist;
 
 	// where to put the height of a building: 0 at lower bottom of roof, 1 at
 	// top of roof
@@ -85,9 +85,12 @@ class CityGMLConverterThread extends Thread {
 	// no different classes in here (yet):
 	private int iuc = 0;
 
-	public CityGMLConverterThread(UrbanCLMConfiguration uclm, Proj4 proj4,
+	public CityGMLConverterThread(UrbanCLMConfiguration uclm, CityGMLConverterConf conf, Proj4 proj4,
 			CityGMLConverterStats stats, CityModel base, int id, String filename) {
 		this.uclm = uclm;
+		this.checkinway = conf.maxcheck_radius;
+		this.checkradiussq = conf.maxbuild_radius*conf.maxbuild_radius;
+		this.minDist = conf.mindist;
 		this.proj4 = proj4;
 		this.id = id;
 		this.filename = filename;

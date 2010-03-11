@@ -60,28 +60,37 @@ public class CityGMLConverterConf {
 			35., 40., 45. };
 
 	String proj4code = "+init=epsg:3068";
-	private String proj4codeDefault = "+init=epsg:3068";
+	private static String proj4codeDefault = "+init=epsg:3068";
 
+	double maxbuild_radius;
+	private static final double maxbuild_radiusDefault=100.;
+
+	double maxcheck_radius;
+	private static final double maxcheck_radiusDefault=100.;
+	
+	double mindist;
+	private static final double mindistDefault=2.;
+	
 	int nThreads;
-	private int nThreadsDefault = 1;
+	private static int nThreadsDefault = 1;
 
 	int nThreadsQueue;
-	private int nThreadsQueueDefault = 1;
+	private static int nThreadsQueueDefault = 1;
 
 	String inputGMLFolder;
-	private String inputGMLFolderDefault="/home/schubert/Documents/workspace/datasets/gml/";
+	private static String inputGMLFolderDefault="/home/schubert/Documents/workspace/datasets/gml/";
 	
 	String logNonPlanar;
-	private String logNonPlanarDefault = "/home/schubert/NonPlanar.log";
+	private static String logNonPlanarDefault = "/home/schubert/NonPlanar.log";
 
 	String logNoSurfButBuildFrac;
-	private String logNoSurfButBuildFracDefault = "/home/schubert/NoSurfButBuildingFrac.log";
+	private static String logNoSurfButBuildFracDefault = "/home/schubert/NoSurfButBuildingFrac.log";
 	
 	String outputFile;
-	private String outputFileDefault = "city.nc";
+	private static String outputFileDefault = "city.nc";
 
 	String statsFile;
-	private String statsFileDefault = "stats.nc";
+	private static String statsFileDefault = "stats.nc";
 	
 	public CityGMLConverterConf() throws IOException {
 		readConf(false);
@@ -119,6 +128,10 @@ public class CityGMLConverterConf {
 			height = prop.getDoubleArray("height", heightDefault);
 
 			proj4code = prop.getString("proj4code", proj4codeDefault);
+	
+			maxbuild_radius = prop.getDouble("maxbuild_radius", maxbuild_radiusDefault);
+			maxcheck_radius = prop.getDouble("maxcheck_radius", maxcheck_radiusDefault);
+			mindist = prop.getDouble("mindist", mindistDefault);
 			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
@@ -163,6 +176,10 @@ public class CityGMLConverterConf {
 		prop.setProperty("ke_urban", ke_urban);
 		prop.setProperty("height", height);
 
+		prop.setProperty("maxbuild_radius", maxbuild_radius);
+		prop.setProperty("maxcheck_radius", maxcheck_radius);
+		prop.setProperty("mindist", mindist);
+		
 		prop.setProperty("proj4code", proj4code);
 		
 		prop.setProperty("nThreads", nThreads);

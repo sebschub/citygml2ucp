@@ -152,7 +152,7 @@ public class CityGMLConverter {
 			// map the JAXBElement class to the citygml4j object model
 			CityModel cityModel = (CityModel) citygml.jaxb2cityGML(featureElem);
 
-			CityGMLConverterThread cgmlct = new CityGMLConverterThread(uclm,
+			CityGMLConverterThread cgmlct = new CityGMLConverterThread(uclm, conf,
 					soldner, stats, cityModel, i, file.toString());
 
 			// everything that is need is now in cgmlct, rest can be deleted
