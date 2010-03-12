@@ -80,11 +80,14 @@ public class CityGMLConverterConf {
 	String inputGMLFolder;
 	private static String inputGMLFolderDefault="/home/schubert/Documents/workspace/datasets/gml/";
 	
+	String outputFolder;
+	private static String outputFolderDefault="/home/schubert/";
+	
 	String logNonPlanar;
-	private static String logNonPlanarDefault = "/home/schubert/NonPlanar.log";
+	private static String logNonPlanarDefault = "NonPlanar.log";
 
 	String logNoSurfButBuildFrac;
-	private static String logNoSurfButBuildFracDefault = "/home/schubert/NoSurfButBuildingFrac.log";
+	private static String logNoSurfButBuildFracDefault = "NoSurfButBuildingFrac.log";
 	
 	String outputFile;
 	private static String outputFileDefault = "city.nc";
@@ -137,13 +140,18 @@ public class CityGMLConverterConf {
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
 			
 			inputGMLFolder = prop.getString("inputGMLFolder", inputGMLFolderDefault);
+			outputFolder = prop.getString("outputFolder", outputFolderDefault);
 			
 			logNonPlanar = prop.getString("logNonPlanar", logNonPlanarDefault);
+			logNonPlanar = outputFolder + logNonPlanar;
 			logNoSurfButBuildFrac = prop.getString("logNoSurfButBuildFrac", logNoSurfButBuildFracDefault);
+			logNoSurfButBuildFrac = outputFolder + logNoSurfButBuildFrac;
 			
 			outputFile = prop.getString("outputFile", outputFileDefault);
+			outputFile = outputFolder + outputFile;
 
 			statsFile = prop.getString("statsFile", statsFileDefault);
+			statsFile = outputFolder + statsFile;
 			
 		} else {
 			if (explicitlyGivenFile) {
@@ -186,6 +194,7 @@ public class CityGMLConverterConf {
 		prop.setProperty("nThreadsQueue", nThreadsQueue);
 		
 		prop.setProperty("inputGMLFolder", inputGMLFolder);
+		prop.setProperty("outputFolder", outputFolder);
 		
 		prop.setProperty("logNonPlanar", logNonPlanar);
 		prop.setProperty("logNoSurfButBuildFrac", logNoSurfButBuildFrac);
