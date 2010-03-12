@@ -259,16 +259,18 @@ class CityGMLConverterThread extends Thread {
 			wallCounter += surface.size();
 		}
 
-		// for visibility surfaces take only walls into
-		// account: new array to include all these surfaces
+		// new array to include all these surfaces
 		RecSurface[] wallSurfaces = new RecSurface[wallCounter];
+
+		// reset counter again
+		wallCounter = -1;
 
 		for (WallSurface wall : walls) {
 			List<SurfaceProperty> surface = wall.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surface.size(); i++) {
-				wallSurfaces[i] = new RecSurface(surface.get(i));
-				if (!wallSurfaces[i].checkCoplanarity()) {
+				wallSurfaces[++wallCounter] = new RecSurface(surface.get(i));
+				if (!wallSurfaces[wallCounter].checkCoplanarity()) {
 					NonPlanarList.add(coID);
 				}
 			}
