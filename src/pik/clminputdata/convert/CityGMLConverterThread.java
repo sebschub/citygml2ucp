@@ -85,11 +85,12 @@ class CityGMLConverterThread extends Thread {
 	// no different classes in here (yet):
 	private int iuc = 0;
 
-	public CityGMLConverterThread(UrbanCLMConfiguration uclm, CityGMLConverterConf conf, Proj4 proj4,
+	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
+			CityGMLConverterConf conf, Proj4 proj4,
 			CityGMLConverterStats stats, CityModel base, int id, String filename) {
 		this.uclm = uclm;
 		this.checkinway = conf.maxcheck_radius;
-		this.checkradiussq = conf.maxbuild_radius*conf.maxbuild_radius;
+		this.checkradiussq = conf.maxbuild_radius * conf.maxbuild_radius;
 		this.minDist = conf.mindist;
 		this.proj4 = proj4;
 		this.id = id;
@@ -173,6 +174,8 @@ class CityGMLConverterThread extends Thread {
 					globalWallSurfaceCounter += buildingWalls[bID].length;
 				} else {
 					System.out.println("No Walls! " + filename);
+					// ignore this building for visibility for now
+					buildingWalls[bID] = new RecSurface[0];
 				}
 			}
 		}
@@ -495,7 +498,7 @@ class CityGMLConverterThread extends Thread {
 
 				List<RecSurfaceDistance> dist = new LinkedList<RecSurfaceDistance>();
 				int wrcount = -1;
-				
+
 				for (int k = 0; k < bCount; k++) {
 					if (i == k) {
 						wrcount += buildingWalls[k].length;
@@ -666,7 +669,7 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 	}
-	
+
 	@Override
 	public void run() {
 
@@ -683,7 +686,7 @@ class CityGMLConverterThread extends Thread {
 		for (int i = 0; i < bCount; i++) {
 			buildingFrac[iuc][irlat[i]][irlon[i]] += bArea[i];
 		}
-		
+
 		runChecks();
 		saveToGlobal();
 
