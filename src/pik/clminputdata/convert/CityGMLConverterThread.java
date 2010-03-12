@@ -30,8 +30,7 @@ import pik.clminputdata.tools.SymmetricMatrixBoolean;
 import ucar.ma2.InvalidRangeException;
 import ucar.unidata.geoloc.ProjectionPoint;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import javax.vecmath.Point3d;
 
 class CityGMLConverterThread extends Thread {
 
@@ -53,7 +52,7 @@ class CityGMLConverterThread extends Thread {
 	public final Proj4 proj4;
 
 	public final CityGMLConverterStats stats;
-	public final ProjectionData bLocation;
+	public final Point3d[] bLocation;
 
 	private int bCount;
 
@@ -99,7 +98,7 @@ class CityGMLConverterThread extends Thread {
 
 		// following items need to be written to when reading city data
 		int size = base.getCityObjectMember().size();
-		bLocation = new ProjectionData(size);
+		bLocation = new Point3d[size];
 		bHeight = new double[size];
 		buildingWalls = new RecSurface[size][];
 		bArea = new double[size];
@@ -131,9 +130,7 @@ class CityGMLConverterThread extends Thread {
 				double ypos = 0.5 * (lc.get(1) + uc.get(1));
 
 				// keep centre and lower position for transformation
-				bLocation.x[bID] = xpos;
-				bLocation.y[bID] = ypos;
-				bLocation.z[bID] = lc.get(2);
+				bLocation[bID] = new Point3d(xpos, ypos, lc.get(2));
 
 				// analyse semantic elements of building: get walls, roofs and
 				// ground surfaces
@@ -380,8 +377,7 @@ class CityGMLConverterThread extends Thread {
 				for (int k = i; k < bCount; k++) {
 
 					// if buildings are too far away, skip:
-					double dist = pow(bLocation.x[i] - bLocation.x[k], 2)
-							+ pow(bLocation.y[i] - bLocation.y[k], 2);
+					double dist = bLocation[i].distanceSquared(bLocation[k]);
 					if (dist > checkradiussq) {
 						for (int l = 0; l < buildingWalls[k].length; l++) {
 							wrcount++;
@@ -411,16 +407,9 @@ class CityGMLConverterThread extends Thread {
 							// building,
 							// so sum of distances - distance of buildings
 							// approx. 0, because of buildings larger radius
-							dist = sqrt(pow(bLocation.x[i] - bLocation.x[m], 2)
-									+ pow(bLocation.y[i] - bLocation.y[m], 2))
-									+ sqrt(pow(bLocation.x[k] - bLocation.x[m],
-											2)
-											+ pow(bLocation.y[k]
-													- bLocation.y[m], 2))
-									- sqrt(pow(bLocation.x[i] - bLocation.x[k],
-											2)
-											+ pow(bLocation.y[i]
-													- bLocation.y[k], 2));
+							dist = bLocation[m].distance(bLocation[i])
+									+ bLocation[m].distance(bLocation[k])
+									- bLocation[i].distance(bLocation[k]);
 							if (dist > checkinway) {
 								continue;
 							}
@@ -458,28 +447,40 @@ class CityGMLConverterThread extends Thread {
 	 * indices.
 	 */
 	private void calcLatLonIndices() {
+
+		// create ProjectionData object for transformation
+		ProjectionData loc;
+
+		double[][] xy = new double[bCount][2];
+		double[] z = new double[bCount];
+		for (int i = 0; i < bCount; i++) {
+			xy[i][0] = bLocation[i].x;
+			xy[i][1] = bLocation[i].y;
+			z[i] = bLocation[i].z;
+		}
+		loc = new ProjectionData(xy, z);
+
 		// transform the coordinates, has to be after visibility determination
 		// because old system is used there
-		proj4.transform(bLocation, bCount, 1);
+		proj4.transform(loc, bCount, 1);
 		// now x is lon, y is lat
 
 		for (int i = 0; i < bCount; i++) {
 			// apply rotated pole
-			ProjectionPoint pp = uclm.rotpol.latLonToProj(bLocation.y[i],
-					bLocation.x[i]);
+			ProjectionPoint pp = uclm.rotpol.latLonToProj(loc.y[i], loc.x[i]);
 			// and write back to projD
-			bLocation.x[i] = pp.getX();
-			bLocation.y[i] = pp.getY();
+			loc.x[i] = pp.getX();
+			loc.y[i] = pp.getY();
 
 			try {
-				irlat[i] = uclm.getRLatIndex(bLocation.y[i]);
+				irlat[i] = uclm.getRLatIndex(loc.y[i]);
 			} catch (InvalidRangeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			try {
-				irlon[i] = uclm.getRLonIndex(bLocation.x[i]);
+				irlon[i] = uclm.getRLonIndex(loc.x[i]);
 			} catch (InvalidRangeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
