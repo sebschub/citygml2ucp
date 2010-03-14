@@ -182,6 +182,7 @@ public class CityGMLConverter {
 		System.out.println(uclm.maxHeight);
 		System.out.println(uclm.minHeight);
 
+		uclm.normBuildingFrac();
 		uclm.normBuildProb();
 		uclm.normStreetWidth();
 
