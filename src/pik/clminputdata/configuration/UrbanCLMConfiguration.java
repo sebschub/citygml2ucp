@@ -176,8 +176,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// ldim is now nucdim, latdim, londim
 
 		// urban fraction
-		this.buildingFrac = new WritableField("FR_BUILD", ldim, "building_fraction",
-				"fraction of building surface in grid cell", "1", "rotated_pole");
+		this.buildingFrac = new WritableField("FR_BUILD", ldim,
+				"building_fraction",
+				"fraction of building surface in grid cell", "1",
+				"rotated_pole");
 		toWrite.add(this.buildingFrac);
 
 		ldim.add(1, this.streetdir);
@@ -214,18 +216,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		Index ind = streetLength.getIndex();
 
 		double lp = r * toRadians(getDlat());
-		
+
 		for (int lat = 0; lat < getJe_tot(); lat++) {
 
 			double ll = 2 * r * getDlon() / getDlat()
 					* sin(0.5 * toRadians(getDlat()))
 					* cos(toRadians(getRLat(lat)));
-			
+
 			for (int sd = 0; sd < getNstreedir(); sd++) {
 
 				double a = toRadians(abs(getStreetDir(sd)));
 
-				if (abs(a - Math.PI/2) < 1e-13) {
+				if (abs(a - Math.PI / 2) < 1e-13) {
 					streetLength.set(ind.set(sd, lat), ll);
 				} else if (tan(a) < ll / lp) {
 					streetLength.set(ind.set(sd, lat), 1 / cos(a) * lp / ll
@@ -277,13 +279,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				.getX()), value);
 	}
 
-	public void incBuildProb(int uc, int sd, int heighti, int rlati, int rloni, double value)
-	throws InvalidRangeException {
+	public void incBuildProb(int uc, int sd, int heighti, int rlati, int rloni,
+			double value) throws InvalidRangeException {
 		setBuildProb(uc, sd, heighti, rlati, rloni, getBuildProb(uc, sd,
-				heighti, rlati, rloni) + value);
+				heighti, rlati, rloni)
+				+ value);
 	}
-	
-		
+
 	public void setBuildProb(int uc, int sd, int lev, int rlati, int rloni,
 			double value) {
 		if (uc >= getNuclasses() || uc < 0) {
@@ -341,6 +343,21 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		buildingFrac.set(ind, buildingFrac.get(ind) + incr);
 	}
 
+	public void normBuildingFrac()
+			throws InvalidRangeException {
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int lat = 0; lat < getJe_tot(); lat++) {
+				for (int lon = 0; lon < getIe_tot(); lon++) {
+					Index ind = buildingFrac.getIndex();
+					ind.set(uc, lat, lon);
+					
+					buildingFrac.set(ind, buildingFrac.get(ind) / getArea(lat));
+					
+				}
+			}
+		}
+	}
+
 	public void normStreetWidth() throws InvalidRangeException {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int dir = 0; dir < getNstreedir(); dir++) {
@@ -357,7 +374,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	public void incStreetSurfaceSum(int uc, int dir, int lat, int lon, double value) {
+	public void incStreetSurfaceSum(int uc, int dir, int lat, int lon,
+			double value) {
 		if (uc >= getNuclasses() || uc < 0) {
 			throw new IllegalArgumentException("uc not in range");
 		}
@@ -370,7 +388,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		if (lon >= getIe_tot() || lon < 0) {
 			throw new IllegalArgumentException("lon not in range");
 		}
-		streetSurfaceSum[uc][dir][lat][lon]+=value;
+		streetSurfaceSum[uc][dir][lat][lon] += value;
 	}
 
 	// public void incBuildingWidth(int uc, int dir, int lat, int lon, double
@@ -457,11 +475,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		if (lat >= getJe_tot() || lat < 0) {
 			throw new IllegalArgumentException("lat not in range");
 		}
-		
+
 		Index ind = streetLength.getIndex();
 		return streetLength.get(ind.set(dir, lat));
 	}
-	
+
 	public double getStreetDir(int sd) {
 		if (sd >= getNstreedir() || sd < 0) {
 			throw new IllegalArgumentException("dir not in range");
@@ -487,7 +505,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 								setBuildProb(uc, sd, lev, lat, lon, sum
 										* getBuildProb(uc, sd, lev, lat, lon));
 							}
-						
+
 							for (int lev = getKe_urban(uc); lev < ke_urbanmax; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
 							}
