@@ -72,6 +72,7 @@ class CityGMLConverterThread extends Thread {
 	private double[][][][] streetSurfaceSum;
 
 	private RecSurface[][] buildingWalls;
+	private RecSurface[][] buildingRoofs;
 
 	private boolean isInStreetdir[][];
 
@@ -101,6 +102,7 @@ class CityGMLConverterThread extends Thread {
 		bLocation = new Point3d[size];
 		bHeight = new double[size];
 		buildingWalls = new RecSurface[size][];
+		buildingRoofs = new RecSurface[size][];
 		bArea = new double[size];
 
 		// ID of building
@@ -153,11 +155,13 @@ class CityGMLConverterThread extends Thread {
 				if (roofs.size() > 0) {
 					// calculate weighted mean of heights of roofs and use it as
 					// height information
+					buildingRoofs[bID] = getAllSurfaces(roofs);
 					bHeight[bID] = calcBuildingHeight(roofs, lc.get(2));
 				} else {
 					System.out.println("No Roofs! " + filename);
 					// maximum height = height of bounding of bounding box
 					bHeight[bID] = uc.get(2) - lc.get(2);
+					buildingRoofs[bID] = new RecSurface[0];
 				}
 
 				if (grounds.size() > 0) {
@@ -167,7 +171,8 @@ class CityGMLConverterThread extends Thread {
 				}
 
 				if (walls.size() > 0) {
-					buildingWalls[bID] = getWallSurfaces(walls, co.getId());
+					buildingWalls[bID] = getAllSurfaces(walls);
+					checkCoplanarity(buildingWalls[bID], co.getId());
 					globalWallSurfaceCounter += buildingWalls[bID].length;
 				} else {
 					System.out.println("No Walls! " + filename);
@@ -246,33 +251,40 @@ class CityGMLConverterThread extends Thread {
 		return area;
 	}
 
-	private RecSurface[] getWallSurfaces(List<WallSurface> walls, String coID) {
-		int wallCounter = 0;
+	public <T extends BoundarySurface> RecSurface[] getAllSurfaces(
+			List<T> listSurfaces) {
 
-		// just get the number of wall surfaces
-		for (WallSurface wall : walls) {
-			List<SurfaceProperty> surface = wall.getLod2MultiSurface()
+		int counter = 0;
+
+		// just get the number of surfaces
+		for (T surface : listSurfaces) {
+			List<SurfaceProperty> surf = surface.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
-			wallCounter += surface.size();
+			counter += surf.size();
 		}
 
 		// new array to include all these surfaces
-		RecSurface[] wallSurfaces = new RecSurface[wallCounter];
+		RecSurface[] surfaces = new RecSurface[counter];
 
 		// reset counter again
-		wallCounter = -1;
+		counter = 0;
 
-		for (WallSurface wall : walls) {
-			List<SurfaceProperty> surface = wall.getLod2MultiSurface()
+		for (T surface : listSurfaces) {
+			List<SurfaceProperty> surf = surface.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
-			for (int i = 0; i < surface.size(); i++) {
-				wallSurfaces[++wallCounter] = new RecSurface(surface.get(i));
-				if (!wallSurfaces[wallCounter].checkCoplanarity()) {
-					NonPlanarList.add(coID);
-				}
+			for (int i = 0; i < surf.size(); i++) {
+				surfaces[counter++] = new RecSurface(surf.get(i));
 			}
 		}
-		return wallSurfaces;
+		return surfaces;
+	}
+
+	private void checkCoplanarity(RecSurface[] surfaces, String coID) {
+		for (int i = 0; i < surfaces.length; i++) {
+			if (!surfaces[i].checkCoplanarity()) {
+				NonPlanarList.add(coID);
+			}
+		}
 	}
 
 	public static double[] getMinMaxHeight(SurfaceProperty surfaceProperty) {
@@ -414,6 +426,7 @@ class CityGMLConverterThread extends Thread {
 								continue;
 							}
 
+							// check wall surfaces
 							for (int n = 0; n < buildingWalls[m].length; n++) {
 								if (i == m && j == n)
 									continue;
@@ -421,6 +434,19 @@ class CityGMLConverterThread extends Thread {
 									continue;
 
 								if (buildingWalls[m][n].contains(
+										buildingWalls[i][j].getCentroid(),
+										buildingWalls[k][l].getCentroid())) {
+									vis = false;
+									break;
+								}
+							}
+							if (!vis) {
+								break;
+							}
+							
+							// check roof surfaces
+							for (int n = 0; n < buildingRoofs[m].length; n++) {
+								if (buildingRoofs[m][n].contains(
 										buildingWalls[i][j].getCentroid(),
 										buildingWalls[k][l].getCentroid())) {
 									vis = false;
