@@ -17,6 +17,8 @@ import ucar.nc2.units.DateFormatter;
 import ucar.unidata.geoloc.LatLonPoint;
 
 /**
+ * A class that sets up basic configuration properties for a CCLM run.
+ * 
  * @author Sebastian Schubert
  * 
  */
@@ -38,6 +40,9 @@ public class CLMConfiguration extends NetCDFData {
 
 	protected WritableDimension verticalDimension;
 
+	/**
+	 * The area of a grid cell, a function of latitude.
+	 */
 	protected WritableField area;
 
 	/**
@@ -133,6 +138,11 @@ public class CLMConfiguration extends NetCDFData {
 		calculateTrueLatLon();
 	}
 
+	/**
+	 * Calculate the area of the grid cell and save it.
+	 * 
+	 * @throws InvalidRangeException
+	 */
 	protected void calculateArea() throws InvalidRangeException {
 		Index ind = area.getIndex();
 		double fac = 2. * r * r * Math.toRadians(getDlon())
@@ -298,7 +308,6 @@ public class CLMConfiguration extends NetCDFData {
 	// }
 	// }
 
-	
 	/**
 	 * @return
 	 * @throws InvalidRangeException
@@ -310,7 +319,7 @@ public class CLMConfiguration extends NetCDFData {
 		Index ind = area.getIndex();
 		return area.get(ind.set(rlati));
 	}
-	
+
 	/**
 	 * @return
 	 * @throws InvalidRangeException

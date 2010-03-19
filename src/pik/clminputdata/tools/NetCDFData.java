@@ -13,14 +13,29 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
 /**
+ * Class for managing several fields and dimensions ought to be written to a
+ * NetCDF file
+ * 
  * @author Sebastian Schubert
- *
+ * 
  */
 public class NetCDFData implements NetCDFWritable {
 
+	/**
+	 * list of items to write to NetCDF file
+	 */
 	protected List<NetCDFWritable> toWrite = new ArrayList<NetCDFWritable>();
-	
-	public void toNetCDFfile(String filename) throws IOException, InvalidRangeException{
+
+	/**
+	 * write data to NetCDF file
+	 * 
+	 * @param filename
+	 *            the filename of the NetCDF file
+	 * @throws IOException
+	 * @throws InvalidRangeException
+	 */
+	public void toNetCDFfile(String filename) throws IOException,
+			InvalidRangeException {
 		NetcdfFileWriteable ncfile = NetcdfFileWriteable.createNew(filename,
 				false);
 		addVariablesToNetCDFfile(ncfile);
@@ -29,23 +44,31 @@ public class NetCDFData implements NetCDFWritable {
 		ncfile.close();
 	}
 
-	/* (non-Javadoc)
-	 * @see pik.clminputdata.configuration.NetCDFWritable#addVariablesToNetCDFfile(ucar.nc2.NetcdfFileWriteable)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * pik.clminputdata.configuration.NetCDFWritable#addVariablesToNetCDFfile
+	 * (ucar.nc2.NetcdfFileWriteable)
 	 */
 	@Override
 	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		List<Dimension> list = new LinkedList<Dimension>();		
+		List<Dimension> list = new LinkedList<Dimension>();
 		for (NetCDFWritable item : toWrite) {
 			List<Dimension> lt = item.addVariablesToNetCDFfile(ncfile);
-			if (lt!=null) {
-				list.addAll(0,lt);
+			if (lt != null) {
+				list.addAll(0, lt);
 			}
 		}
 		return list;
 	}
 
-	/* (non-Javadoc)
-	 * @see pik.clminputdata.configuration.NetCDFWritable#writeVariablesToNetCDFfile(ucar.nc2.NetcdfFileWriteable)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * pik.clminputdata.configuration.NetCDFWritable#writeVariablesToNetCDFfile
+	 * (ucar.nc2.NetcdfFileWriteable)
 	 */
 	@Override
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
@@ -54,6 +77,5 @@ public class NetCDFData implements NetCDFWritable {
 			item.writeVariablesToNetCDFfile(ncfile);
 		}
 	}
-	
-	
+
 }

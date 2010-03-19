@@ -7,9 +7,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * @author Sebastian Schubert
+ * A file filter for CityGML files or .gml and .xml files
  * 
- */
+ * @author Sebastian Schubert
+ * */
 public class GMLFilenameFilter implements FilenameFilter {
 
 	/*

@@ -2,11 +2,28 @@ package pik.clminputdata.tools;
 
 import javax.vecmath.Point3d;
 
-
+/**
+ * Class for the distance between two polygons, which can be compared and,
+ * therefore, sorted
+ * 
+ * @author Sebastian Schubert
+ * 
+ */
 public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 
-	public final RecSurface sending, receiving;
+	/**
+	 * The sending surface
+	 */
+	public final RecSurface sending;
+	/**
+	 * The receiving surface
+	 */
+	public final RecSurface receiving;
 
+	/**
+	 * The distance between sending and receiving surface defined by the
+	 * distance between their centroids.
+	 */
 	public final double distance;
 
 	public RecSurfaceDistance(RecSurface sending, RecSurface receiving) {
@@ -15,13 +32,8 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 
 		Point3d p1 = sending.getCentroid();
 		Point3d p2 = receiving.getCentroid();
-				
+
 		distance = p1.distance(p2);
-//		if (Double.isNaN(distance)) {
-//			System.out.println(p1);
-//			System.out.println(p2);
-//			System.out.println("++++++++++++++++++++++");
-//		}
 	}
 
 	@Override

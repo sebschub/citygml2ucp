@@ -1,13 +1,11 @@
 package pik.clminputdata.tools;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.vecmath.*;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.AbstractRingPropertyImpl;
 import org.citygml4j.impl.jaxb.gml._3_1_1.DirectPositionListImpl;
 import org.citygml4j.impl.jaxb.gml._3_1_1.ExteriorImpl;
 import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
@@ -16,20 +14,45 @@ import org.citygml4j.impl.jaxb.gml._3_1_1.SurfacePropertyImpl;
 import org.citygml4j.model.gml.*;
 
 /**
+ * Class for planar polygons
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class RecSurface {
 
-	// points with this distance are supposed to be equal and one is remove
+	/**
+	 * points with this distance are supposed to be equal and one is remove
+	 */
 	private static double equalDistance = 0.00001;
-	// the angle that the angle between normal and one in the "plane" is allowed
-	// to differ
+
+	/**
+	 * the angle that the angle between normal and one in the "plane" is allowed
+	 * to differ
+	 */
 	private static double diffAngle = 5. / 180. * Math.PI;
 
-	Vector3d uvn, uv1, uv2;
+	/**
+	 * Vector normal to polygon
+	 */
+	Vector3d uvn;
+
+	/**
+	 * base vector of plane of polygon
+	 */
+	Vector3d uv1, uv2;
+	/**
+	 * point in plane
+	 */
 	Point3d pos;
-	List<Point3d> points, points2;
+	/**
+	 * 3d points of polygon
+	 */
+	List<Point3d> points;
+	// List<Point3d> points2;
+	/**
+	 * 3d coordinates relative uv1, uv2 and pos
+	 */
 	Point2d[] points2d;
 
 	private boolean isSetCentroid = false;
@@ -55,12 +78,11 @@ public class RecSurface {
 					for (int i = 0; i < coord.size(); i += 3) {
 						points.add(new Point3d(coord.get(i), coord.get(i + 1),
 								coord.get(i + 2)));
-						// System.out.println(points[i/3]);
 					}
 
-//					for testing
-					points2 = new LinkedList<Point3d>(points);
-					// System.out.println(points.length);
+					/*
+					 * // for testing points2 = new LinkedList<Point3d>(points);
+					 */
 
 					// remove points which are very near to each other. Since
 					// the points ought to be planar, these vector between one
@@ -79,8 +101,8 @@ public class RecSurface {
 								}
 								double dist = (new Vector3d(points.get(i),
 										points.get(j))).length();
-//								System.out.println("i: " + i + "  j: " + j);
-//								System.out.println(dist);
+								// System.out.println("i: " + i + "  j: " + j);
+								// System.out.println(dist);
 								if (dist < equalDistance) {
 									points.remove(j);
 								} else {
@@ -123,9 +145,6 @@ public class RecSurface {
 						}
 					}
 
-					// System.out.println(imax);
-					// System.out.println(jmax);
-
 					uvn.normalize();
 
 					a = new Vector3d(points.get(jmax), points.get(jmax + 1));
@@ -166,17 +185,16 @@ public class RecSurface {
 						// System.out.println(points2d[i]);
 					}
 
-//					if (!checkCoplanarity(points)) {
-//						for (Point3d point3d : points) {
-//							System.out.println(point3d);
-//						}
-//						System.out.println(uvn);
-//						System.out.println(imax);
-//						System.out.println(jmax);
-//						throw new UnsupportedOperationException("Not planar!");
-//					}
+					// if (!checkCoplanarity(points)) {
+					// for (Point3d point3d : points) {
+					// System.out.println(point3d);
+					// }
+					// System.out.println(uvn);
+					// System.out.println(imax);
+					// System.out.println(jmax);
+					// throw new UnsupportedOperationException("Not planar!");
+					// }
 
-					
 				} else {
 					throw new IllegalArgumentException(
 							"Linear ring is no PosList, handle this case!");
@@ -192,9 +210,9 @@ public class RecSurface {
 	}
 
 	/**
-	 * get angle from normal vector
+	 * Calculate the angle of normal vector projected on horizontal plane
 	 * 
-	 * @return
+	 * @return angle in degrees
 	 */
 	public double getAngle() {
 		if (isSetAngle) {
@@ -216,6 +234,11 @@ public class RecSurface {
 		}
 	}
 
+	/**
+	 * Is the polygon horizontal?
+	 * 
+	 * @return true for horizontal
+	 */
 	public boolean isHorizontal() {
 		getAngle();
 		return this.isHorizontal;
@@ -360,20 +383,17 @@ public class RecSurface {
 						- (points2d[i + 1].x * points2d[i].y);
 				// System.out.println(area);
 			}
-			area = 0.5*Math.abs(area);
-			
+			area = 0.5 * Math.abs(area);
+
 			isSetArea = true;
-			
-			if (area<1e-12) {
-				for (int i = 0; i < points2.size(); i++) {
-					System.out.println(points2.get(i));
-				}
-				System.out.println("++++++++++++++++++++");
-				for (int i = 0; i < points.size(); i++) {
-					System.out.println(points.get(i));
-				}
-				System.out.println("====================");
-			}
+
+			/*
+			 * if (area < 1e-12) { for (int i = 0; i < points2.size(); i++) {
+			 * System.out.println(points2.get(i)); }
+			 * System.out.println("++++++++++++++++++++"); for (int i = 0; i <
+			 * points.size(); i++) { System.out.println(points.get(i)); }
+			 * System.out.println("===================="); }
+			 */
 			return area;
 		}
 	}
@@ -386,7 +406,7 @@ public class RecSurface {
 			double x = 0, y = 0;
 			double iarea;
 			iarea = 1. / (6. * getArea());
-			
+
 			for (int i = 0; i < points2d.length - 1; i++) {
 				x += (points2d[i].x + points2d[i + 1].x)
 						* (points2d[i].x * points2d[i + 1].y - points2d[i + 1].x
@@ -413,9 +433,19 @@ public class RecSurface {
 			centroid = new Point3d(a);
 
 			isSetCentroid = true;
-			
+
 			return centroid;
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return getCentroid().toString();
 	}
 
 	public static void main(String[] args) {
@@ -432,8 +462,8 @@ public class RecSurface {
 		// t.test=15;
 		// System.out.println(list.get(0).test);
 
-		RecSurface s1, s2, s3;
-		LinearRing l1, l2, l3;
+		RecSurface s1;
+		LinearRing l1;
 
 		l1 = new LinearRingImpl();
 
@@ -540,15 +570,5 @@ public class RecSurface {
 		// if (polygon.getExterior().getRing() instanceof LinearRing) {
 		// LinearRing lRing = (LinearRing) polygon.getExterior();
 		//	
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return getCentroid().toString();
 	}
 }

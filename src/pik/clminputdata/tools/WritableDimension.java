@@ -12,22 +12,32 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
 /**
+ * A dimension which can be written to a NetCDF file.
+ * 
  * @author Sebastian Schubert
- *
+ * 
  */
 public class WritableDimension extends Dimension implements NetCDFWritable {
 
 	/**
+	 * Define a dimension by name and length.
+	 * 
 	 * @param name
+	 *            The name of the dimension.
 	 * @param length
+	 *            The length of the dimension.
 	 */
 	public WritableDimension(String name, int length) {
 		super(name, length);
 	}
 
 	/**
+	 * Define a new dimension from a given one.
+	 * 
 	 * @param name
+	 *            The new name.
 	 * @param from
+	 *            The old dimension.
 	 */
 	public WritableDimension(String name, Dimension from) {
 		super(name, from);
@@ -54,8 +64,12 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 		super(name, length, isShared, isUnlimited, isVariableLength);
 	}
 
-	/* (non-Javadoc)
-	 * @see pik.clminputdata.configuration.NetCDFWritable#addVariablesToNetCDFfile(ucar.nc2.NetcdfFileWriteable)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * pik.clminputdata.configuration.NetCDFWritable#addVariablesToNetCDFfile
+	 * (ucar.nc2.NetcdfFileWriteable)
 	 */
 	@Override
 	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
@@ -64,12 +78,18 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 		return l;
 	}
 
-	/* (non-Javadoc)
-	 * @see pik.clminputdata.configuration.NetCDFWritable#writeVariablesToNetCDFfile(ucar.nc2.NetcdfFileWriteable)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * pik.clminputdata.configuration.NetCDFWritable#writeVariablesToNetCDFfile
+	 * (ucar.nc2.NetcdfFileWriteable)
 	 */
 	@Override
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
 			throws IOException, InvalidRangeException {
+		// dimensions just have to be added to the file and then are written
+		// automatically to the file
 	}
 
 }
