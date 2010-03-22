@@ -217,21 +217,19 @@ public class RecSurface {
 	public double getAngle() {
 		if (isSetAngle) {
 			return angle;
-		} else {
-
-			if (Math.abs(uvn.x) < 1.e-12) {
-				if (Math.abs(uvn.y) < 1.e-12) {
-					angle = -1000.;
-					isHorizontal = true;
-				} else {
-					angle = 90.;
-				}
-			} else {
-				angle = Math.toDegrees(Math.atan(uvn.y / uvn.x));
-			}
-			isSetAngle = true;
-			return angle;
 		}
+		if (Math.abs(uvn.x) < 1.e-12) {
+			if (Math.abs(uvn.y) < 1.e-12) {
+				angle = -1000.;
+				isHorizontal = true;
+			} else {
+				angle = 90.;
+			}
+		} else {
+			angle = Math.toDegrees(Math.atan(uvn.y / uvn.x));
+		}
+		isSetAngle = true;
+		return angle;
 	}
 
 	/**
@@ -365,77 +363,73 @@ public class RecSurface {
 
 		if (max > diffAngle) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 	public double getArea() {
 		if (isSetArea) {
 			return area;
-		} else {
-			area = 0;
-
-			for (int i = 0; i < points2d.length - 1; i++) {
-				// if(points2d[i]==null) System.out.println("1");
-				// if(points2d[i+1]==null) System.out.println("2");
-				area += (points2d[i].x * points2d[i + 1].y)
-						- (points2d[i + 1].x * points2d[i].y);
-				// System.out.println(area);
-			}
-			area = 0.5 * Math.abs(area);
-
-			isSetArea = true;
-
-			/*
-			 * if (area < 1e-12) { for (int i = 0; i < points2.size(); i++) {
-			 * System.out.println(points2.get(i)); }
-			 * System.out.println("++++++++++++++++++++"); for (int i = 0; i <
-			 * points.size(); i++) { System.out.println(points.get(i)); }
-			 * System.out.println("===================="); }
-			 */
-			return area;
 		}
+		area = 0;
+
+		for (int i = 0; i < points2d.length - 1; i++) {
+			// if(points2d[i]==null) System.out.println("1");
+			// if(points2d[i+1]==null) System.out.println("2");
+			area += (points2d[i].x * points2d[i + 1].y)
+					- (points2d[i + 1].x * points2d[i].y);
+			// System.out.println(area);
+		}
+		area = 0.5 * Math.abs(area);
+
+		isSetArea = true;
+
+		/*
+		 * if (area < 1e-12) { for (int i = 0; i < points2.size(); i++) {
+		 * System.out.println(points2.get(i)); }
+		 * System.out.println("++++++++++++++++++++"); for (int i = 0; i <
+		 * points.size(); i++) { System.out.println(points.get(i)); }
+		 * System.out.println("===================="); }
+		 */
+		return area;
 	}
 
 	public Point3d getCentroid() {
 		if (isSetCentroid) {
 			return centroid;
-		} else {
-
-			double x = 0, y = 0;
-			double iarea;
-			iarea = 1. / (6. * getArea());
-
-			for (int i = 0; i < points2d.length - 1; i++) {
-				x += (points2d[i].x + points2d[i + 1].x)
-						* (points2d[i].x * points2d[i + 1].y - points2d[i + 1].x
-								* points2d[i].y);
-				y += (points2d[i].y + points2d[i + 1].y)
-						* (points2d[i].x * points2d[i + 1].y - points2d[i + 1].x
-								* points2d[i].y);
-			}
-
-			x *= iarea;
-			y *= iarea;
-
-			// convert to 3d
-
-			Vector3d a = new Vector3d(uv1);
-			Vector3d b = new Vector3d(uv2);
-
-			a.scale(x);
-			b.scale(y);
-
-			a.add(b);
-			a.add(pos);
-
-			centroid = new Point3d(a);
-
-			isSetCentroid = true;
-
-			return centroid;
 		}
+		double x = 0, y = 0;
+		double iarea;
+		iarea = 1. / (6. * getArea());
+
+		for (int i = 0; i < points2d.length - 1; i++) {
+			x += (points2d[i].x + points2d[i + 1].x)
+					* (points2d[i].x * points2d[i + 1].y - points2d[i + 1].x
+							* points2d[i].y);
+			y += (points2d[i].y + points2d[i + 1].y)
+					* (points2d[i].x * points2d[i + 1].y - points2d[i + 1].x
+							* points2d[i].y);
+		}
+
+		x *= iarea;
+		y *= iarea;
+
+		// convert to 3d
+
+		Vector3d a = new Vector3d(uv1);
+		Vector3d b = new Vector3d(uv2);
+
+		a.scale(x);
+		b.scale(y);
+
+		a.add(b);
+		a.add(pos);
+
+		centroid = new Point3d(a);
+
+		isSetCentroid = true;
+
+		return centroid;
 	}
 
 	/*

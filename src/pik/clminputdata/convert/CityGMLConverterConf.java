@@ -156,10 +156,9 @@ public class CityGMLConverterConf {
 		} else {
 			if (explicitlyGivenFile) {
 				throw new FileNotFoundException("Configuration file not found");
-			} else {
-				System.err
-						.println("Configuration file not found, using default configuration");
 			}
+			System.err
+					.println("Configuration file not found, using default configuration");
 		}
 	}
 	

@@ -195,6 +195,7 @@ public class WritableAxis extends WritableDimension {
 	}
 
 	public int getIndexOf(double value) throws IllegalArgumentException {
+		int returnValue;
 		if (isPBC) {
 			double[] expandedValues = new double[values.length + 2];
 
@@ -215,11 +216,11 @@ public class WritableAxis extends WritableDimension {
 			int expReturn = binarySearch(value, expandedValues);
 
 			if (expReturn == 0) {
-				return values.length-1;
+				returnValue =  values.length-1;
 			} else if (expReturn == values.length + 1) {
-				return 0;
+				returnValue =  0;
 			} else {
-				return expReturn - 1;
+				returnValue = expReturn - 1;
 			}
 		} else {
 			if (value < values[0] - getDValue(0, this.values) / 2.
@@ -228,8 +229,10 @@ public class WritableAxis extends WritableDimension {
 				throw new IllegalArgumentException("value out of range");
 			}
 
-			return binarySearch(value, this.values);
+			returnValue = binarySearch(value, this.values);
 		}
+		
+		return returnValue;
 	}
 
 	public double getValue(int i) throws IllegalArgumentException {
@@ -246,13 +249,11 @@ public class WritableAxis extends WritableDimension {
 			throw new IllegalArgumentException("index not in range");
 		if (isRegular) {
 			return dv;
-		} else {
-			if (i == values.length - 1) {
-				return values[i] - values[i - 1];
-			} else {
-				return values[i + 1] - values[i];
-			}
 		}
+		if (i == values.length - 1) {
+			return values[i] - values[i - 1];
+		}
+		return values[i + 1] - values[i];
 	}
 
 }

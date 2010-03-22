@@ -30,9 +30,8 @@ public class PropertiesEnh extends Properties {
 		String str = getProperty(key);
 		if (str == null) {
 			return defaultValue;
-		} else {
-			return Integer.parseInt(str.trim());
 		}
+		return Integer.parseInt(str.trim());
 	}
 
 	/**
@@ -48,9 +47,8 @@ public class PropertiesEnh extends Properties {
 		String str = getProperty(key);
 		if (str == null) {
 			return defaultValue;
-		} else {
-			return Double.parseDouble(str.trim());
 		}
+		return Double.parseDouble(str.trim());
 	}
 
 	/**
@@ -66,39 +64,37 @@ public class PropertiesEnh extends Properties {
 		String str = getProperty(key);
 		if (str == null) {
 			return defaultValue;
-		} else {
-
-			str = str.trim();
-
-			ArrayList<Double> temp = new ArrayList<Double>();
-
-			int cpos = str.indexOf(',');
-			if (cpos == -1) {
-				temp.add(Double.parseDouble(str.trim()));
-			} else {
-				// get first element
-				temp.add(Double.parseDouble(str.substring(0, cpos).trim()));
-				int cpos2;
-				do {
-					cpos2 = str.indexOf(',', cpos + 1);
-					if (cpos2 != -1) {
-						temp.add(Double.parseDouble(str.substring(cpos + 1,
-								cpos2).trim()));
-						cpos = cpos2;
-					} else {
-						temp.add(Double.parseDouble(str.substring(cpos + 1,
-								str.length() - 1).trim()));
-						cpos = -2;
-					}
-				} while (cpos != -2);
-			}
-
-			double[] rarray = new double[temp.size()];
-			for (int i = 0; i < rarray.length; i++) {
-				rarray[i] = temp.get(i);
-			}
-			return rarray;
 		}
+		str = str.trim();
+
+		ArrayList<Double> temp = new ArrayList<Double>();
+
+		int cpos = str.indexOf(',');
+		if (cpos == -1) {
+			temp.add(Double.parseDouble(str.trim()));
+		} else {
+			// get first element
+			temp.add(Double.parseDouble(str.substring(0, cpos).trim()));
+			int cpos2;
+			do {
+				cpos2 = str.indexOf(',', cpos + 1);
+				if (cpos2 != -1) {
+					temp.add(Double.parseDouble(str.substring(cpos + 1,
+							cpos2).trim()));
+					cpos = cpos2;
+				} else {
+					temp.add(Double.parseDouble(str.substring(cpos + 1,
+							str.length() - 1).trim()));
+					cpos = -2;
+				}
+			} while (cpos != -2);
+		}
+
+		double[] rarray = new double[temp.size()];
+		for (int i = 0; i < rarray.length; i++) {
+			rarray[i] = temp.get(i);
+		}
+		return rarray;
 	}
 
 	/**
@@ -114,39 +110,37 @@ public class PropertiesEnh extends Properties {
 		String str = getProperty(key);
 		if (str == null) {
 			return defaultValue;
-		} else {
-
-			str = str.trim();
-
-			ArrayList<Integer> temp = new ArrayList<Integer>();
-
-			int cpos = str.indexOf(',');
-			if (cpos == -1) {
-				temp.add(Integer.parseInt(str.trim()));
-			} else {
-				// get first element
-				temp.add(Integer.parseInt(str.substring(0, cpos).trim()));
-				int cpos2;
-				do {
-					cpos2 = str.indexOf(',', cpos + 1);
-					if (cpos2 != -1) {
-						temp.add(Integer.parseInt(str
-								.substring(cpos + 1, cpos2).trim()));
-						cpos = cpos2;
-					} else {
-						temp.add(Integer.parseInt(str.substring(cpos + 1,
-								str.length() - 1).trim()));
-						cpos = -2;
-					}
-				} while (cpos != -2);
-			}
-
-			int[] rarray = new int[temp.size()];
-			for (int i = 0; i < rarray.length; i++) {
-				rarray[i] = temp.get(i);
-			}
-			return rarray;
 		}
+		str = str.trim();
+
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+
+		int cpos = str.indexOf(',');
+		if (cpos == -1) {
+			temp.add(Integer.parseInt(str.trim()));
+		} else {
+			// get first element
+			temp.add(Integer.parseInt(str.substring(0, cpos).trim()));
+			int cpos2;
+			do {
+				cpos2 = str.indexOf(',', cpos + 1);
+				if (cpos2 != -1) {
+					temp.add(Integer.parseInt(str
+							.substring(cpos + 1, cpos2).trim()));
+					cpos = cpos2;
+				} else {
+					temp.add(Integer.parseInt(str.substring(cpos + 1,
+							str.length() - 1).trim()));
+					cpos = -2;
+				}
+			} while (cpos != -2);
+		}
+
+		int[] rarray = new int[temp.size()];
+		for (int i = 0; i < rarray.length; i++) {
+			rarray[i] = temp.get(i);
+		}
+		return rarray;
 	}
 
 	/**

@@ -68,6 +68,11 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return (int) distance;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -78,5 +83,4 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 		return sending.toString() + "  " + receiving.toString() + "  "
 				+ Double.toString(distance);
 	}
-
 }

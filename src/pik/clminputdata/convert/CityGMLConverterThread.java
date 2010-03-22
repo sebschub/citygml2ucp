@@ -308,18 +308,15 @@ class CityGMLConverterThread extends Thread {
 						}
 					}
 					return new double[] { min, max };
-				} else {
-					throw new IllegalArgumentException(
-							"Linear ring is no PosList, handle this case!");
 				}
-			} else {
 				throw new IllegalArgumentException(
-						"Polygon is no linear ring, handle this case!");
+						"Linear ring is no PosList, handle this case!");
 			}
-		} else {
 			throw new IllegalArgumentException(
-					"Surface is no Polygon, handle this case!");
+					"Polygon is no linear ring, handle this case!");
 		}
+		throw new IllegalArgumentException(
+				"Surface is no Polygon, handle this case!");
 	}
 
 	public static double calcArea(SurfaceProperty surfaceProperty) {
@@ -349,18 +346,15 @@ class CityGMLConverterThread extends Thread {
 					// - (coord.get(0) * coord.get(pos + 1));
 					// km^2
 					return 0.0000005 * Math.abs(lArea);
-				} else {
-					throw new IllegalArgumentException(
-							"Linear ring is no PosList, handle this case!");
 				}
-			} else {
 				throw new IllegalArgumentException(
-						"Polygon is no linear ring, handle this case!");
+						"Linear ring is no PosList, handle this case!");
 			}
-		} else {
 			throw new IllegalArgumentException(
-					"Surface is no Polygon, handle this case!");
+					"Polygon is no linear ring, handle this case!");
 		}
+		throw new IllegalArgumentException(
+				"Surface is no Polygon, handle this case!");
 	}
 
 	/**

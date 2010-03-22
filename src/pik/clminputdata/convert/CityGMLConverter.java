@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List; //import java.util.ArrayList;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -18,23 +15,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.proj4.Proj4;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.factory.CityGMLFactory;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.Building;
-import org.citygml4j.model.citygml.core.CityGMLBase;
 import org.citygml4j.model.citygml.core.CityModel;
-import org.citygml4j.model.citygml.core.CityObject;
-import org.citygml4j.model.citygml.core.CityObjectMember; //import org.citygml4j.model.citygml.core.CoreModule;
-import org.citygml4j.model.gml.Length;
-import org.citygml4j.model.gml.MultiSurface;
-import org.citygml4j.model.gml.MultiSurfaceProperty;
 
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.GMLFilenameFilter;
