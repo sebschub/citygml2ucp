@@ -83,6 +83,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	protected WritableField streetWidth;
 
+	protected WritableField urbanFrac;
+
+	protected WritableField buildingWidth;
+
+	protected WritableField streetFrac;
+
+	protected WritableField urbanClassFrac;
+
 	private double streetSurfaceSum[][][][];
 
 	public WritableField streetLength;
@@ -173,6 +181,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
 
+		this.urbanClassFrac = new WritableField("FR_URBAN_CLASS", ldim,
+				"urban_classes_fraction", "urban classes fraction", "1",
+				"rotated_pole");
+		toWrite.add(this.urbanClassFrac);
+
+		// impervious surface fraction
+		this.urbanFrac = new WritableField("FR_URBAN", ldim,
+				"urban_fraction",
+				"fraction of urban surfaces in grid cell", "1",
+				"rotated_pole");
+		toWrite.add(this.urbanFrac);
+
 		// urban fraction
 		this.buildingFrac = new WritableField("FR_BUILD", ldim,
 				"building_fraction",
@@ -182,6 +202,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
+
+		this.streetFrac = new WritableField("STREET_FRAC", ldim,
+				"street_fraction", "street fraction", "1", "rotated_pole");
+		toWrite.add(streetFrac);
 
 		this.streetLength = new WritableField("STREET_LENGTH", ldim.subList(1,
 				3), "Street Length", "average street length", "km",
@@ -194,6 +218,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
+
+		// building width
+		this.buildingWidth = new WritableField("BUILD_WIDTH", ldim,
+				"building_width", "building width in grid cell", "m",
+				"rotated_pole");
+		toWrite.add(this.buildingWidth);
 
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
@@ -242,11 +272,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public UrbanCLMConfiguration() throws IllegalArgumentException,
 			InvalidRangeException {
 		super();
-		// nuclasses = 1;
-		// ke_urban = new int[] { 10 };
-		// ke_urban_max = 10;
-		// height = new double[] { 0.f, 3.f, 7.f, 10.f, 13.f, 19.f, 25.f, 30.f,
-		// 38.f, 45.f };
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
 				new int[] { 10 }, new double[] { 0.f, 3.f, 7.f, 10.f, 13.f,
 						19.f, 25.f, 30.f, 38.f, 45.f });
@@ -282,6 +307,72 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		setBuildProb(uc, sd, heighti, rlati, rloni, getBuildProb(uc, sd,
 				heighti, rlati, rloni)
 				+ value);
+	}
+
+	public void setUrbanFrac(int uc, int lat, int lon, double value) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (lat >= getJe_tot() || lat < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (lon >= getIe_tot() || lon < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+
+		Index ind = urbanFrac.getIndex();
+		urbanFrac.set(ind.set(uc, lat, lon), value);
+	}
+
+	public double getUrbanFrac(int uc, int lat, int lon) {
+		Index ind = urbanFrac.getIndex();
+		return urbanFrac.get(ind.set(uc, lat, lon));
+	}
+
+	public void fakeUrbanClassFrac() {
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int lat = 0; lat < getJe_tot(); lat++) {
+				for (int lon = 0; lon < getIe_tot(); lon++) {
+					Index index = urbanClassFrac.getIndex();
+					urbanClassFrac.set(index.set(uc, lat, lon), 1.);
+				}
+			}
+		}
+	}
+
+	public void calculateBuildingWidth() throws InvalidRangeException {
+		Index index = buildingWidth.getIndex();
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int dir = 0; dir < getNstreedir(); dir++) {
+				for (int lat = 0; lat < getJe_tot(); lat++) {
+					for (int lon = 0; lon < getIe_tot(); lon++) {
+						index.set(uc, dir, lat, lon);
+						double bfrac = getBuildingFrac(uc, lat, lon);
+						if (bfrac > 1.e-12) {
+							buildingWidth.set(index, bfrac
+									/ (getUrbanFrac(uc, lat, lon) - bfrac)
+									* getStreetWidth(uc, dir, lat, lon));
+						} else {
+							buildingWidth.set(index, 0.);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void setStreetFrac(int uc, int sd, int rlati, int rloni, double value) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (rlati >= getJe_tot() || rlati < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (rloni >= getIe_tot() || rloni < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+		Index ind = streetFrac.getIndex();
+		streetFrac.set(ind.set(uc, sd, rlati, rloni), value);
 	}
 
 	public void setBuildProb(int uc, int sd, int lev, int rlati, int rloni,
@@ -341,16 +432,15 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		buildingFrac.set(ind, buildingFrac.get(ind) + incr);
 	}
 
-	public void normBuildingFrac()
-			throws InvalidRangeException {
+	public void normBuildingFrac() throws InvalidRangeException {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
 					Index ind = buildingFrac.getIndex();
 					ind.set(uc, lat, lon);
-					
+
 					buildingFrac.set(ind, buildingFrac.get(ind) / getArea(lat));
-					
+
 				}
 			}
 		}
@@ -485,34 +575,46 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return streetdir.getValue(sd);
 	}
 
-	public void normBuildProb() {
-		double sum;
+	public void normBuildProbAndCalcStreetFraction() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					sum = 0.;
+					double sum = 0.;
+					double[] sumStreet = new double[getNstreedir()];
 					for (int sd = 0; sd < getNstreedir(); sd++) {
+						sumStreet[sd] = 0.;
 						for (int lev = 0; lev < getKe_urban(uc); lev++) {
-							sum += getBuildProb(uc, sd, lev, lat, lon);
+							sumStreet[sd] += getBuildProb(uc, sd, lev, lat, lon);
 						}
+						sum += sumStreet[sd];
 					}
 					if (sum > 1e-14) {
 						sum = 1. / sum;
 						for (int sd = 0; sd < getNstreedir(); sd++) {
-							for (int lev = 0; lev < getKe_urban(uc); lev++) {
-								setBuildProb(uc, sd, lev, lat, lon, sum
-										* getBuildProb(uc, sd, lev, lat, lon));
+							if (sumStreet[sd] > 1.e-12) {
+								for (int lev = 0; lev < getKe_urban(uc); lev++) {
+									setBuildProb(uc, sd, lev, lat, lon,
+											getBuildProb(uc, sd, lev, lat, lon)
+													/ sumStreet[sd]);
+								}
+							} else {
+								for (int lev = 0; lev < getKe_urban(uc); lev++) {
+									setBuildProb(uc, sd, lev, lat, lon, 0.);
+								}
 							}
 
 							for (int lev = getKe_urban(uc); lev < ke_urbanmax; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
 							}
+
+							setStreetFrac(uc, sd, lat, lon, sum * sumStreet[sd]);
 						}
 					} else {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							for (int lev = 0; lev < ke_urbanmax; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
 							}
+							setStreetFrac(uc, sd, lat, lon, 0.);
 						}
 					}
 				}

@@ -95,6 +95,24 @@ public class CityGMLConverterConf {
 	String statsFile;
 	private static String statsFileDefault = "stats.nc";
 	
+	String impSurfFile;
+	private static String impSurfFileDefault = "/home/schubert/Documents/workspace/datasets/vg";
+	
+	int rowLat;
+	private static int rowLatDefault = 2;
+	
+	int rowLon;
+	private static int rowLonDefault = 1;
+	
+	int rowImpSurf;
+	private static int rowImpSurfDefault = 3;
+	
+	int skipLines;
+	private static int skipLinesDefault = 0;
+	
+	String sepString;
+	private static String sepStringDefault = ",";
+	
 	public CityGMLConverterConf() throws IOException {
 		readConf(false);
 	}
@@ -153,6 +171,16 @@ public class CityGMLConverterConf {
 			statsFile = prop.getString("statsFile", statsFileDefault);
 			statsFile = outputFolder + statsFile;
 			
+			impSurfFile = prop.getString("impSurfFile", impSurfFileDefault);
+	
+			rowLat = prop.getInt("rowLat", rowLatDefault);
+			rowLon = prop.getInt("rowLon", rowLonDefault);
+			rowImpSurf = prop.getInt("rowImpSurf", rowImpSurfDefault);
+			
+			skipLines = prop.getInt("skipLines", skipLinesDefault);
+			
+			sepString = prop.getString("sepString", sepStringDefault);
+						
 		} else {
 			if (explicitlyGivenFile) {
 				throw new FileNotFoundException("Configuration file not found");
@@ -201,6 +229,16 @@ public class CityGMLConverterConf {
 		prop.setProperty("outputFile", outputFile);
 		
 		prop.setProperty("statsFile", statsFile);
+		
+		prop.setProperty("impSurfFile", impSurfFile);
+		
+		prop.setProperty("rowLat", rowLat);
+		prop.setProperty("rowLon", rowLon);
+		prop.setProperty("rowImpSurf", rowImpSurf);
+		
+		prop.setProperty("skipLines", skipLines);
+		
+		prop.setProperty("sepString", sepString);
 		
 		return prop;
 	}

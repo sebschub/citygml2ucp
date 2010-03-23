@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List; //import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +28,32 @@ import ucar.ma2.InvalidRangeException;
 
 public class CityGMLConverter {
 
-	// public final static int nThreads = 12;
-	// public final static int nThreadsQueue = 30;
+	private static void readImpSurfaceFile(CityGMLConverterConf conf, UrbanCLMConfiguration uclm)
+			throws IOException, InvalidRangeException {
+		Scanner scanner = new Scanner(new File(conf.impSurfFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine()).useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNextDouble()) {
+				values.add(lScanner.nextDouble());
+			}
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat-1));
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon-1));
+			uclm.setUrbanFrac(0, lat, lon, values.get(conf.rowImpSurf-1)/100.);
+			lScanner.close();
+		}
+		scanner.close();
+
+	}
+
 	static List<CityGMLConverterThread> lThreads = new LinkedList<CityGMLConverterThread>();
 
 	/**
@@ -49,12 +74,6 @@ public class CityGMLConverter {
 		long startTime = new Date().getTime();
 
 		CityGMLConverterConf conf;
-		// if (args.length>=1) {
-		// conf = new CityGMLConverterConf(args[0]);
-		// } else {
-		// conf = new CityGMLConverterConf();
-		// }
-		// conf.writeConf();
 
 		if (args.length == 1) {
 			conf = new CityGMLConverterConf(args[0]);
@@ -70,31 +89,14 @@ public class CityGMLConverter {
 				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.ke_tot,
 				conf.nuclasses, conf.streetdir, conf.ke_urban, conf.height);
 
-		// uclm.toNetCDFfile("/home/schubert/temp/test2.nc");
-
-		// // new converter of soldner <=> lat lon
-		// Soldner bsold = new Soldner();
-
 		Proj4 soldner = new Proj4(conf.proj4code, "+init=epsg:4326 +latlong");
 
 		// set up citygml4j context
 		CityGMLContext ctx = new CityGMLContext();
 		CityGMLFactory citygml = ctx.createCityGMLFactory();
 
-		// // create a new XML parser
-		// SAXParserFactory factory = SAXParserFactory.newInstance();
-		// factory.setNamespaceAware(true);
-		// XMLReader reader = factory.newSAXParser().getXMLReader();
-
 		// create a JAXBContext, an Unmarshaller and unmarshal input file
 		JAXBContext jaxbCtx = ctx.createJAXBContext();
-
-		// Following is done in splitter
-
-		// Unmarshaller um = jaxbCtx.createUnmarshaller();
-		// JAXBElement<?> cityModelElem = (JAXBElement<?>) um.unmarshal(new
-		// File(
-		// "../datasets/SimpleLOD1Buildings.gml"));
 
 		File[] flist;
 		File folder = new File(conf.inputGMLFolder);
@@ -110,13 +112,12 @@ public class CityGMLConverter {
 				flist, new File(conf.logNonPlanar), new File(
 						conf.logNoSurfButBuildFrac));
 
-		// ExecutorService exec = Executors.newFixedThreadPool(nThreads);
+		readImpSurfaceFile(conf, uclm);
+
 		ThreadPoolExecutor exec = new ThreadPoolExecutor(conf.nThreads,
 				conf.nThreads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
 				new ThreadPoolExecutor.CallerRunsPolicy());
-
-		// final Runtime rt = Runtime.getRuntime();
 
 		// here loop over citygmlfiles
 		for (int i = 0; i < flist.length; i++) {
@@ -124,9 +125,6 @@ public class CityGMLConverter {
 			File file = flist[i];
 
 			System.out.println(file);
-
-			// File file = new File("../datasets/2000020000.gml");
-			// File file = new File("../datasets/gml/2600032000.gml");
 
 			// unmarshaller has to be in loop, otherwise memory is not freed
 			// (reference in unmarshaller?)
@@ -137,8 +135,8 @@ public class CityGMLConverter {
 			// map the JAXBElement class to the citygml4j object model
 			CityModel cityModel = (CityModel) citygml.jaxb2cityGML(featureElem);
 
-			CityGMLConverterThread cgmlct = new CityGMLConverterThread(uclm, conf,
-					soldner, stats, cityModel, i, file.toString());
+			CityGMLConverterThread cgmlct = new CityGMLConverterThread(uclm,
+					conf, soldner, stats, cityModel, i, file.toString());
 
 			// everything that is need is now in cgmlct, rest can be deleted
 			cityModel = null;
@@ -147,20 +145,11 @@ public class CityGMLConverter {
 
 			if (conf.nThreads > 1) {
 				exec.execute(cgmlct);
-				// lThreads.add(cgmlct);
-				// System.out.println(lThreads.size());
-				// if (lThreads.size() == nThreadsQueue) {
-				// for (int i = 0; i < nThreads; i++) {
-				// lThreads.get(i).join();
-				// }
-				// lThreads.subList(0, nThreads).clear();
-				// System.out.println("removed, so: " + lThreads.size());
-				// }
 			} else {
 				cgmlct.run();
 			}
 		}
-		
+
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
@@ -168,8 +157,10 @@ public class CityGMLConverter {
 		System.out.println(uclm.minHeight);
 
 		uclm.normBuildingFrac();
-		uclm.normBuildProb();
+		uclm.normBuildProbAndCalcStreetFraction();
 		uclm.normStreetWidth();
+		uclm.calculateBuildingWidth();
+		uclm.fakeUrbanClassFrac();
 
 		uclm.toNetCDFfile(conf.outputFile);
 
