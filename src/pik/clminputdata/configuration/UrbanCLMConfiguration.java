@@ -24,84 +24,93 @@ import static java.lang.Math.abs;
 import static java.lang.Math.toRadians;
 
 /**
+ * Data for a run of CCLM with urban model.
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class UrbanCLMConfiguration extends CLMConfiguration {
 
+	/**
+	 * Dimension for street directions
+	 */
 	protected WritableAxis streetdir;
 
 	/**
-	 * number of urban classes
+	 * Dimension for urban classes
 	 */
-	// public final int nuclasses;
 	protected WritableDimension nuclasses;
 
 	/**
-	 * number of height levels in urban scheme
+	 * Number of height levels in urban scheme for different urban classes
 	 */
 	protected WritableFieldInt ke_urban;
 
-	protected static int ke_urbanmax;
-
 	/**
 	 * maximum of ke_urban, used to initialize arrays (so space is wasted, but
-	 * only netcdf 4 natively supports ragged arrays, java does, though)
+	 * only NetCDF 4 natively supports ragged arrays, java library not at the
+	 * moment, though)
 	 */
-	// public final int ke_urban_max;
+	protected int ke_urbanmax;
+
+	/**
+	 * Dimension for the urban height
+	 */
 	protected WritableAxis height;
 
-	// /**
-	// * height of urban levels
-	// */
-	// public final double[] height;
-	// /**
-	// * String used in NetCDF file for height
-	// */
-	// public final static String heightString = "height";
-
 	/**
-	 * probability to have a building
+	 * Probability to have a building on a certain height level
 	 */
 	protected WritableField buildProb;
-	// /**
-	// * String used in NetCDF file for buildprob
-	// */
-	// public final static String buildprobString = "BUILD_PROP";
 
 	/**
-	 * urban fraction
+	 * Probability to have a building in a grid cell
 	 */
 	protected WritableField buildingFrac;
-	// /**
-	// * String used in NetCDF file for urban_frac
-	// */
-	// public final static String urban_fracString = "FR_URBAN";
 
 	/**
-	 * street width
+	 * Street width
 	 */
 	protected WritableField streetWidth;
 
+	/**
+	 * Urban fraction of a grid cell
+	 */
 	protected WritableField urbanFrac;
 
+	/**
+	 * Width of a building
+	 */
 	protected WritableField buildingWidth;
 
+	/**
+	 * Fraction of street direction in a grid cell
+	 */
 	protected WritableField streetFrac;
 
+	/**
+	 * Fraction of an urban class in a grid cell
+	 */
 	protected WritableField urbanClassFrac;
 
+	/**
+	 * Sum of areas in a street (used for normalization).
+	 */
 	private double streetSurfaceSum[][][][];
 
+	/**
+	 * Street length as a function of latitude in rotated system
+	 */
 	public WritableField streetLength;
 
+	/**
+	 * Maximum height of buildings
+	 */
 	public double maxHeight = -Double.MAX_VALUE;
+	/**
+	 * Minimum height of buildings
+	 */
 	public double minHeight = Double.MAX_VALUE;
-
-	// /**
-	// * String used in NetCDF file for urban_frac
-	// */
-	// public final static String street_widthString = "STREET_WIDTH";
 
 	private void initalizeUrbanFields(int nuclasses, double[] streetdir,
 			int[] ke_urban, double[] height) {
@@ -188,9 +197,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		// impervious surface fraction
 		this.urbanFrac = new WritableFieldFloat("FR_URBAN", ldim,
-				"urban_fraction",
-				"fraction of urban surfaces in grid cell", "1",
-				"rotated_pole");
+				"urban_fraction", "fraction of urban surfaces in grid cell",
+				"1", "rotated_pole");
 		toWrite.add(this.urbanFrac);
 
 		// urban fraction
@@ -207,8 +215,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
-		this.streetLength = new WritableFieldFloat("STREET_LENGTH", ldim.subList(1,
-				3), "Street Length", "average street length", "km",
+		this.streetLength = new WritableFieldFloat("STREET_LENGTH", ldim
+				.subList(1, 3), "Street Length", "average street length", "km",
 				"rotated_pole");
 		toWrite.add(streetLength);
 		calculateStreetLength();
@@ -327,6 +335,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return urbanFrac.get(ind.set(uc, lat, lon));
 	}
 
+	/**
+	 * Only one urban class so far, so set the fraction of this one class to 1.
+	 */
 	public void fakeUrbanClassFrac() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
@@ -338,6 +349,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	/**
+	 * Calculate the building width from A_B/A_S = B/W .
+	 */
 	public void calculateBuildingWidth() {
 		Index index = buildingWidth.getIndex();
 		for (int uc = 0; uc < getNuclasses(); uc++) {
@@ -427,6 +441,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		buildingFrac.set(ind, buildingFrac.get(ind) + incr);
 	}
 
+	/**
+	 * Normalize the area of buildings to the cell size.
+	 */
 	public void normBuildingFrac() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
@@ -441,6 +458,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	/**
+	 * Normalize the street width which has been weightes with respective wall
+	 * surface.
+	 */
 	public void normStreetWidth() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int dir = 0; dir < getNstreedir(); dir++) {
@@ -474,26 +495,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		streetSurfaceSum[uc][dir][lat][lon] += value;
 	}
 
-	// public void incBuildingWidth(int uc, int dir, int lat, int lon, double
-	// value) {
-	// if (uc >= getNuclasses() || uc < 0) {
-	// throw new IllegalArgumentException("uc not in range");
-	// }
-	// if (dir >= getNstreedir() || dir < 0) {
-	// throw new IllegalArgumentException("dir not in range");
-	// }
-	// if (lat >= getJe_tot() || lat < 0) {
-	// throw new IllegalArgumentException("lat not in range");
-	// }
-	// if (lon >= getIe_tot() || lon < 0) {
-	// throw new IllegalArgumentException("lon not in range");
-	// }
-	//
-	// Index ind = buildingWidth.getIndex();
-	// buildingWidth.set(ind.set(uc, dir, lat, lon), getBuildingWidth(uc, dir,
-	// lat, lon)
-	// + value);
-	// }
 
 	public void incStreetWidth(int uc, int dir, int lat, int lon, double value) {
 		if (uc >= getNuclasses() || uc < 0) {
@@ -570,6 +571,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return streetdir.getValue(sd);
 	}
 
+	/**
+	 * Normalize the building probability for one street direction and calculate
+	 * the fraction of the street direction in a grid cell.
+	 */
 	public void normBuildProbAndCalcStreetFraction() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {

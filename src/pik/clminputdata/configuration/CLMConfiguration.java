@@ -25,39 +25,44 @@ import ucar.unidata.geoloc.LatLonPoint;
 public class CLMConfiguration extends NetCDFData {
 
 	/**
-	 * radius of earth in km
+	 * Radius of earth in km
 	 */
 	public final static double r = 6371.229;
 
 	/**
-	 * rotated pole
+	 * Rotated pole
 	 */
 	public final WritableRotatedPole rotpol;
 
-	protected WritableAxis meridionalAxis;
-
-	protected WritableAxis zonalAxis;
-
-	protected WritableDimension verticalDimension;
+	/**
+	 * Latitude in rotated coordinate system
+	 */
+	protected final WritableAxis meridionalAxis;
+	/**
+	 * Longitude in rotated coordinate system
+	 */
+	protected final WritableAxis zonalAxis;
 
 	/**
-	 * The area of a grid cell, a function of latitude.
+	 * Vertical dimension
 	 */
-	protected WritableField area;
+	protected final WritableDimension verticalDimension;
 
 	/**
-	 * the corresponding latitude and longitude on the non-rotated grid
+	 * Area of a grid cell, a function of latitude
 	 */
-	protected WritableField lat, lon;
+	protected final WritableField area;
+
+	/**
+	 * Corresponding latitude and longitude on the non-rotated grid
+	 */
+	protected final WritableField lat, lon;
 
 	/**
 	 * Initialize with default values of CLM
 	 * 
-	 * @throws IllegalArgumentException
-	 * @throws IllegalArgumentException
 	 */
-	public CLMConfiguration() throws IllegalArgumentException,
-			IllegalArgumentException {
+	public CLMConfiguration() {
 		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51, 20);
 	}
 
@@ -66,7 +71,6 @@ public class CLMConfiguration extends NetCDFData {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             One of the arguments is not in the correct range
-	 * @throws IllegalArgumentException
 	 */
 	public CLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
@@ -76,31 +80,31 @@ public class CLMConfiguration extends NetCDFData {
 		toWrite.add(rotpol);
 
 		if (dlat < 0 || dlat > 90) {
-			throw new IllegalArgumentException("dlat out of range");
+			throw new IllegalArgumentException("dlat out of range.");
 		}
 
 		if (dlon < 0 || dlon > 180) {
-			throw new IllegalArgumentException("dlon out of range");
+			throw new IllegalArgumentException("dlon out of range.");
 		}
 
 		if (startlat_tot < -90 || startlat_tot > 90) {
-			throw new IllegalArgumentException("startlat_tot out of range");
+			throw new IllegalArgumentException("startlat_tot out of range.");
 		}
 
 		if (startlon_tot < -180 || startlon_tot > 180) {
-			throw new IllegalArgumentException("startlon_tot out of range");
+			throw new IllegalArgumentException("startlon_tot out of range.");
 		}
 
 		if (ie_tot < 0) {
-			throw new IllegalArgumentException("ie_tot out of range");
+			throw new IllegalArgumentException("ie_tot out of range.");
 		}
 
 		if (je_tot < 0) {
-			throw new IllegalArgumentException("je_tot out of range");
+			throw new IllegalArgumentException("je_tot out of range.");
 		}
 
 		if (ke_tot < 0) {
-			throw new IllegalArgumentException("ke_tot out of range");
+			throw new IllegalArgumentException("ke_tot out of range.");
 		}
 
 		zonalAxis = new WritableAxis("rlon", ie_tot, "rlon", "X",
@@ -140,9 +144,8 @@ public class CLMConfiguration extends NetCDFData {
 	/**
 	 * Calculate the area of the grid cell and save it.
 	 * 
-	 * @throws IllegalArgumentException
 	 */
-	protected void calculateArea() throws IllegalArgumentException {
+	protected void calculateArea() {
 		Index ind = area.getIndex();
 		double fac = 2. * r * r * Math.toRadians(getDlon())
 				* Math.sin(Math.toRadians(getDlat() / 2.));
@@ -151,6 +154,9 @@ public class CLMConfiguration extends NetCDFData {
 		}
 	}
 
+	/**
+	 * Calculate the true non-rotated coordinates.
+	 */
 	protected void calculateTrueLatLon() {
 		Index ilat = lat.getIndex();
 		Index ilon = lon.getIndex();
@@ -164,6 +170,12 @@ public class CLMConfiguration extends NetCDFData {
 		}
 	}
 
+	/**
+	 * Add additional parameters (institute, convention, date) to NetCDF file.
+	 * 
+	 * @param ncfile
+	 *            NetCDF file
+	 */
 	protected void addGlobalAttributesToNetCDFfile(NetcdfFileWriteable ncfile) {
 		ncfile.addGlobalAttribute("institution", "PIK");
 		ncfile.addGlobalAttribute("Conventions", "CF-1.4");
@@ -190,121 +202,176 @@ public class CLMConfiguration extends NetCDFData {
 	}
 
 	/**
-	 * @return 'Meridional' (rotated lat-direction) grid spacing (in degrees), 0
-	 *         if non-regular axis
+	 * Get 'Meridional' (rotated lat-direction) grid spacing (in degrees), 0 if
+	 * non-regular axis
+	 * 
+	 * @return Grid spacing
 	 */
 	public double getDlat() {
 		return meridionalAxis.getDValue(0);
 	}
 
 	/**
-	 * @return 'Zonal' (rotated lon-direction) grid spacing (in degrees), 0 if
-	 *         non-regular
+	 * Get 'Zonal' (rotated lon-direction) grid spacing (in degrees), 0 if
+	 * non-regular
+	 * 
+	 * @return Grid spacing
 	 */
 	public double getDlon() {
 		return zonalAxis.getDValue(0);
 	}
 
 	/**
-	 * @return Latitude of the lower left grid point of the total domain (in
-	 *         degrees, north>0, rotated coordinates)
+	 * Get latitude of the lower left grid point of the total domain (in
+	 * degrees, north>0, rotated coordinates)
+	 * 
+	 * @return Starting latitude
 	 */
 	public double getStartlat_tot() {
 		return meridionalAxis.getValue(0);
 	}
 
 	/**
-	 * @return Longitude of the lower left grid point of the total domain (in
-	 *         degrees, east > 0, rotated coordinates)
+	 * Get longitude of the lower left grid point of the total domain (in
+	 * degrees, east > 0, rotated coordinates)
+	 * 
+	 * @return Starting longitude
 	 */
 	public double getStartlon_tot() {
 		return zonalAxis.getValue(0);
 	}
 
 	/**
-	 * @return
+	 * Get total number if grid points in zonal direction.
+	 * 
+	 * @return Number of grid points
 	 */
 	public int getIe_tot() {
 		return zonalAxis.getLength();
 	}
 
 	/**
-	 * @return
+	 * Get total number if grid points in meridional direction.
+	 * 
+	 * @return Number of grid points
 	 */
 	public int getJe_tot() {
 		return meridionalAxis.getLength();
 	}
 
 	/**
-	 * @return Number of gridpoints of the total domain in vertical direction
+	 * Get total number if grid points in vertical direction.
+	 * 
+	 * @return Number of grid points
 	 */
 	public int getKe_tot() {
 		return verticalDimension.getLength();
 	}
 
 	/**
-	 * @return Geographical longitude of the rotated north pole
+	 * Get geographical longitude of the rotated north pole.
+	 * 
+	 * @return Longitude of rotated north pole
 	 */
 	public double getPollon() {
 		return rotpol.getNorthPole().x;
 	}
 
 	/**
-	 * @return Geographical latitude of the rotated north pole
+	 * Geographical latitude of the rotated north pole
+	 * 
+	 * @return Latitude of rotated north pole
 	 */
 	public double getPollat() {
 		return rotpol.getNorthPole().y;
 	}
 
 	/**
-	 * @return
-	 * @throws IllegalArgumentException
+	 * Get latitude of an index in rotated system.
+	 * 
+	 * @param j
+	 *            Index
+	 * @return Latitude
 	 */
-	public double getRLat(int j) throws IllegalArgumentException {
+	public double getRLat(int j) {
 		return meridionalAxis.getValue(j);
 	}
 
 	/**
-	 * @return
-	 * @throws IllegalArgumentException
+	 * Get longitude of an index in rotated system.
+	 * 
+	 * @param i
+	 *            Index
+	 * @return Longitude
 	 */
-	public double getRLon(int i) throws IllegalArgumentException {
+	public double getRLon(int i) {
 		return zonalAxis.getValue(i);
 	}
 
-	// CHECK!!!
+	/**
+	 * Get zonal index of an axis value.
+	 * 
+	 * @param lon
+	 *            Axis value
+	 * @return Index
+	 */
 	public int getRLonIndex(double lon) {
 		return zonalAxis.getIndexOf(lon);
 	}
 
+	/**
+	 * Get meridional index of an axis value.
+	 * 
+	 * @param lat
+	 *            Axis value
+	 * @return Index
+	 */
 	public int getRLatIndex(double lat) {
 		return meridionalAxis.getIndexOf(lat);
 	}
 
 	/**
-	 * @return
+	 * Get the area of a grid cell.
+	 * 
+	 * @param Latitude
+	 *            in rotated system of the grid cell
+	 * @return Area of the cell
 	 * @throws IllegalArgumentException
+	 *             Latitude not in range
 	 */
 	public double getArea(int rlati) throws IllegalArgumentException {
 		if (rlati >= getJe_tot() || rlati < 0) {
-			throw new IllegalArgumentException("rlati out of range");
+			throw new IllegalArgumentException("rlati out of range.");
 		}
 		Index ind = area.getIndex();
 		return area.get(ind.set(rlati));
 	}
 
-	
-	public double getLat(int j, int i) throws  IllegalArgumentException {
+	/**
+	 * Get the geographical latitude for indices.
+	 * @param j Latitude index in rotated system
+	 * @param i Longitude index in rotated system
+	 * @return Geographical latitude
+	 * @throws IllegalArgumentException Index not in range
+	 */
+	public double getLat(int j, int i) throws IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {
-			throw new IllegalArgumentException("j out of range");
+			throw new IllegalArgumentException("j out of range.");
 		}
 		if (i >= getIe_tot() || i < 0) {
-			throw new IllegalArgumentException("i out of range");
+			throw new IllegalArgumentException("i out of range.");
 		}
 		Index ind = lat.getIndex();
 		return lat.get(ind.set(j, i));
 	}
-
+	
+	/**
+	 * Get the geographical longitude for indices.
+	 * @param j Latitude index in rotated system
+	 * @param i Longitude index in rotated system
+	 * @return Geographical longitude
+	 * @throws IllegalArgumentException Index not in range
+	 */
 	public double getLon(int j, int i) throws IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {
 			throw new IllegalArgumentException("j out of range");
