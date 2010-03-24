@@ -187,6 +187,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(this.zonalAxis);
 		// ldim is now latdim, londim
 
+		// impervious surface fraction
+		this.urbanFrac = new WritableFieldFloat("FR_URBAN", ldim,
+				"urban_fraction", "fraction of urban surfaces in grid cell",
+				"1", "rotated_pole");
+		toWrite.add(this.urbanFrac);
+
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
 
@@ -195,13 +201,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"rotated_pole");
 		toWrite.add(this.urbanClassFrac);
 
-		// impervious surface fraction
-		this.urbanFrac = new WritableFieldFloat("FR_URBAN", ldim,
-				"urban_fraction", "fraction of urban surfaces in grid cell",
-				"1", "rotated_pole");
-		toWrite.add(this.urbanFrac);
-
-		// urban fraction
+		// building fraction
 		this.buildingFrac = new WritableFieldFloat("FR_BUILD", ldim,
 				"building_fraction",
 				"fraction of building surface in grid cell", "1",
@@ -315,10 +315,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				+ value);
 	}
 
-	public void setUrbanFrac(int uc, int lat, int lon, double value) {
-		if (uc >= getNuclasses() || uc < 0) {
-			throw new IllegalArgumentException("uc not in range");
-		}
+	public void setUrbanFrac(int lat, int lon, double value) {
 		if (lat >= getJe_tot() || lat < 0) {
 			throw new IllegalArgumentException("lat not in range");
 		}
@@ -327,12 +324,26 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 
 		Index ind = urbanFrac.getIndex();
-		urbanFrac.set(ind.set(uc, lat, lon), value);
+		urbanFrac.set(ind.set(lat, lon), value);
 	}
 
-	public double getUrbanFrac(int uc, int lat, int lon) {
+	public double getUrbanFrac(int lat, int lon) {
 		Index ind = urbanFrac.getIndex();
-		return urbanFrac.get(ind.set(uc, lat, lon));
+		return urbanFrac.get(ind.set(lat, lon));
+	}
+
+	public double getUrbanClassFrac(int uc, int lat, int lon) {
+		Index ind = urbanClassFrac.getIndex();
+		return urbanClassFrac.get(ind.set(uc, lat, lon));
+	}
+
+	public void setUrbanClassFrac(int uc, int lat, int lon, double val) {
+		if (val > 1. || val < 0.) {
+			throw new IllegalArgumentException(
+					"urban class fraction has to be between 0 and 1");
+		}
+		Index ind = urbanClassFrac.getIndex();
+		urbanClassFrac.set(ind.set(uc, lat, lon), val);
 	}
 
 	/**
@@ -342,8 +353,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					Index index = urbanClassFrac.getIndex();
-					urbanClassFrac.set(index.set(uc, lat, lon), 1.);
+					setUrbanClassFrac(uc, lat, lon, 1.);
 				}
 			}
 		}
@@ -361,9 +371,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						index.set(uc, dir, lat, lon);
 						double bfrac = getBuildingFrac(uc, lat, lon);
 						if (bfrac > 1.e-12) {
-							buildingWidth.set(index, bfrac
-									/ (getUrbanFrac(uc, lat, lon) - bfrac)
-									* getStreetWidth(uc, dir, lat, lon));
+							buildingWidth
+									.set(index, bfrac
+											/ (getUrbanFrac(lat, lon)
+													* getUrbanClassFrac(uc,
+															lat, lon) - bfrac)
+											* getStreetWidth(uc, dir, lat, lon));
 						} else {
 							buildingWidth.set(index, 0.);
 						}
@@ -494,7 +507,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 		streetSurfaceSum[uc][dir][lat][lon] += value;
 	}
-
 
 	public void incStreetWidth(int uc, int dir, int lat, int lon, double value) {
 		if (uc >= getNuclasses() || uc < 0) {

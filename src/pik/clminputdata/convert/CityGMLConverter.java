@@ -48,8 +48,7 @@ public class CityGMLConverter {
 			}
 			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
 			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
-			uclm.setUrbanFrac(0, lat, lon,
-					values.get(conf.rowImpSurf - 1) / 100.);
+			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
 			lScanner.close();
 		}
 		scanner.close();
@@ -159,11 +158,11 @@ public class CityGMLConverter {
 		System.out.println(uclm.maxHeight);
 		System.out.println(uclm.minHeight);
 
+		uclm.fakeUrbanClassFrac();
 		uclm.normBuildingFrac();
 		uclm.normBuildProbAndCalcStreetFraction();
 		uclm.normStreetWidth();
 		uclm.calculateBuildingWidth();
-		uclm.fakeUrbanClassFrac();
 
 		uclm.toNetCDFfile(conf.outputFile);
 
