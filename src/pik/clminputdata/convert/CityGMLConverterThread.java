@@ -42,62 +42,155 @@ import javax.vecmath.Point3d;
  */
 class CityGMLConverterThread extends Thread {
 
-	private final double checkradiussq;
-
-	// where to put the height of a building: 0 at lower bottom of roof, 1 at
-	// top of roof
+	/**
+	 * Factor for height of a building: 0 at lower bottom of roof, 1 at top of
+	 * roof
+	 */
 	private final static double roofHeightFactor = 0.5;
 
+	/**
+	 * Number of visible polygons that are taken into account for distance
+	 * calculation
+	 */
 	private static int ndistmean = 10000;
 
-	// the id corresponding to the filename
-	public final int id;
-	public final String filename;
-
-	public final UrbanCLMConfiguration uclm;
-	public final Proj4 proj4;
-
-	public final CityGMLConverterStats stats;
-	public final CityGMLConverterConf conf;
-	public final Point3d[] bLocation;
-
-	private int bCount;
-
-	private int[] irlat, irlon;
-	private double[] bArea;
-	private double[] bHeight;
-
-	// function of urban class, je, ie
-	private double[][][] buildingFrac;
-	// function of urban class, street direction, height, je, ie
-	private double[][][][][] buildingHeight;
-	// function of urban class, street direction, je, ie
-	private double[][][][] buildingDistance;
-	// function of urban class, street direction, je, ie
-	private int[][][][] nStreetSurfaces;
-	// function of urban class, street direction, je, ie
-	private double[][][][] streetSurfaceSum;
-
-	private RecSurface[][] buildingWalls;
-	private RecSurface[][] buildingRoofs;
-
-	private boolean isInStreetdir[][];
-
-	private ArrayList<String> NonPlanarList = new ArrayList<String>();
-
-	private SymmetricMatrixBoolean visible;
-
-	private Lock lock = new ReentrantLock();
-
-	// no different classes in here (yet):
+	/**
+	 * Number of urban class when no urban classes are considered
+	 */
 	private int iuc = 0;
 
+	/**
+	 * ID of the CityGML file
+	 */
+	public final int id;
+	/**
+	 * File name of the CityGML file
+	 */
+	public final String filename;
+
+	/**
+	 * Urban configuration which includes the global effective urban data
+	 */
+	public final UrbanCLMConfiguration uclm;
+	/**
+	 * Object for coordinate transformation
+	 */
+	public final Proj4 proj4;
+
+	/**
+	 * Additional output information
+	 */
+	public final CityGMLConverterStats stats;
+	/**
+	 * Configuration of this run
+	 */
+	public final CityGMLConverterConf conf;
+	/**
+	 * Lock for saving to global data
+	 */
+	private Lock lock = new ReentrantLock();
+
+	/**
+	 * Number of buildings
+	 */
+	private int bCount;
+	/**
+	 * Coordinates of the centre of the building's bounding box at the ground in
+	 * original coordinates
+	 */
+	public final Point3d[] bLocation;
+	/**
+	 * Index of the building's coordinates in rotated system
+	 */
+	private int[] irlat, irlon;
+	/**
+	 * Ground area of the buildings
+	 */
+	private double[] bArea;
+	/**
+	 * Height of the buildings
+	 */
+	private double[] bHeight;
+	/**
+	 * Visibility between wall surfaces
+	 */
+	private SymmetricMatrixBoolean visible;
+
+	/**
+	 * List of all wall surfaces
+	 */
+	private RecSurface[][] buildingWalls;
+	/**
+	 * List of all roof surfaces
+	 */
+	private RecSurface[][] buildingRoofs;
+
+	// for output
+	/**
+	 * Sum of area of buildings in the cell.
+	 * 
+	 * Arguments: urban class, lat, lon; used for calculation of building
+	 * fraction
+	 */
+	private double[][][] buildingAreaSum;
+	/**
+	 * Sum of area of walls in the cell.
+	 * 
+	 * Arguments: urban class, street direction, height of building, lat, lon;
+	 * used for calculation of height distribution
+	 */
+	private double[][][][][] wallAreaSum;
+	/**
+	 * Building distance weighted with the respective wall area.
+	 * 
+	 * Arguments: urban class, street direction, lat, lon; used for distance
+	 * calculation (divide by {@code streetSurfaceSum})
+	 */
+	private double[][][][] buildingDistanceWeighted;
+	/**
+	 * Number of wall polygons.
+	 * 
+	 * Arguments: urban class, street direction, lat, lon
+	 */
+	private int[][][][] nStreetSurfaces;
+	/**
+	 * Sum of wall areas.
+	 * 
+	 * Arguments: urban class, street direction, lat, lon; used for distance
+	 * calculation
+	 */
+	private double[][][][] streetSurfaceSum;
+
+	/**
+	 * List of non-planar surfaces
+	 */
+	private ArrayList<String> NonPlanarList = new ArrayList<String>();
+
+	/**
+	 * Constructor.
+	 * 
+	 * All necessary CityModel data is saved here, the rest can be freed.
+	 * 
+	 * @param uclm
+	 *            Global urban data
+	 * @param conf
+	 *            Configuration of the run
+	 * @param proj4
+	 *            Coordinate converter
+	 * @param stats
+	 *            Additional output
+	 * @param base
+	 *            City data
+	 * @param id
+	 *            ID of the city data
+	 * @param filename
+	 *            Name of the file including the city data
+	 */
 	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
 			CityGMLConverterConf conf, Proj4 proj4,
 			CityGMLConverterStats stats, CityModel base, int id, String filename) {
 		this.uclm = uclm;
 		this.conf = conf;
-		this.checkradiussq = conf.maxbuild_radius * conf.maxbuild_radius;
 		this.proj4 = proj4;
 		this.id = id;
 		this.filename = filename;
@@ -194,24 +287,31 @@ class CityGMLConverterThread extends Thread {
 		irlat = new int[bCount];
 		irlon = new int[bCount];
 
-		isInStreetdir = new boolean[bCount][uclm.getNstreedir()];
-
 		// only one urban class in ke_urban, CHANGE THIS IS IF NECESSARY!
-		buildingHeight = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
+		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
 				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
 
-		buildingDistance = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getJe_tot()][uclm.getIe_tot()];
+		buildingDistanceWeighted = new double[uclm.getNuclasses()][uclm
+				.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
 
 		nStreetSurfaces = new int[uclm.getNuclasses()][uclm.getNstreedir()][uclm
 				.getJe_tot()][uclm.getIe_tot()];
 
 		streetSurfaceSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
 				.getJe_tot()][uclm.getIe_tot()];
-		buildingFrac = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm
+		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm
 				.getIe_tot()];
 	}
 
+	/**
+	 * Calculate the height of a building.
+	 * 
+	 * @param roofs
+	 *            Roof surfaces of the building
+	 * @param groundHeight
+	 *            Ground height of the building (defines the height 0)
+	 * @return Height of the building
+	 */
 	public static double calcBuildingHeight(List<RoofSurface> roofs,
 			double groundHeight) {
 		double sumRoofArea = 0.;
@@ -245,6 +345,13 @@ class CityGMLConverterThread extends Thread {
 		return roofHeight;
 	}
 
+	/**
+	 * Calculate the ground size of a building.
+	 * 
+	 * @param grounds
+	 *            Ground surfaces of the building
+	 * @return Ground area of the building
+	 */
 	public static double calcGroundSize(List<GroundSurface> grounds) {
 		double area = 0.;
 		for (GroundSurface ground : grounds) {
@@ -257,6 +364,15 @@ class CityGMLConverterThread extends Thread {
 		return area;
 	}
 
+	/**
+	 * Extract all polygons from a list of surfaces.
+	 * 
+	 * @param <T>
+	 *            either RoofSurface, WallSurface or GroundSurface
+	 * @param listSurfaces
+	 *            List of surfaces
+	 * @return Array of polygons
+	 */
 	public <T extends BoundarySurface> RecSurface[] getAllSurfaces(
 			List<T> listSurfaces) {
 
@@ -285,6 +401,14 @@ class CityGMLConverterThread extends Thread {
 		return surfaces;
 	}
 
+	/**
+	 * Check polygons independently for planarity.
+	 * 
+	 * @param surfaces
+	 *            Array of Polygons
+	 * @param coID
+	 *            ID of the building which includes the polygon
+	 */
 	private void checkCoplanarity(RecSurface[] surfaces, String coID) {
 		for (int i = 0; i < surfaces.length; i++) {
 			if (!surfaces[i].checkCoplanarity()) {
@@ -293,6 +417,13 @@ class CityGMLConverterThread extends Thread {
 		}
 	}
 
+	/**
+	 * Get the minimum and maximum height of surface
+	 * 
+	 * @param surfaceProperty
+	 *            Surfaces
+	 * @return Array with { minimum, maximum } height
+	 */
 	public static double[] getMinMaxHeight(SurfaceProperty surfaceProperty) {
 		if (surfaceProperty.getSurface() instanceof Polygon) {
 			Polygon polygon = (Polygon) surfaceProperty.getSurface();
@@ -364,8 +495,12 @@ class CityGMLConverterThread extends Thread {
 	}
 
 	/**
-	 * Calculate the visibility for walls. The bLocation data needs to be still
-	 * in metre!
+	 * Calculate the visibility between wall surfaces.
+	 * 
+	 * Every pair of wall surfaces are checked for visibility. Since this
+	 * relationship is symmetric only half of them are analysed. To increase the
+	 * calculation speed, only buildings which are less then a defined distance
+	 * apart are considered.
 	 */
 	private void calcVisibility() {
 
@@ -390,7 +525,7 @@ class CityGMLConverterThread extends Thread {
 
 					// if buildings are too far away, skip:
 					double dist = bLocation[i].distanceSquared(bLocation[k]);
-					if (dist > checkradiussq) {
+					if (dist > conf.maxbuild_radius_sq) {
 						for (int l = 0; l < buildingWalls[k].length; l++) {
 							wrcount++;
 							visible.set(wcount, wrcount, false);
@@ -506,6 +641,9 @@ class CityGMLConverterThread extends Thread {
 		}
 	}
 
+	/**
+	 * Calculate urban parameters after visibility is know.
+	 */
 	private void calcStreetProperties() {
 		int wcount = -1;
 
@@ -579,21 +717,23 @@ class CityGMLConverterThread extends Thread {
 						.getAngle());
 
 				// Weight distance with surface size
-				buildingDistance[iuc][indexAngle][irlat[i]][irlon[i]] += distance
+				buildingDistanceWeighted[iuc][indexAngle][irlat[i]][irlon[i]] += distance
 						* buildingWalls[i][j].getArea();
 
 				streetSurfaceSum[iuc][indexAngle][irlat[i]][irlon[i]] += buildingWalls[i][j]
 						.getArea();
-				buildingHeight[iuc][indexAngle][uclm.getHeightIndex(bHeight[i])][irlat[i]][irlon[i]] += buildingWalls[i][j]
+				wallAreaSum[iuc][indexAngle][uclm.getHeightIndex(bHeight[i])][irlat[i]][irlon[i]] += buildingWalls[i][j]
 						.getArea();
 
 				nStreetSurfaces[iuc][indexAngle][irlat[i]][irlon[i]]++;
 
-				isInStreetdir[i][indexAngle] = true;
 			}
 		}
 	}
 
+	/**
+	 * Save results to global data.
+	 */
 	private void saveToGlobal() {
 		lock.lock();
 
@@ -611,18 +751,18 @@ class CityGMLConverterThread extends Thread {
 			for (int j = 0; j < uclm.getJe_tot(); j++) {
 				for (int i = 0; i < uclm.getIe_tot(); i++) {
 					// if urban there
-					if (buildingFrac[c][j][i] > 1.e-13) {
+					if (buildingAreaSum[c][j][i] > 1.e-13) {
 						// add urban fraction
-						uclm.incBuildingFrac(c, j, i, buildingFrac[c][j][i]);
+						uclm.incBuildingFrac(c, j, i, buildingAreaSum[c][j][i]);
 						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
 							// inc street width and its counter to norm later
 							uclm.incStreetWidth(c, dir, j, i,
-									buildingDistance[c][dir][j][i]);
+									buildingDistanceWeighted[c][dir][j][i]);
 							uclm.incStreetSurfaceSum(c, dir, j, i,
 									streetSurfaceSum[c][dir][j][i]);
 							for (int height = 0; height < uclm.getKe_urban(c); height++) {
 								uclm.incBuildProb(c, dir, height, j, i,
-										buildingHeight[c][dir][height][j][i]);
+										wallAreaSum[c][dir][height][j][i]);
 							}
 						}
 					}
@@ -639,18 +779,21 @@ class CityGMLConverterThread extends Thread {
 		lock.unlock();
 	}
 
+	/**
+	 * Check for sane results.
+	 */
 	private void runChecks() {
 		for (int c = 0; c < uclm.getNuclasses(); c++) {
 			for (int j = 0; j < uclm.getJe_tot(); j++) {
 				for (int i = 0; i < uclm.getIe_tot(); i++) {
 					// if urban there
-					if (buildingFrac[c][j][i] > 1.e-13) {
+					if (buildingAreaSum[c][j][i] > 1.e-13) {
 						int sumNStreetSurfaces = 0;
 						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
 							sumNStreetSurfaces += nStreetSurfaces[c][dir][j][i];
 						}
 						if (sumNStreetSurfaces == 0) {
-							System.out.println(buildingFrac[c][j][i]);
+							System.out.println(buildingAreaSum[c][j][i]);
 							System.out
 									.println("no surface but urban fraction>0 "
 											+ filename);
@@ -663,6 +806,11 @@ class CityGMLConverterThread extends Thread {
 		}
 	}
 
+	/*
+	 * (non-Javadoc) Start the analysis.
+	 * 
+	 * @see java.lang.Thread#run()
+	 */
 	@Override
 	public void run() {
 
@@ -677,7 +825,7 @@ class CityGMLConverterThread extends Thread {
 
 		// sum of areas of buildings
 		for (int i = 0; i < bCount; i++) {
-			buildingFrac[iuc][irlat[i]][irlon[i]] += bArea[i];
+			buildingAreaSum[iuc][irlat[i]][irlon[i]] += bArea[i];
 		}
 
 		runChecks();

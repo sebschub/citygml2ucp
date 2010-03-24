@@ -28,8 +28,8 @@ import ucar.ma2.InvalidRangeException;
 
 public class CityGMLConverter {
 
-	private static void readImpSurfaceFile(CityGMLConverterConf conf, UrbanCLMConfiguration uclm)
-			throws IOException, InvalidRangeException {
+	private static void readImpSurfaceFile(CityGMLConverterConf conf,
+			UrbanCLMConfiguration uclm) throws IOException {
 		Scanner scanner = new Scanner(new File(conf.impSurfFile));
 		for (int i = 0; i < conf.skipLines; i++) {
 			if (scanner.hasNextLine()) {
@@ -40,14 +40,16 @@ public class CityGMLConverter {
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine()).useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNextDouble()) {
 				values.add(lScanner.nextDouble());
 			}
-			int lat = uclm.getRLatIndex(values.get(conf.rowLat-1));
-			int lon = uclm.getRLonIndex(values.get(conf.rowLon-1));
-			uclm.setUrbanFrac(0, lat, lon, values.get(conf.rowImpSurf-1)/100.);
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
+			uclm.setUrbanFrac(0, lat, lon,
+					values.get(conf.rowImpSurf - 1) / 100.);
 			lScanner.close();
 		}
 		scanner.close();
@@ -124,7 +126,8 @@ public class CityGMLConverter {
 
 			File file = flist[i];
 
-			System.out.println(file);
+			System.out.println("Read file " + (i + 1) + "/" + flist.length
+					+ ": " + file);
 
 			// unmarshaller has to be in loop, otherwise memory is not freed
 			// (reference in unmarshaller?)

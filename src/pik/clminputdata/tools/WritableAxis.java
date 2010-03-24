@@ -296,7 +296,7 @@ public class WritableAxis extends WritableDimension {
 	 * Get the nearest index of a value for given monotonously growing array
 	 * using binary search.
 	 * 
-	 * @param value
+	 * @param item
 	 *            The value to find the index for
 	 * @param values
 	 *            The grid values

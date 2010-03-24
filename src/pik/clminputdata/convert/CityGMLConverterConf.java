@@ -63,6 +63,7 @@ public class CityGMLConverterConf {
 	private static String proj4codeDefault = "+init=epsg:3068";
 
 	double maxbuild_radius;
+	double maxbuild_radius_sq;
 	private static final double maxbuild_radiusDefault=100.;
 
 	double maxcheck_radius;
@@ -151,6 +152,7 @@ public class CityGMLConverterConf {
 			proj4code = prop.getString("proj4code", proj4codeDefault);
 	
 			maxbuild_radius = prop.getDouble("maxbuild_radius", maxbuild_radiusDefault);
+			maxbuild_radius_sq = maxbuild_radius*maxbuild_radius;
 			maxcheck_radius = prop.getDouble("maxcheck_radius", maxcheck_radiusDefault);
 			mindist = prop.getDouble("mindist", mindistDefault);
 			
