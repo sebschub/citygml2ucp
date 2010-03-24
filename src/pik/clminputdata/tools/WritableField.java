@@ -12,27 +12,66 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 import ucar.nc2.Variable;
 
+/**
+ * A field that can be written to a NetCDF file.
+ * 
+ * During calculations, a double field is always used to be able to inherit from
+ * {@code ArrayDouble}, just {@code Array} cannot be used (better idea?).
+ * 
+ * @author Sebastian Schubert
+ * 
+ */
 public class WritableField extends ArrayDouble implements NetCDFWritable {
 
-	protected String name, standard_name, long_name, units, grid_mapping;
+	/**
+	 * Name of the field variable in the NetCDF file
+	 */
+	protected final String name;
+	/**
+	 * Standard name of the field in the NetCDF file
+	 */
+	protected final String standard_name;
+	/**
+	 * More descriptive name of the field in the NetCDF file
+	 */
+	protected final String long_name;
+	/**
+	 * Unit of the field in NetCDF file
+	 */
+	protected final String units;
+	/**
+	 * Information about the mapping of the field, e.g. "rotated_pole"
+	 */
+	protected final String grid_mapping;
 
-	protected List<Dimension> dimlist;
-
+	/**
+	 * Dimensions of the field
+	 */
+	protected final List<Dimension> dimlist;
+	
+	/**
+	 * Output data type 
+	 */
+	protected final DataType outputType;
+	
+	/**
+	 * Get the length of a list of dimensions.
+	 * 
+	 * @param diml
+	 *            List of dimensions
+	 * @return Array of lengths
+	 */
 	private static int[] getDimensions(List<Dimension> diml) {
 		int[] dimint = new int[diml.size()];
 		for (int i = 0; i < dimint.length; i++) {
-//			if (diml.get(i).isUnlimited()) {
-//				dimint[i] = 1;
-//			} else {
-				dimint[i] = diml.get(i).getLength();
-//			}
+			dimint[i] = diml.get(i).getLength();
 		}
 		return dimint;
 	}
 
 	public WritableField(String name, List<Dimension> dimlist,
 			String standard_name, String long_name, String units,
-			String grid_mapping) {
+			String grid_mapping, DataType outputType) {
 		super(getDimensions(dimlist));
 		this.name = name;
 		this.standard_name = standard_name;
@@ -41,10 +80,11 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		this.grid_mapping = grid_mapping;
 		this.dimlist = new LinkedList<Dimension>();
 		this.dimlist.addAll(dimlist);
+		this.outputType = outputType;
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * (non-Javadoc) Here it is defined to write that field as float.
 	 * 
 	 * @see
 	 * pik.clminputdata.configuration.NetCDFWritable#addVariablesToNetCDFfile
@@ -52,7 +92,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	 */
 	@Override
 	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		Variable var = ncfile.addVariable(name, DataType.FLOAT, this.dimlist);
+		Variable var = ncfile.addVariable(name, this.outputType, this.dimlist);
 		ncfile.addVariableAttribute(var, new Attribute("standard_name",
 				standard_name));
 		ncfile.addVariableAttribute(var, new Attribute("long_name", long_name));

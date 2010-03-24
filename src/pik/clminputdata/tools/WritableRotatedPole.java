@@ -17,16 +17,23 @@ import ucar.unidata.geoloc.projection.RotatedPole;
 import ucar.unidata.util.Parameter;
 
 /**
+ * A rotated pole that can be written to NetCDF files.
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class WritableRotatedPole extends RotatedPole implements NetCDFWritable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -4545528607347807035L;
 
+	/**
+	 * Use super constructor to create new pole.
+	 * 
+	 * @param pollat
+	 *            Latitude of the new pole
+	 * @param pollon
+	 *            Longitude of the new pole
+	 */
 	public WritableRotatedPole(double pollat, double pollon) {
 		super(pollat, pollon);
 	}
@@ -63,10 +70,11 @@ public class WritableRotatedPole extends RotatedPole implements NetCDFWritable {
 	 * (ucar.nc2.NetcdfFileWriteable)
 	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile) throws IOException, InvalidRangeException {
-//		character is written anyway so set it to ""
+	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
+			throws IOException, InvalidRangeException {
+		// character is written anyway so set it to ""
 		ArrayChar ac = new ArrayChar.D0();
-//		ac.setChar(0, ' ');
+		// ac.setChar(0, ' ');
 		ncfile.write("rotated_pole", ac);
 	}
 }

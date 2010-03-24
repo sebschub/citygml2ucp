@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * A file filter for CityGML files or .gml and .xml files
+ * A file filter for CityGML files or .gml and .xml files.
  * 
  * @author Sebastian Schubert
  * */

@@ -67,8 +67,10 @@ public class SymmetricMatrixBoolean {
 		} else if (i < j) {
 			// use symmetry of matrix
 			field[j][i] = val;
+		} else {
+			throw new IllegalArgumentException(
+			"The diagonal of the matrix has a fixed value and cannot be set.");
 		}
-		// else case not defined
 	}
 
 }

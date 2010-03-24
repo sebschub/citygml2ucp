@@ -14,7 +14,7 @@ import ucar.nc2.NetcdfFileWriteable;
 
 /**
  * Class for managing several fields and dimensions ought to be written to a
- * NetCDF file
+ * NetCDF file.
  * 
  * @author Sebastian Schubert
  * 
@@ -22,12 +22,12 @@ import ucar.nc2.NetcdfFileWriteable;
 public class NetCDFData implements NetCDFWritable {
 
 	/**
-	 * list of items to write to NetCDF file
+	 * List of items to write to NetCDF file
 	 */
 	protected List<NetCDFWritable> toWrite = new ArrayList<NetCDFWritable>();
 
 	/**
-	 * write data to NetCDF file
+	 * Write data to NetCDF file.
 	 * 
 	 * @param filename
 	 *            the filename of the NetCDF file

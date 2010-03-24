@@ -12,7 +12,7 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
 /**
- * A dimension which can be written to a NetCDF file.
+ * A dimension which can be used for a field in a NetCDF file.
  * 
  * @author Sebastian Schubert
  * 
@@ -23,9 +23,9 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 	 * Define a dimension by name and length.
 	 * 
 	 * @param name
-	 *            The name of the dimension.
+	 *            Name of the dimension
 	 * @param length
-	 *            The length of the dimension.
+	 *            Length of the dimension
 	 */
 	public WritableDimension(String name, int length) {
 		super(name, length);
@@ -35,29 +35,41 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 	 * Define a new dimension from a given one.
 	 * 
 	 * @param name
-	 *            The new name.
+	 *            Name must be unique within group
 	 * @param from
-	 *            The old dimension.
+	 *            Old dimension
 	 */
 	public WritableDimension(String name, Dimension from) {
 		super(name, from);
 	}
 
 	/**
+	 * A new dimension with option to share it.
+	 * 
 	 * @param name
+	 *            Name must be unique within group
 	 * @param length
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
 	 * @param isShared
+	 *            Whether its shared or local to Variable
 	 */
 	public WritableDimension(String name, int length, boolean isShared) {
 		super(name, length, isShared);
 	}
 
 	/**
+	 * Constructor.
+	 * 
 	 * @param name
+	 *            Name must be unique within group
 	 * @param length
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
 	 * @param isShared
+	 *            Whether its shared or local to Variable
 	 * @param isUnlimited
+	 *            Whether the length can grow
 	 * @param isVariableLength
+	 *            Whether the length is unknown until the data is read
 	 */
 	public WritableDimension(String name, int length, boolean isShared,
 			boolean isUnlimited, boolean isVariableLength) {

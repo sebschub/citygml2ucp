@@ -14,24 +14,77 @@ import ucar.nc2.NetcdfFileWriteable;
 import ucar.nc2.Variable;
 
 /**
+ * A dimension with values of the values connected to it.
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class WritableAxis extends WritableDimension {
 
+	/**
+	 * Name of the field variable in the NetCDF file
+	 */
 	public final String axisname;
-	public final String axistype;
-	public final String standard_name;
-	public final String long_name;
-	public final String units;
-	public final double[] values;
 
+	/**
+	 * Which axis type: either "X", "Y", "Z", "T" or ""
+	 */
+	public final String axistype;
+	/**
+	 * Standard name of the field in the NetCDF file
+	 */
+	public final String standard_name;
+	/**
+	 * More descriptive name of the field in the NetCDF file
+	 */
+	public final String long_name;
+	/**
+	 * Unit of the field in NetCDF file
+	 */
+	public final String units;
+	/**
+	 * The values on the axis
+	 */
+	private final double[] values;
+
+	/**
+	 * Axis with periodic boundary condition
+	 */
 	private boolean isPBC = false;
+	/**
+	 * x + pbc = x
+	 */
 	private double pbc;
 
+	/**
+	 * constant grid spacing?
+	 */
 	private boolean isRegular = false;
+	/**
+	 * Grid spacing
+	 */
 	private double dv = 0.;
 
+	/**
+	 * Constructor for non-periodic axis.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
+	 * @param axisname
+	 *            Name for the NetCDF File
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param values
+	 *            Axis values
+	 */
 	public WritableAxis(String name, int size, String axisname,
 			String axistype, String standard_name, String long_name,
 			String units, double[] values) {
@@ -75,6 +128,28 @@ public class WritableAxis extends WritableDimension {
 		this.values = values;
 	}
 
+	/**
+	 * Constructor for periodic axis.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
+	 * @param axisname
+	 *            Name for the NetCDF File
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param values
+	 *            Axis values
+	 * @param pbc
+	 *            x+pbc = pbc
+	 */
 	public WritableAxis(String name, int size, String axisname,
 			String axistype, String standard_name, String long_name,
 			String units, double[] values, double pbc) {
@@ -84,6 +159,28 @@ public class WritableAxis extends WritableDimension {
 		isPBC = true;
 	}
 
+	/**
+	 * Constructor for axis with fixed grid spacing.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length
+	 * @param axisname
+	 *            Name for the NetCDF File
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param startvalue
+	 *            First axis value
+	 * @param dv
+	 *            Grid spacing
+	 */
 	public WritableAxis(String name, int size, String axisname,
 			String axistype, String standard_name, String long_name,
 			String units, double startvalue, double dv) {
@@ -93,6 +190,30 @@ public class WritableAxis extends WritableDimension {
 		this.dv = dv;
 	}
 
+	/**
+	 * Constructor for periodic axis with fixed grid spacing.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length
+	 * @param axisname
+	 *            Name for the NetCDF File
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param startvalue
+	 *            First axis value
+	 * @param dv
+	 *            Grid spacing
+	 * @param pbc
+	 *            x+pbc=pbc
+	 */
 	public WritableAxis(String name, int size, String axisname,
 			String axistype, String standard_name, String long_name,
 			String units, double startvalue, double dv, double pbc) {
@@ -102,6 +223,17 @@ public class WritableAxis extends WritableDimension {
 		isPBC = true;
 	}
 
+	/**
+	 * Generate values from a start value and a grid spacing.
+	 * 
+	 * @param size
+	 *            Number of points
+	 * @param startvalue
+	 *            First point
+	 * @param dv
+	 *            Grid spacing
+	 * @return Array of values
+	 */
 	private static double[] generate_valuefield(int size, double startvalue,
 			double dv) {
 		double[] valuestemp = new double[size];
@@ -148,23 +280,27 @@ public class WritableAxis extends WritableDimension {
 	@Override
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
 			throws IOException, InvalidRangeException {
-		// super.writeVariablesToNetCDFfile(ncfile);
 		ncfile.write(axisname, Array.factory(values));
 	}
 
 	/**
-	 * @return the isRegular
+	 * Does the Axis have a constant grid spacing?
+	 * 
+	 * @return isRegular
 	 */
 	public boolean isRegular() {
 		return isRegular;
 	}
 
 	/**
-	 * searching using binary search
+	 * Get the nearest index of a value for given monotonously growing array
+	 * using binary search.
 	 * 
 	 * @param value
+	 *            The value to find the index for
 	 * @param values
-	 * @return
+	 *            The grid values
+	 * @return Index of {@code values} nearest to {@code value}
 	 */
 	private int binarySearch(double item, double[] values) {
 		// it would never reach last index with code below
@@ -179,11 +315,6 @@ public class WritableAxis extends WritableDimension {
 
 		do {
 			i2 = (start + end) / 2;
-			// System.out.print(values[start] + "  ");
-			// System.out.print(values[i2] - getDValue(i2) / 2. + "  ");
-			// System.out.println(values[end]);
-			// System.out.println("start: " + start + " i2: " + i2 + " end: "
-			// + end);
 			if (values[i2] - getDValue(i2, values) / 2. > item) {
 				end = i2;
 			} else {
@@ -194,6 +325,16 @@ public class WritableAxis extends WritableDimension {
 		return start;
 	}
 
+	/**
+	 * Find the index on the axis which corresponds to the axis value nearest to
+	 * the given value.
+	 * 
+	 * @param value
+	 *            Find index for that value
+	 * @return Index for the input value
+	 * @throws IllegalArgumentException
+	 *             {@code value} is outside of the range of this axis
+	 */
 	public int getIndexOf(double value) throws IllegalArgumentException {
 		int returnValue;
 		if (isPBC) {
@@ -209,16 +350,12 @@ public class WritableAxis extends WritableDimension {
 			// values.length + 2 - 1
 			expandedValues[values.length + 1] = values[0] + pbc;
 
-//			for (double d : expandedValues) {
-//				System.out.println(d);
-//			}
-//			System.out.println("-------------");			
 			int expReturn = binarySearch(value, expandedValues);
 
 			if (expReturn == 0) {
-				returnValue =  values.length-1;
+				returnValue = values.length - 1;
 			} else if (expReturn == values.length + 1) {
-				returnValue =  0;
+				returnValue = 0;
 			} else {
 				returnValue = expReturn - 1;
 			}
@@ -226,27 +363,68 @@ public class WritableAxis extends WritableDimension {
 			if (value < values[0] - getDValue(0, this.values) / 2.
 					|| value > values[this.getLength() - 1]
 							+ getDValue(getLength() - 1, this.values) / 2.) {
-				throw new IllegalArgumentException("value out of range");
+				throw new IllegalArgumentException("Value " + value
+						+ " out of range of axis " + this.axisname + ".");
 			}
 
 			returnValue = binarySearch(value, this.values);
 		}
-		
+
 		return returnValue;
 	}
 
+	/**
+	 * Get the axis value for an index.
+	 * 
+	 * @param i
+	 *            Index to get the value for
+	 * @return Axis value
+	 * @throws IllegalArgumentException
+	 *             {@code i} is not in the range of the axis.
+	 */
 	public double getValue(int i) throws IllegalArgumentException {
+		if (i < 0 || i >= values.length) {
+			throw new IllegalArgumentException("Axisindex " + i
+					+ " out of range of axis " + this.axisname + ".");
+		}
 		return values[i];
 	}
-	
+
+	/**
+	 * Get the grid spacing between a value of a given index and the next value.
+	 * 
+	 * @param i
+	 *            Index of the first value
+	 * @return Grid spacing
+	 * @throws IllegalArgumentException
+	 *             {@code i} is not in the range of the axis.
+	 */
 	public double getDValue(int i) throws IllegalArgumentException {
-		return getDValue(i, this.values);
+		try {
+			return getDValue(i, this.values);
+		} catch (IllegalArgumentException exep) {
+			throw new IllegalArgumentException("Axisindex " + i
+					+ " out of range of axis " + this.axisname + ".");
+		}
 	}
 
-	public double getDValue(int i, double[] values)
+	/**
+	 * Get the grid spacing between a value of a given index and the next value
+	 * for a given set of axis values.
+	 * 
+	 * @param i
+	 *            Index of the first value
+	 * @param values
+	 *            Values to calculate grid spacing for
+	 * @return Grid spacing
+	 * @throws IllegalArgumentException
+	 *             {@code i} is not in the range of the axis.
+	 */
+	private double getDValue(int i, double[] values)
 			throws IllegalArgumentException {
 		if (i < 0 || i > values.length - 1)
-			throw new IllegalArgumentException("index not in range");
+			throw new IllegalArgumentException("Axisindex " + i
+					+ " out of range of given values.");
 		if (isRegular) {
 			return dv;
 		}

@@ -9,10 +9,10 @@ import java.util.List;
 import pik.clminputdata.tools.WritableAxis;
 import pik.clminputdata.tools.WritableDimension;
 import pik.clminputdata.tools.WritableField;
+import pik.clminputdata.tools.WritableFieldFloat;
 import pik.clminputdata.tools.WritableFieldInt;
 
 import ucar.ma2.Index;
-import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionPoint;
@@ -104,7 +104,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	// public final static String street_widthString = "STREET_WIDTH";
 
 	private void initalizeUrbanFields(int nuclasses, double[] streetdir,
-			int[] ke_urban, double[] height) throws InvalidRangeException {
+			int[] ke_urban, double[] height) {
 		if (nuclasses < 1) {
 			throw new IllegalArgumentException("nuclasses must be positive");
 		}
@@ -181,20 +181,20 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
 
-		this.urbanClassFrac = new WritableField("FR_URBAN_CLASS", ldim,
+		this.urbanClassFrac = new WritableFieldFloat("FR_URBAN_CLASS", ldim,
 				"urban_classes_fraction", "urban classes fraction", "1",
 				"rotated_pole");
 		toWrite.add(this.urbanClassFrac);
 
 		// impervious surface fraction
-		this.urbanFrac = new WritableField("FR_URBAN", ldim,
+		this.urbanFrac = new WritableFieldFloat("FR_URBAN", ldim,
 				"urban_fraction",
 				"fraction of urban surfaces in grid cell", "1",
 				"rotated_pole");
 		toWrite.add(this.urbanFrac);
 
 		// urban fraction
-		this.buildingFrac = new WritableField("FR_BUILD", ldim,
+		this.buildingFrac = new WritableFieldFloat("FR_BUILD", ldim,
 				"building_fraction",
 				"fraction of building surface in grid cell", "1",
 				"rotated_pole");
@@ -203,24 +203,24 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
 
-		this.streetFrac = new WritableField("STREET_FRAC", ldim,
+		this.streetFrac = new WritableFieldFloat("STREET_FRAC", ldim,
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
-		this.streetLength = new WritableField("STREET_LENGTH", ldim.subList(1,
+		this.streetLength = new WritableFieldFloat("STREET_LENGTH", ldim.subList(1,
 				3), "Street Length", "average street length", "km",
 				"rotated_pole");
 		toWrite.add(streetLength);
 		calculateStreetLength();
 
 		// street width
-		this.streetWidth = new WritableField("STREET_WIDTH", ldim,
+		this.streetWidth = new WritableFieldFloat("STREET_WIDTH", ldim,
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
 
 		// building width
-		this.buildingWidth = new WritableField("BUILD_WIDTH", ldim,
+		this.buildingWidth = new WritableFieldFloat("BUILD_WIDTH", ldim,
 				"building_width", "building width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.buildingWidth);
@@ -229,7 +229,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
 		// building probability
-		this.buildProb = new WritableField("BUILD_PROP", ldim,
+		this.buildProb = new WritableFieldFloat("BUILD_PROP", ldim,
 				"building_probability",
 				"probability to have a building at the height", "1",
 				"rotated_pole");
@@ -239,7 +239,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 	}
 
-	private void calculateStreetLength() throws InvalidRangeException {
+	private void calculateStreetLength() {
 
 		Index ind = streetLength.getIndex();
 
@@ -269,8 +269,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	public UrbanCLMConfiguration() throws IllegalArgumentException,
-			InvalidRangeException {
+	public UrbanCLMConfiguration() throws IllegalArgumentException {
 		super();
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
 				new int[] { 10 }, new double[] { 0.f, 3.f, 7.f, 10.f, 13.f,
@@ -280,8 +279,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int ke_tot, int nuclasses, double[] streetdir,
-			int[] ke_urban, double[] height) throws IllegalArgumentException,
-			InvalidRangeException {
+			int[] ke_urban, double[] height) throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot, ke_tot);
 		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
@@ -296,14 +294,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	}
 
 	public void setBuildProb(int uc, int sd, int lev, LatLonPoint llp,
-			double value) throws InvalidRangeException {
+			double value) {
 		ProjectionPoint pp = rotpol.latLonToProj(llp);
 		setBuildProb(uc, sd, lev, getRLatIndex(pp.getY()), getRLonIndex(pp
 				.getX()), value);
 	}
 
 	public void incBuildProb(int uc, int sd, int heighti, int rlati, int rloni,
-			double value) throws InvalidRangeException {
+			double value) {
 		setBuildProb(uc, sd, heighti, rlati, rloni, getBuildProb(uc, sd,
 				heighti, rlati, rloni)
 				+ value);
@@ -340,7 +338,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	public void calculateBuildingWidth() throws InvalidRangeException {
+	public void calculateBuildingWidth() {
 		Index index = buildingWidth.getIndex();
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int dir = 0; dir < getNstreedir(); dir++) {
@@ -394,8 +392,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		buildProb.set(ind.set(uc, sd, lev, rlati, rloni), value);
 	}
 
-	public double getBuildProb(int uc, int sd, int lev, LatLonPoint llp)
-			throws InvalidRangeException {
+	public double getBuildProb(int uc, int sd, int lev, LatLonPoint llp) {
 		ProjectionPoint pp = rotpol.latLonToProj(llp);
 		return getBuildProb(uc, sd, lev, getRLatIndex(pp.getY()),
 				getRLonIndex(pp.getX()));
@@ -419,20 +416,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return buildProb.get(ind.set(uc, sd, lev, rlati, rloni));
 	}
 
-	public double getBuildingFrac(int uc, int irlat, int irlon)
-			throws InvalidRangeException {
+	public double getBuildingFrac(int uc, int irlat, int irlon) {
 		Index ind = buildingFrac.getIndex();
 		return buildingFrac.get(ind.set(uc, irlat, irlon));
 	}
 
-	public void incBuildingFrac(int uc, int irlat, int irlon, double incr)
-			throws InvalidRangeException {
+	public void incBuildingFrac(int uc, int irlat, int irlon, double incr) {
 		Index ind = buildingFrac.getIndex();
 		ind.set(uc, irlat, irlon);
 		buildingFrac.set(ind, buildingFrac.get(ind) + incr);
 	}
 
-	public void normBuildingFrac() throws InvalidRangeException {
+	public void normBuildingFrac() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
@@ -446,7 +441,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	public void normStreetWidth() throws InvalidRangeException {
+	public void normStreetWidth() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int dir = 0; dir < getNstreedir(); dir++) {
 				for (int lat = 0; lat < getJe_tot(); lat++) {
@@ -627,14 +622,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return ke_urban.getInt(ind.set(uc));
 	}
 
-	public int getHeightIndex(double height) throws InvalidRangeException {
+	public int getHeightIndex(double height) {
 		return this.height.getIndexOf(height);
 	}
 
-	public int getStreetdirIndex(double angle) throws InvalidRangeException {
-		if (angle > 90 || angle < -90) {
-			throw new InvalidRangeException("angle not between -90 and 90");
-		}
+	public int getStreetdirIndex(double angle) {
 		return streetdir.getIndexOf(angle);
 	}
 

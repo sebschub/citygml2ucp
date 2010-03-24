@@ -27,16 +27,22 @@ import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.RecSurface;
 import pik.clminputdata.tools.RecSurfaceDistance;
 import pik.clminputdata.tools.SymmetricMatrixBoolean;
-import ucar.ma2.InvalidRangeException;
 import ucar.unidata.geoloc.ProjectionPoint;
 
 import javax.vecmath.Point3d;
 
+/**
+ * Calculation of the main properties of a city element.
+ * 
+ * This can be used as a single thread. All necessary locking is done in this
+ * class, no external locks are required.
+ * 
+ * @author Sebastian Schubert
+ * 
+ */
 class CityGMLConverterThread extends Thread {
 
 	private final double checkradiussq;
-	private final double checkinway;
-	private final double minDist;
 
 	// where to put the height of a building: 0 at lower bottom of roof, 1 at
 	// top of roof
@@ -52,6 +58,7 @@ class CityGMLConverterThread extends Thread {
 	public final Proj4 proj4;
 
 	public final CityGMLConverterStats stats;
+	public final CityGMLConverterConf conf;
 	public final Point3d[] bLocation;
 
 	private int bCount;
@@ -89,9 +96,8 @@ class CityGMLConverterThread extends Thread {
 			CityGMLConverterConf conf, Proj4 proj4,
 			CityGMLConverterStats stats, CityModel base, int id, String filename) {
 		this.uclm = uclm;
-		this.checkinway = conf.maxcheck_radius;
+		this.conf = conf;
 		this.checkradiussq = conf.maxbuild_radius * conf.maxbuild_radius;
-		this.minDist = conf.mindist;
 		this.proj4 = proj4;
 		this.id = id;
 		this.filename = filename;
@@ -398,7 +404,8 @@ class CityGMLConverterThread extends Thread {
 						wrcount++;
 
 						if (i == k && j == l) {
-							visible.set(wcount, wrcount, false);
+							// already done at initialization of matrix
+							// visible.set(wcount, wrcount, false);
 							continue;
 						}
 
@@ -416,7 +423,7 @@ class CityGMLConverterThread extends Thread {
 							dist = bLocation[m].distance(bLocation[i])
 									+ bLocation[m].distance(bLocation[k])
 									- bLocation[i].distance(bLocation[k]);
-							if (dist > checkinway) {
+							if (dist > conf.maxcheck_radius) {
 								continue;
 							}
 
@@ -437,7 +444,7 @@ class CityGMLConverterThread extends Thread {
 							if (!vis) {
 								break;
 							}
-							
+
 							// check roof surfaces
 							for (int n = 0; n < buildingRoofs[m].length; n++) {
 								if (buildingRoofs[m][n].contains(
@@ -492,19 +499,10 @@ class CityGMLConverterThread extends Thread {
 			loc.x[i] = pp.getX();
 			loc.y[i] = pp.getY();
 
-			try {
-				irlat[i] = uclm.getRLatIndex(loc.y[i]);
-			} catch (InvalidRangeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			irlat[i] = uclm.getRLatIndex(loc.y[i]);
 
-			try {
-				irlon[i] = uclm.getRLonIndex(loc.x[i]);
-			} catch (InvalidRangeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			irlon[i] = uclm.getRLonIndex(loc.x[i]);
+
 		}
 	}
 
@@ -561,7 +559,7 @@ class CityGMLConverterThread extends Thread {
 				int ind = 0;
 
 				while (ind < dist.size() - 1
-						&& dist.get(ind).distance < minDist) {
+						&& dist.get(ind).distance < conf.mindist) {
 					ind++;
 				}
 
@@ -577,13 +575,8 @@ class CityGMLConverterThread extends Thread {
 				distance /= sumArea;
 
 				int indexAngle = 0;
-				try {
-					indexAngle = uclm.getStreetdirIndex(buildingWalls[i][j]
-							.getAngle());
-				} catch (InvalidRangeException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				indexAngle = uclm.getStreetdirIndex(buildingWalls[i][j]
+						.getAngle());
 
 				// Weight distance with surface size
 				buildingDistance[iuc][indexAngle][irlat[i]][irlon[i]] += distance
@@ -591,14 +584,9 @@ class CityGMLConverterThread extends Thread {
 
 				streetSurfaceSum[iuc][indexAngle][irlat[i]][irlon[i]] += buildingWalls[i][j]
 						.getArea();
-				try {
-					buildingHeight[iuc][indexAngle][uclm
-							.getHeightIndex(bHeight[i])][irlat[i]][irlon[i]] += buildingWalls[i][j]
-							.getArea();
-				} catch (InvalidRangeException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				buildingHeight[iuc][indexAngle][uclm.getHeightIndex(bHeight[i])][irlat[i]][irlon[i]] += buildingWalls[i][j]
+						.getArea();
+
 				nStreetSurfaces[iuc][indexAngle][irlat[i]][irlon[i]]++;
 
 				isInStreetdir[i][indexAngle] = true;
@@ -624,15 +612,8 @@ class CityGMLConverterThread extends Thread {
 				for (int i = 0; i < uclm.getIe_tot(); i++) {
 					// if urban there
 					if (buildingFrac[c][j][i] > 1.e-13) {
-						try {
-							// add urban fraction
-							uclm
-									.incBuildingFrac(c, j, i,
-											buildingFrac[c][j][i]);
-						} catch (InvalidRangeException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						// add urban fraction
+						uclm.incBuildingFrac(c, j, i, buildingFrac[c][j][i]);
 						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
 							// inc street width and its counter to norm later
 							uclm.incStreetWidth(c, dir, j, i,
@@ -640,19 +621,8 @@ class CityGMLConverterThread extends Thread {
 							uclm.incStreetSurfaceSum(c, dir, j, i,
 									streetSurfaceSum[c][dir][j][i]);
 							for (int height = 0; height < uclm.getKe_urban(c); height++) {
-								try {
-									uclm
-											.incBuildProb(
-													c,
-													dir,
-													height,
-													j,
-													i,
-													buildingHeight[c][dir][height][j][i]);
-								} catch (InvalidRangeException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								uclm.incBuildProb(c, dir, height, j, i,
+										buildingHeight[c][dir][height][j][i]);
 							}
 						}
 					}

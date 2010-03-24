@@ -8,10 +8,10 @@ import pik.clminputdata.tools.NetCDFData;
 import pik.clminputdata.tools.WritableAxis;
 import pik.clminputdata.tools.WritableDimension;
 import pik.clminputdata.tools.WritableField;
+import pik.clminputdata.tools.WritableFieldFloat;
 import pik.clminputdata.tools.WritableRotatedPole;
 
 import ucar.ma2.Index;
-import ucar.ma2.InvalidRangeException;
 import ucar.nc2.*;
 import ucar.nc2.units.DateFormatter;
 import ucar.unidata.geoloc.LatLonPoint;
@@ -53,11 +53,11 @@ public class CLMConfiguration extends NetCDFData {
 	/**
 	 * Initialize with default values of CLM
 	 * 
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 * @throws IllegalArgumentException
 	 */
 	public CLMConfiguration() throws IllegalArgumentException,
-			InvalidRangeException {
+			IllegalArgumentException {
 		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51, 20);
 	}
 
@@ -66,12 +66,11 @@ public class CLMConfiguration extends NetCDFData {
 	 * 
 	 * @throws IllegalArgumentException
 	 *             One of the arguments is not in the correct range
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 */
 	public CLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot, int ke_tot) throws IllegalArgumentException,
-			InvalidRangeException {
+			int je_tot, int ke_tot) throws IllegalArgumentException {
 
 		rotpol = new WritableRotatedPole(pollat, pollon);
 		toWrite.add(rotpol);
@@ -120,18 +119,18 @@ public class CLMConfiguration extends NetCDFData {
 		List<Dimension> dimlist = new ArrayList<Dimension>();
 		dimlist.add(meridionalAxis);
 
-		area = new WritableField("area", dimlist, "area_element",
+		area = new WritableFieldFloat("area", dimlist, "area_element",
 				"size of area element", "km2", "");
 		calculateArea();
 		toWrite.add(area);
 
 		dimlist.add(zonalAxis);
 
-		lon = new WritableField("lon", dimlist, "longitude", "longitude",
+		lon = new WritableFieldFloat("lon", dimlist, "longitude", "longitude",
 				"degrees east", "");
 		toWrite.add(lon);
 
-		lat = new WritableField("lat", dimlist, "latitude", "latitude",
+		lat = new WritableFieldFloat("lat", dimlist, "latitude", "latitude",
 				"degrees north", "");
 		toWrite.add(lat);
 
@@ -141,9 +140,9 @@ public class CLMConfiguration extends NetCDFData {
 	/**
 	 * Calculate the area of the grid cell and save it.
 	 * 
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 */
-	protected void calculateArea() throws InvalidRangeException {
+	protected void calculateArea() throws IllegalArgumentException {
 		Index ind = area.getIndex();
 		double fac = 2. * r * r * Math.toRadians(getDlon())
 				* Math.sin(Math.toRadians(getDlat() / 2.));
@@ -157,8 +156,8 @@ public class CLMConfiguration extends NetCDFData {
 		Index ilon = lon.getIndex();
 		for (int i = 0; i < zonalAxis.getLength(); i++) {
 			for (int j = 0; j < meridionalAxis.getLength(); j++) {
-				LatLonPoint llp = rotpol.projToLatLon(zonalAxis.values[i],
-						meridionalAxis.values[j]);
+				LatLonPoint llp = rotpol.projToLatLon(zonalAxis.getValue(i),
+						meridionalAxis.getValue(j));
 				lat.set(ilat.set(j, i), llp.getLatitude());
 				lon.set(ilon.set(j, i), llp.getLongitude());
 			}
@@ -211,7 +210,7 @@ public class CLMConfiguration extends NetCDFData {
 	 *         degrees, north>0, rotated coordinates)
 	 */
 	public double getStartlat_tot() {
-		return meridionalAxis.values[0];
+		return meridionalAxis.getValue(0);
 	}
 
 	/**
@@ -219,7 +218,7 @@ public class CLMConfiguration extends NetCDFData {
 	 *         degrees, east > 0, rotated coordinates)
 	 */
 	public double getStartlon_tot() {
-		return zonalAxis.values[0];
+		return zonalAxis.getValue(0);
 	}
 
 	/**
@@ -259,92 +258,59 @@ public class CLMConfiguration extends NetCDFData {
 
 	/**
 	 * @return
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 */
-	public double getRLat(int j) throws InvalidRangeException {
-		if (j >= getJe_tot() || j < 0) {
-			throw new InvalidRangeException("j out of range");
-		}
-		return meridionalAxis.values[j];
+	public double getRLat(int j) throws IllegalArgumentException {
+		return meridionalAxis.getValue(j);
 	}
 
 	/**
 	 * @return
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 */
-	public double getRLon(int i) throws InvalidRangeException {
-		if (i >= getIe_tot() || i < 0) {
-			throw new InvalidRangeException("i out of range");
-		}
-		return zonalAxis.values[i];
+	public double getRLon(int i) throws IllegalArgumentException {
+		return zonalAxis.getValue(i);
 	}
 
 	// CHECK!!!
-	public int getRLonIndex(double lon) throws InvalidRangeException {
-		// if (lon<getStartlon_tot() || lon>getRLon(getIe_tot()-1)) {
-		// throw new InvalidRangeException("lon out of range");
-		// }
+	public int getRLonIndex(double lon) {
 		return zonalAxis.getIndexOf(lon);
 	}
 
-	public int getRLatIndex(double lat) throws InvalidRangeException {
-		// if (lat<getStartlat_tot() || lat>getRLat(getJe_tot()-1)) {
-		// throw new InvalidRangeException("lat out of range");
-		// }
+	public int getRLatIndex(double lat) {
 		return meridionalAxis.getIndexOf(lat);
 	}
 
-	// protected int indexSearch(int start, int end, double value, WritableAxis
-	// axis) {
-	// if (start == end) {
-	// return start;
-	// }
-	//		
-	// int i2 = (end-start)/2;
-	// if (value<= axis.values[i2]) {
-	// return indexSearch(start, i2, value, axis);
-	// } else {
-	// return indexSearch(i2, end, value, axis);
-	// }
-	// }
-
 	/**
 	 * @return
-	 * @throws InvalidRangeException
+	 * @throws IllegalArgumentException
 	 */
-	public double getArea(int rlati) throws InvalidRangeException {
+	public double getArea(int rlati) throws IllegalArgumentException {
 		if (rlati >= getJe_tot() || rlati < 0) {
-			throw new InvalidRangeException("rlati out of range");
+			throw new IllegalArgumentException("rlati out of range");
 		}
 		Index ind = area.getIndex();
 		return area.get(ind.set(rlati));
 	}
 
-	/**
-	 * @return
-	 * @throws InvalidRangeException
-	 */
-	public double getLat(int j, int i) throws InvalidRangeException {
+	
+	public double getLat(int j, int i) throws  IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {
-			throw new InvalidRangeException("j out of range");
+			throw new IllegalArgumentException("j out of range");
 		}
 		if (i >= getIe_tot() || i < 0) {
-			throw new InvalidRangeException("i out of range");
+			throw new IllegalArgumentException("i out of range");
 		}
 		Index ind = lat.getIndex();
 		return lat.get(ind.set(j, i));
 	}
 
-	/**
-	 * @return
-	 * @throws InvalidRangeException
-	 */
-	public double getLon(int j, int i) throws InvalidRangeException {
+	public double getLon(int j, int i) throws IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {
-			throw new InvalidRangeException("j out of range");
+			throw new IllegalArgumentException("j out of range");
 		}
 		if (i >= getIe_tot() || i < 0) {
-			throw new InvalidRangeException("i out of range");
+			throw new IllegalArgumentException("i out of range");
 		}
 		Index ind = lon.getIndex();
 		return lon.get(ind.set(j, i));

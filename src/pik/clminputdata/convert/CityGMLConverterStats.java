@@ -10,11 +10,10 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import pik.clminputdata.configuration.*;
 import pik.clminputdata.tools.NetCDFData;
 import pik.clminputdata.tools.WritableDimension;
 import pik.clminputdata.tools.WritableField;
-import ucar.ma2.Array;
+import pik.clminputdata.tools.WritableFieldFloat;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
@@ -103,10 +102,10 @@ public class CityGMLConverterStats extends NetCDFData {
 		List<Dimension> dimlist = new ArrayList<Dimension>();
 		dimlist.add(unlimetedDimension);
 		unlimetedDimension.setLength(buildingHeights.size());
-		buildingHeightsNetCDF = new WritableField("bheights", dimlist,
+		buildingHeightsNetCDF = new WritableFieldFloat("bheights", dimlist,
 				"Building Height", "Building Height", "", "");
 		toWrite.add(buildingHeightsNetCDF);
-		buildingGroundsNetCDF = new WritableField("bgrounds", dimlist,
+		buildingGroundsNetCDF = new WritableFieldFloat("bgrounds", dimlist,
 				"Building Ground Surface size", "Building Ground Surface", "",
 				"");
 		toWrite.add(buildingGroundsNetCDF);

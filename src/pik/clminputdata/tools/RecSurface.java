@@ -14,7 +14,7 @@ import org.citygml4j.impl.jaxb.gml._3_1_1.SurfacePropertyImpl;
 import org.citygml4j.model.gml.*;
 
 /**
- * Class for planar polygons
+ * Class for planar polygons.
  * 
  * @author Sebastian Schubert
  * 
@@ -55,16 +55,43 @@ public class RecSurface {
 	 */
 	Point2d[] points2d;
 
+	/**
+	 * Centroid already calculated?
+	 */
 	private boolean isSetCentroid = false;
+	/**
+	 * Centroid of the polygon
+	 */
 	private Point3d centroid;
 
+	/**
+	 * Area of the polygon
+	 */
 	private double area;
+	/**
+	 * Area already calculated?
+	 */
 	private boolean isSetArea = false;
 
+	/**
+	 * Angle of the polygon in the horizontal plane (x-y) relative to the x axis
+	 */
 	private double angle;
+	/**
+	 * Angle already calculated?
+	 */
 	private boolean isSetAngle = false;
+	/**
+	 * Polygon is horizontal so {@code angle} is not defined?
+	 */
 	private boolean isHorizontal = false;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param surfaceProperty
+	 *            Descibes the polygon
+	 */
 	public RecSurface(SurfaceProperty surfaceProperty) {
 		if (surfaceProperty.getSurface() instanceof Polygon) {
 			Polygon polygon = (Polygon) surfaceProperty.getSurface();
@@ -210,7 +237,7 @@ public class RecSurface {
 	}
 
 	/**
-	 * Calculate the angle of normal vector projected on horizontal plane
+	 * Calculate the angle of normal vector projected on horizontal plane.
 	 * 
 	 * @return angle in degrees
 	 */

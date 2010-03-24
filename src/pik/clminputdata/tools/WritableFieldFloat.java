@@ -6,18 +6,18 @@ import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 
 /**
- * A field that can be written to a NetCDF file as integer.
+ * A field that can be written to a NetCDF file as float.
  * 
  * @author Sebastian Schubert
  * 
  */
-public class WritableFieldInt extends WritableField {
+public class WritableFieldFloat extends WritableField {
 
-	public WritableFieldInt(String name, List<Dimension> dimlist,
+	public WritableFieldFloat(String name, List<Dimension> dimlist,
 			String standard_name, String long_name, String units,
 			String grid_mapping) {
 		super(name, dimlist, standard_name, long_name, units, grid_mapping,
-				DataType.INT);
+				DataType.FLOAT);
 	}
 
 }

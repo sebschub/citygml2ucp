@@ -4,7 +4,7 @@ import javax.vecmath.Point3d;
 
 /**
  * Class for the distance between two polygons, which can be compared and,
- * therefore, sorted
+ * therefore, sorted.
  * 
  * @author Sebastian Schubert
  * 
@@ -26,6 +26,14 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 	 */
 	public final double distance;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param sending
+	 *            Sending surface
+	 * @param receiving
+	 *            Receiving surface
+	 */
 	public RecSurfaceDistance(RecSurface sending, RecSurface receiving) {
 		this.sending = sending;
 		this.receiving = receiving;
@@ -72,7 +80,7 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 	public int hashCode() {
 		return (int) distance;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 

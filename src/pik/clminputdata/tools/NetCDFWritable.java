@@ -11,7 +11,7 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
 /**
- * Properties for classes that include data which can be written to NetCDF files
+ * Routines for classes that include data which can be written to NetCDF files.
  * 
  * @author Sebastian Schubert
  * 
@@ -22,16 +22,16 @@ public interface NetCDFWritable {
 	 * Add necessary dimensions to a NetCDF file
 	 * 
 	 * @param ncfile
-	 *            the NetCDF file
-	 * @return added dimensions
+	 *            NetCDF file
+	 * @return Added dimensions
 	 */
 	List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile);
 
 	/**
-	 * write data to NetCDF file
+	 * Write data to NetCDF file
 	 * 
 	 * @param ncfile
-	 *            the NetCDF file
+	 *            NetCDF file
 	 * @throws IOException
 	 * @throws InvalidRangeException
 	 */
