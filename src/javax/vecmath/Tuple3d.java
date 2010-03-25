@@ -24,9 +24,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  *
- * $Revision: 1.2 $
+ * $Revision: 1.2a $
  * $Date: 2009/07/17 15:23:48 $
  * $State: Exp $
+ * 
+ * Sebastian Schubert: removed unnecessary cast, added hashcode
  */
 
 package javax.vecmath;
@@ -98,9 +100,9 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
      */
     public Tuple3d()
     {
-	this.x = (double) 0.0;
-	this.y = (double) 0.0;
-	this.z = (double) 0.0;
+	this.x = 0.0;
+	this.y = 0.0;
+	this.z = 0.0;
     }
 
     /**
@@ -709,5 +711,10 @@ public abstract class Tuple3d implements java.io.Serializable, Cloneable {
 	 */
 	public final void setZ(double z) {
 		this.z = z;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) Math.sqrt(x * x + y * y + z * z);
 	}
 }

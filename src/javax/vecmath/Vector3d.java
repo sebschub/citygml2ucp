@@ -24,9 +24,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  *
- * $Revision: 1.2 $
+ * $Revision: 1.2a $
  * $Date: 2009/07/17 15:23:48 $
  * $State: Exp $
+ * 
+ * Sebastian Schubert: removed unnecessary cast
  */
 
 package javax.vecmath;
@@ -190,7 +192,7 @@ public class Vector3d extends Tuple3d implements java.io.Serializable {
 			vDot = -1.0;
 		if (vDot > 1.0)
 			vDot = 1.0;
-		return ((double) (Math.acos(vDot)));
+		return (Math.acos(vDot));
 	}
 
 }

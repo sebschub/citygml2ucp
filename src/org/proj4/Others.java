@@ -55,6 +55,7 @@ public class Others extends Projections
    */
   public void prepareData(ProjectionData dataTP)
   {
+//	  nothing to do
   }
 
   /* (non-Javadoc)
@@ -62,6 +63,7 @@ public class Others extends Projections
    */
   public void prepareTransformedData(ProjectionData dataTP)
   {
+//	  nothing to do
   }
 
 }

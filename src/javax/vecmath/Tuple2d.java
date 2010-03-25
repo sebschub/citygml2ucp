@@ -24,9 +24,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  *
- * $Revision: 1.2 $
+ * $Revision: 1.2a $
  * $Date: 2009/07/17 15:23:48 $
  * $State: Exp $
+ * 
+ * Sebastian Schubert: added hashcode 
  */
 
 package javax.vecmath;
@@ -567,4 +569,9 @@ public abstract class Tuple2d implements java.io.Serializable, Cloneable {
 		this.y = y;
 	}
 
+	@Override
+	public int hashCode() {
+		return (int) Math.sqrt(x * x + y * y);
+	}
+	
 }

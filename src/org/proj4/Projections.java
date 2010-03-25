@@ -10,8 +10,8 @@
  COMPANY:       HydroloGIS / Engineering, University of Trento / CUDAM
  COPYRIGHT:    Copyright (C) 2004 HydroloGIS / University of Trento / CUDAM, ITALY, GPL
  VERSION:         $version$
- CREATED OR MODIFIED:  Oct 15, 2004
- REVISION:  ---
+ CREATED OR MODIFIED:  Mar 25, 2010
+ REVISION:  a, added Type to LinkedHashMap
  =====================================================================================*/
 
 /* 
@@ -80,7 +80,7 @@ public abstract class Projections
    *         to_meter<BR>
    *         fr_meter<BR>
    */
-  private LinkedHashMap projParameters = null;
+  private LinkedHashMap<String, String> projParameters = null;
 
   static
   {
@@ -177,9 +177,9 @@ public abstract class Projections
   /**
    * return all the proj info into a Linked Hashmap
    */
-  public LinkedHashMap mapProjInfo()
+  public LinkedHashMap<String, String> mapProjInfo()
   {
-    projParameters = new LinkedHashMap();
+    projParameters = new LinkedHashMap<String, String>();
     String projinfo = getProjInfo();
 
     String[] infos = projinfo.split("\\+");

@@ -10,8 +10,8 @@
  COMPANY:       HydroloGIS / Engineering, University of Trento / CUDAM
  COPYRIGHT:    Copyright (C) 2004 HydroloGIS / University of Trento / CUDAM, ITALY, GPL
  VERSION:         $version$
- CREATED OR MODIFIED:  Oct 18, 2004
- REVISION:  ---
+ CREATED OR MODIFIED:  Mar 25, 2010
+ REVISION:  a, removed unnecessary import
  =====================================================================================*/
 
 /* 
@@ -38,8 +38,6 @@
  */
 package org.proj4;
 
-import javax.sound.sampled.Line;
-
 /**
  * class representing the dataset to be reprojected
  */
@@ -54,7 +52,7 @@ public class ProjectionData {
 
 	/**
 	 * object to hold the data to be transformed. This will be passed from the
-	 * starting projection object to the destinantion projection passing through
+	 * starting projection object to the destination projection passing through
 	 * the transformation.
 	 */
 	public ProjectionData(double[][] _coord, double[] _values) {

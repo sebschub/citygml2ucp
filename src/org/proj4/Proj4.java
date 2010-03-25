@@ -11,7 +11,7 @@
  COPYRIGHT:    Copyright (C) 2004 HydroloGIS / University of Trento / CUDAM, ITALY, GPL
  VERSION:         $version$
  CREATED OR MODIFIED:  Oct 15, 2004
- REVISION:  ---
+ REVISION:  a, added type to hashmap, commented output for transform
  =====================================================================================*/
 
 /* 
@@ -138,7 +138,7 @@ public class Proj4 implements Proj4Factory
   /**
    * @return the projection info as a hashmap
    */
-  public LinkedHashMap getProjInfo()
+  public LinkedHashMap<String, String> getProjInfo()
   {
     return projection.mapProjInfo();
   }
@@ -146,7 +146,7 @@ public class Proj4 implements Proj4Factory
   /**
    * @return the source projection info as a hashmap
    */
-  public LinkedHashMap getSrcProjInfo()
+  public LinkedHashMap<String, String> getSrcProjInfo()
   {
     return srcProjection.mapProjInfo();
   }
@@ -154,7 +154,7 @@ public class Proj4 implements Proj4Factory
   /**
    * @return the destination projection info as a hashmap
    */
-  public LinkedHashMap getDestProjInfo()
+  public LinkedHashMap<String, String> getDestProjInfo()
   {
     return destProjection.mapProjInfo();
   }

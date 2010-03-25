@@ -24,9 +24,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  *
- * $Revision: 1.2 $
+ * $Revision: 1.2a $
  * $Date: 2009/07/17 15:23:48 $
  * $State: Exp $
+ * 
+ * Sebastian Schubert: removed unnecessary cast
  */
 
 package javax.vecmath;
@@ -109,7 +111,7 @@ public class Vector2d extends Tuple2d implements java.io.Serializable {
      */  
     public final double length()
     {
-        return (double) Math.sqrt(this.x*this.x + this.y*this.y);
+        return Math.sqrt(this.x*this.x + this.y*this.y);
     }
 
     /**  
@@ -129,7 +131,7 @@ public class Vector2d extends Tuple2d implements java.io.Serializable {
     {
         double norm;
 
-        norm = (double) (1.0/Math.sqrt(v1.x*v1.x + v1.y*v1.y));
+        norm = (1.0/Math.sqrt(v1.x*v1.x + v1.y*v1.y));
         this.x = v1.x*norm;
         this.y = v1.y*norm;
     }
@@ -141,8 +143,7 @@ public class Vector2d extends Tuple2d implements java.io.Serializable {
     {
         double norm;
 
-        norm = (double)
-               (1.0/Math.sqrt(this.x*this.x + this.y*this.y));
+        norm = (1.0/Math.sqrt(this.x*this.x + this.y*this.y));
         this.x *= norm;
         this.y *= norm;
     }
@@ -159,7 +160,7 @@ public class Vector2d extends Tuple2d implements java.io.Serializable {
       double vDot = this.dot(v1) / ( this.length()*v1.length() );
       if( vDot < -1.0) vDot = -1.0;
       if( vDot >  1.0) vDot =  1.0;
-      return((double) (Math.acos( vDot )));
+      return (Math.acos( vDot ));
 
    }
 
