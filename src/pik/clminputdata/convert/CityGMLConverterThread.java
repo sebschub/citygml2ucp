@@ -164,7 +164,11 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * List of non-planar surfaces
 	 */
-	private ArrayList<String> NonPlanarList = new ArrayList<String>();
+	private LinkedList<String> NonPlanarList = new LinkedList<String>();
+	private LinkedList<String> surfWithoutDistances = new LinkedList<String>();
+	private LinkedList<String> noRoof = new LinkedList<String>();
+	private LinkedList<String> noWall = new LinkedList<String>();
+	private LinkedList<String> noGround = new LinkedList<String>();
 
 	/**
 	 * Constructor.
@@ -257,7 +261,7 @@ class CityGMLConverterThread extends Thread {
 					buildingRoofs[bID] = getAllSurfaces(roofs);
 					bHeight[bID] = calcBuildingHeight(roofs, lc.get(2));
 				} else {
-					System.out.println("No Roofs! " + filename);
+					noRoof.add(co.getId());
 					// maximum height = height of bounding of bounding box
 					bHeight[bID] = uc.get(2) - lc.get(2);
 					buildingRoofs[bID] = new Polygon3d[0];
@@ -266,7 +270,7 @@ class CityGMLConverterThread extends Thread {
 				if (grounds.size() > 0) {
 					bArea[bID] = calcGroundSize(grounds);
 				} else {
-					System.out.println("No Grounds! " + filename);
+					noGround.add(co.getId());
 				}
 
 				if (walls.size() > 0) {
@@ -274,7 +278,7 @@ class CityGMLConverterThread extends Thread {
 					checkCoplanarity(buildingWalls[bID], co.getId());
 					globalWallSurfaceCounter += buildingWalls[bID].length;
 				} else {
-					System.out.println("No Walls! " + filename);
+					noWall.add(co.getId());
 					// ignore this building for visibility for now
 					buildingWalls[bID] = new Polygon3d[0];
 				}
@@ -670,8 +674,8 @@ class CityGMLConverterThread extends Thread {
 
 						if (visible.get(wcount, wrcount)) {
 
-							dist.add(new Polygon3dDistance(
-									buildingWalls[i][j], buildingWalls[k][l]));
+							dist.add(new Polygon3dDistance(buildingWalls[i][j],
+									buildingWalls[k][l]));
 
 							if (dist.size() > ndistmean) {
 								Collections.sort(dist);
@@ -733,6 +737,9 @@ class CityGMLConverterThread extends Thread {
 
 	/**
 	 * Save results to global data.
+	 * 
+	 * This is the only routine which uses locks for saving the data to the
+	 * global classes.
 	 */
 	private void saveToGlobal() {
 		lock.lock();
@@ -755,7 +762,8 @@ class CityGMLConverterThread extends Thread {
 						// add urban fraction
 						uclm.incBuildingFrac(c, j, i, buildingAreaSum[c][j][i]);
 						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
-							// inc street width and its counter to norm later
+							// increase street width and its counter to norm
+							// later
 							uclm.incStreetWidth(c, dir, j, i,
 									buildingDistanceWeighted[c][dir][j][i]);
 							uclm.incStreetSurfaceSum(c, dir, j, i,
@@ -772,6 +780,11 @@ class CityGMLConverterThread extends Thread {
 
 		// save where not planar
 		stats.addNonPlanar(id, NonPlanarList);
+		// save when ground surface but no distance taken into account
+		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
+		stats.addNoGround(id, noGround);
+		stats.addNoRoof(id, noRoof);
+		stats.addNoWall(id, noWall);
 		for (int i = 0; i < bCount; i++) {
 			stats.buildingHeights.add(bHeight[i]);
 			stats.buildingGrounds.add(bArea[i]);
@@ -793,12 +806,8 @@ class CityGMLConverterThread extends Thread {
 							sumNStreetSurfaces += nStreetSurfaces[c][dir][j][i];
 						}
 						if (sumNStreetSurfaces == 0) {
-							System.out.println(buildingAreaSum[c][j][i]);
-							System.out
-									.println("no surface but urban fraction>0 "
-											+ filename);
-							System.out.println(j);
-							System.out.println(i);
+							surfWithoutDistances.add(Double
+									.toString(buildingAreaSum[c][j][i]));
 						}
 					}
 				}

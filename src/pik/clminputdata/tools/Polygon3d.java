@@ -64,7 +64,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 * Constructor.
 	 * 
 	 * @param surfaceProperty
-	 *            Descibes the polygon
+	 *            Describes the polygon
 	 */
 	public Polygon3d(SurfaceProperty surfaceProperty) {
 		if (surfaceProperty.getSurface() instanceof Polygon) {
@@ -176,9 +176,9 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 						xcoord[i] = uv1.dot(pvs);
 						ycoord[i] = uv2.dot(pvs);
 					}
-					
+
 					polygon2d = new Polygon2d(xcoord, ycoord);
-					
+
 				} else {
 					throw new IllegalArgumentException(
 							"Linear ring is no PosList, handle this case!");
@@ -192,8 +192,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 					"Surface is no Polygon, handle this case!");
 		}
 	}
-	
-	
+
 	/**
 	 * Calculate the angle of normal vector projected on horizontal plane.
 	 * 
@@ -216,7 +215,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		isSetAngle = true;
 		return angle;
 	}
-	
+
 	/**
 	 * Is the polygon horizontal?
 	 * 
@@ -226,7 +225,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		getAngle();
 		return this.isHorizontal;
 	}
-	
+
 	public boolean checkCoplanarity() {
 
 		double max = Double.MIN_VALUE;
@@ -242,9 +241,6 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 				if (dot > max) {
 					max = dot;
-					// System.out.println(max);
-					// System.out.println(j);
-					// System.out.println(i);
 				}
 			}
 		}
@@ -254,7 +250,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		}
 		return true;
 	}
-	
+
 	@Override
 	protected double calcArea() {
 		return polygon2d.getArea();
@@ -263,8 +259,8 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	@Override
 	protected Point3d calcCentroid() {
 		Point2d centroid2d = polygon2d.getCentroid();
-		// convert to 3d
 
+		// convert to 3d
 		Vector3d a = new Vector3d(uv1);
 		Vector3d b = new Vector3d(uv2);
 
@@ -275,10 +271,17 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		a.add(pos);
 
 		return new Point3d(a);
-		
 	}
 
-
+	/**
+	 * Does the line between two points hit the polygon?
+	 * 
+	 * @param p1
+	 *            One point
+	 * @param p2
+	 *            Other point
+	 * @return hit?
+	 */
 	public boolean isHitBy(Point3d p1, Point3d p2) {
 		// vector of direction
 		Vector3d rv = new Vector3d(p1, p2);
@@ -307,12 +310,11 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 		planePoint.sub(pos);
 
-
 		// Corresponding point2d in plane
 
 		double x = uv1.dot(planePoint);
 		double y = uv2.dot(planePoint);
-		
+
 		return polygon2d.contains(x, y);
 	}
 

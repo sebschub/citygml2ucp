@@ -90,6 +90,15 @@ public class CityGMLConverterConf {
 	String logNoSurfButBuildFrac;
 	private static String logNoSurfButBuildFracDefault = "NoSurfButBuildingFrac.log";
 	
+	String logNoRoof;
+	private static String logNoRoofDefault = "NoRoof.log";
+	
+	String logNoWall;
+	private static String logNoWallDefault = "NoWall.log";
+	
+	String logNoGround;
+	private static String logNoGroundDefault = "NoGround.log";
+	
 	String outputFile;
 	private static String outputFileDefault = "city.nc";
 
@@ -167,6 +176,13 @@ public class CityGMLConverterConf {
 			logNoSurfButBuildFrac = prop.getString("logNoSurfButBuildFrac", logNoSurfButBuildFracDefault);
 			logNoSurfButBuildFrac = outputFolder + logNoSurfButBuildFrac;
 			
+			logNoGround = prop.getString("logNoGround", logNoGroundDefault);
+			logNoGround = outputFolder + logNoGround;
+			logNoRoof = prop.getString("logNoRoof", logNoRoofDefault);
+			logNoRoof = outputFolder + logNoRoof;
+			logNoWall = prop.getString("logNoWall", logNoWallDefault);
+			logNoWall = outputFolder + logNoWall;
+			
 			outputFile = prop.getString("outputFile", outputFileDefault);
 			outputFile = outputFolder + outputFile;
 
@@ -227,6 +243,10 @@ public class CityGMLConverterConf {
 		
 		prop.setProperty("logNonPlanar", logNonPlanar);
 		prop.setProperty("logNoSurfButBuildFrac", logNoSurfButBuildFrac);
+		
+		prop.setProperty("LogNoWall", logNoWall);
+		prop.setProperty("LogNoGround", logNoGround);
+		prop.setProperty("LogNoRoof", logNoRoof);
 		
 		prop.setProperty("outputFile", outputFile);
 		

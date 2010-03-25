@@ -109,9 +109,7 @@ public class CityGMLConverter {
 			flist[0] = folder;
 		}
 
-		CityGMLConverterStats stats = new CityGMLConverterStats(flist.length,
-				flist, new File(conf.logNonPlanar), new File(
-						conf.logNoSurfButBuildFrac));
+		CityGMLConverterStats stats = new CityGMLConverterStats(flist, conf);
 
 		readImpSurfaceFile(conf, uclm);
 
@@ -171,7 +169,7 @@ public class CityGMLConverter {
 
 		long lasted = new Date().getTime() - startTime;
 
-		System.out.println("Program took " + lasted / 1000. + " seconds.");
+		System.out.println("Program took " + lasted / 1000. / 60. + " minutes.");
 
 	}
 }

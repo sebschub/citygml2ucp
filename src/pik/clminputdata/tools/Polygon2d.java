@@ -5,15 +5,17 @@ package pik.clminputdata.tools;
 
 import javax.vecmath.Point2d;
 
-
 /**
  * A 2d polygon based on {@link javax.vecmath.Point2d Point2d}.
  * 
  * @author Sebastian Schubert
  * 
  */
-public class Polygon2d extends ClosedSurface<Point2d>{
+public class Polygon2d extends ClosedSurface<Point2d> {
 
+	/**
+	 * Coordinates of the polygon
+	 */
 	private double[] xcoord, ycoord;
 
 	/**
@@ -21,25 +23,45 @@ public class Polygon2d extends ClosedSurface<Point2d>{
 	 */
 	private static final long serialVersionUID = 1275895460208834376L;
 
-	public Polygon2d(double[] x, double[] y) {
-		if (x.length!=y.length) {
-			throw new IllegalArgumentException("x and y arrays have to be of the same size.");
+	/**
+	 * Constructor.
+	 * 
+	 * @param x
+	 *            x coordinates
+	 * @param y
+	 *            y coordinates
+	 * @throws IllegalArgumentException
+	 *             x and y do not have the same length
+	 */
+	public Polygon2d(double[] x, double[] y) throws IllegalArgumentException {
+		if (x.length != y.length) {
+			throw new IllegalArgumentException(
+					"x and y arrays have to be of the same size.");
 		}
 		this.xcoord = x;
 		this.ycoord = y;
 	}
 
-	
+	/*
+	 * (non-Javadoc) Surveyor's Formula:
+	 * http://en.wikipedia.org/wiki/Polygon#Area_and_centroid
+	 * 
+	 * @see pik.clminputdata.tools.ClosedSurface#calcArea()
+	 */
 	@Override
 	protected double calcArea() {
 		double area = 0;
 		for (int i = 0; i < xcoord.length - 1; i++) {
-			area += (xcoord[i] * ycoord[i + 1])
-					- (xcoord[i + 1] * ycoord[i]);
+			area += (xcoord[i] * ycoord[i + 1]) - (xcoord[i + 1] * ycoord[i]);
 		}
 		return 0.5 * Math.abs(area);
 	}
 
+	/*
+	 * (non-Javadoc) http://en.wikipedia.org/wiki/Polygon#Area_and_centroid
+	 * 
+	 * @see pik.clminputdata.tools.ClosedSurface#calcCentroid()
+	 */
 	@Override
 	protected Point2d calcCentroid() {
 		double x = 0, y = 0;
@@ -48,20 +70,30 @@ public class Polygon2d extends ClosedSurface<Point2d>{
 
 		for (int i = 0; i < xcoord.length - 1; i++) {
 			x += (xcoord[i] + xcoord[i + 1])
-					* (xcoord[i] * ycoord[i + 1] - xcoord[i + 1]
-							* ycoord[i]);
+					* (xcoord[i] * ycoord[i + 1] - xcoord[i + 1] * ycoord[i]);
 			y += (ycoord[i] + ycoord[i + 1])
-					* (xcoord[i] * ycoord[i + 1] - xcoord[i + 1]
-							* ycoord[i]);
+					* (xcoord[i] * ycoord[i + 1] - xcoord[i + 1] * ycoord[i]);
 		}
 
 		x *= iarea;
 		y *= iarea;
 
-		return new Point2d(x,y);
+		return new Point2d(x, y);
 	}
 
-
+	// no idea how to inherit from java.awt.polygon (uses integers!) or other
+	// classes instead of reusing the code
+	/**
+	 * Is a point inside the polygon?
+	 * 
+	 * Code taken from java.awt.polygon (openjava).
+	 * 
+	 * @param x
+	 *            x coordinate of the point
+	 * @param y
+	 *            y coordinate of the point
+	 * @return (x,y) inside the polygon?
+	 */
 	public boolean contains(double x, double y) {
 		int hits = 0;
 

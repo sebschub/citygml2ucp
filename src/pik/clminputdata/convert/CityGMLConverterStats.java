@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import pik.clminputdata.tools.NetCDFData;
@@ -20,59 +21,185 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
 /**
+ * Additional information and statistics for a CityGMLConverter run.
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class CityGMLConverterStats extends NetCDFData {
 
-	private ArrayList<String>[] notPlanarList;
-	private ArrayList<String>[] noSurfButBuildFracList;
-	private File[] flist;
+	/**
+	 * List for all non planar polygons
+	 */
+	private List<LinkedList<String>> notPlanarList;
+	/**
+	 * IDs of the entries in {@code notPlanarList}
+	 */
+	private List<Integer> notPlanarListID;
 
-	File logNonPlanar;
-	File logNoSurfButBuildFrac;
+	/**
+	 * List for cell with no wall surfaces taken into account but building
+	 * fraction > 0
+	 */
+	private List<LinkedList<String>> noSurfButBuildFracList;
+	/**
+	 * IDs of the entries in {@code noSurfButBuildFracList}
+	 */
+	private List<Integer> noSurfButBuildFracListID;
 
-	public ArrayList<Double> buildingHeights = new ArrayList<Double>();
-	public ArrayList<Double> buildingGrounds = new ArrayList<Double>();
-	private WritableField buildingHeightsNetCDF;
-	private WritableField buildingGroundsNetCDF;
+	/**
+	 * List for buildings with no defined wall
+	 */
+	private List<LinkedList<String>> noWallList;
+	/**
+	 * IDs of the entries in {@code noWallList}
+	 */
+	private List<Integer> noWallListID;
+	/**
+	 * List for buildings with no defined roof
+	 */
+	private List<LinkedList<String>> noRoofList;
+	/**
+	 * IDs of the entries in {@code noRoofList}
+	 */
+	private List<Integer> noRoofListID;
+	/**
+	 * List for buildings with no defined ground
+	 */
+	private List<LinkedList<String>> noGroundList;
+	/**
+	 * IDs of the entries in {@code noGroundList}
+	 */
+	private List<Integer> noGroundListID;
+
+	/**
+	 * All files that are analysed
+	 */
+	private final File[] flist;
+
+	/**
+	 * Configuration of the run
+	 */
+	private final CityGMLConverterConf conf;
+
+	/**
+	 * Height of the buildings
+	 */
+	public List<Double> buildingHeights = new ArrayList<Double>();
+	/**
+	 * Ground size of the buildings
+	 */
+	public List<Double> buildingGrounds = new ArrayList<Double>();
+
+	/**
+	 * Field for output
+	 */
+	private WritableField buildingHeightsNetCDF, buildingGroundsNetCDF;
+	/**
+	 * Unlimited dimension for output
+	 */
 	private WritableDimension unlimetedDimension;
 
-	@SuppressWarnings("unchecked")
-	public CityGMLConverterStats(int length, File[] flist, File logNonPlanar,
-			File logNoSurfButBuildFrac) {
-		notPlanarList = (ArrayList<String>[]) new ArrayList[length];
-		noSurfButBuildFracList = (ArrayList<String>[]) new ArrayList[length];
+	/**
+	 * Constructor.
+	 * 
+	 * @param flist
+	 *            List of analysed files
+	 * @param conf
+	 *            CityGMLConverter configuration
+	 */
+	public CityGMLConverterStats(File[] flist, CityGMLConverterConf conf) {
+		this.conf = conf;
+		notPlanarList = new LinkedList<LinkedList<String>>();
+		notPlanarListID = new LinkedList<Integer>();
+		noSurfButBuildFracList = new LinkedList<LinkedList<String>>();
+		noSurfButBuildFracListID = new LinkedList<Integer>();
 		this.flist = flist;
-		this.logNonPlanar = logNonPlanar;
-		this.logNoSurfButBuildFrac = logNoSurfButBuildFrac;
 
 		unlimetedDimension = new WritableDimension("counter", 0, true, true,
 				false);
 		toWrite.add(unlimetedDimension);
 	}
 
-	public void addNonPlanar(int id, ArrayList<String> list) {
-		notPlanarList[id] = list;
-	}
-	
-	public void addNoSurfButBuildFrac(int id, ArrayList<String> list) {
-		noSurfButBuildFracList[id] = list;
+	/**
+	 * Add non planar information.
+	 * 
+	 * @param id
+	 *            Number of file for which to add information
+	 * @param list
+	 *            List of buildings with non-planar surfaces
+	 */
+	public void addNonPlanar(int id, LinkedList<String> list) {
+		notPlanarListID.add(id);
+		notPlanarList.add(list);
 	}
 
-	private void writeLog(ArrayList<String>[] list, File log) throws IOException {
+	/**
+	 * Add no surface but building fraction information.
+	 * 
+	 * @param id
+	 *            Number of file for which to add information
+	 * @param list
+	 *            List of ground sizes ignored
+	 */
+	public void addNoSurfButBuildFrac(int id, LinkedList<String> list) {
+		noSurfButBuildFracListID.add(id);
+		noSurfButBuildFracList.add(list);
+	}
+	
+	/**
+	 * Add no wall information.
+	 * 
+	 * @param id
+	 *            Number of file for which to add information
+	 * @param list
+	 *            List of buildings with no defined wall
+	 */
+	public void addNoWall(int id, LinkedList<String> list) {
+		noWallListID.add(id);
+		noWallList.add(list);
+	}
+	
+	/**
+	 * Add no roof information.
+	 * 
+	 * @param id
+	 *            Number of file for which to add information
+	 * @param list
+	 *            List of buildings with no defined roof
+	 */
+	public void addNoRoof(int id, LinkedList<String> list) {
+		noRoofListID.add(id);
+		noRoofList.add(list);
+	}
+	
+	/**
+	 * Add no ground information.
+	 * 
+	 * @param id
+	 *            Number of file for which to add information
+	 * @param list
+	 *            List of buildings with no defined ground
+	 */
+	public void addNoGround(int id, LinkedList<String> list) {
+		noGroundListID.add(id);
+		noGroundList.add(list);
+	}
+
+	private void writeLog(List<LinkedList<String>> list, List<Integer> id,
+			File log) throws IOException {
 		if (log.exists()) {
 			log.delete();
 		}
 
 		Writer fw = new FileWriter(log);
 
-		for (int i = 0; i < list.length; i++) {
-			if (list[i] != null && list[i].size() != 0) {
-				fw.append(flist[i].toString());
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i) != null && list.get(i).size() != 0) {
+				fw.append(flist[id.get(i)].toString());
 				fw.append(System.getProperty("line.separator"));
-				for (int j = 0; j < list[i].size(); j++) {
-					fw.append(list[i].get(j));
+				for (int j = 0; j < list.get(i).size(); j++) {
+					fw.append(list.get(i).get(j));
 					fw.append(System.getProperty("line.separator"));
 				}
 			}
@@ -81,12 +208,11 @@ public class CityGMLConverterStats extends NetCDFData {
 	}
 
 	public void writeLogs() throws IOException {
-		writeLog(notPlanarList, logNonPlanar);
-		writeLog(noSurfButBuildFracList, logNoSurfButBuildFrac);
+		writeLog(notPlanarList, notPlanarListID, new File(conf.logNonPlanar));
+		writeLog(noSurfButBuildFracList, noSurfButBuildFracListID, new File(
+				conf.logNoSurfButBuildFrac));
 	}
-	
-	
-	
+
 	private void fillNetCDFVariables() {
 		Index ind = buildingHeightsNetCDF.getIndex();
 		for (int i = 0; i < buildingHeights.size(); i++) {
