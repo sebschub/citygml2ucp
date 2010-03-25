@@ -333,7 +333,7 @@ public class CLMConfiguration extends NetCDFData {
 	/**
 	 * Get the area of a grid cell.
 	 * 
-	 * @param Latitude
+	 * @param rlati
 	 *            in rotated system of the grid cell
 	 * @return Area of the cell
 	 * @throws IllegalArgumentException

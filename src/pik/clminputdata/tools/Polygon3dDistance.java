@@ -9,16 +9,16 @@ import javax.vecmath.Point3d;
  * @author Sebastian Schubert
  * 
  */
-public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
+public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 
 	/**
 	 * The sending surface
 	 */
-	public final RecSurface sending;
+	public final Polygon3d sending;
 	/**
 	 * The receiving surface
 	 */
-	public final RecSurface receiving;
+	public final Polygon3d receiving;
 
 	/**
 	 * The distance between sending and receiving surface defined by the
@@ -34,7 +34,7 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 	 * @param receiving
 	 *            Receiving surface
 	 */
-	public RecSurfaceDistance(RecSurface sending, RecSurface receiving) {
+	public Polygon3dDistance(Polygon3d sending, Polygon3d receiving) {
 		this.sending = sending;
 		this.receiving = receiving;
 
@@ -45,7 +45,7 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 	}
 
 	@Override
-	public int compareTo(RecSurfaceDistance arg0) {
+	public int compareTo(Polygon3dDistance arg0) {
 		if (arg0 == null) {
 			throw new NullPointerException();
 		}
@@ -65,11 +65,11 @@ public class RecSurfaceDistance implements Comparable<RecSurfaceDistance> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof RecSurfaceDistance)) {
+		if (!(obj instanceof Polygon3dDistance)) {
 			return false;
 		}
 
-		if (((RecSurfaceDistance) obj).distance == this.distance) {
+		if (((Polygon3dDistance) obj).distance == this.distance) {
 			return true;
 		}
 

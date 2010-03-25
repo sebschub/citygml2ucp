@@ -11,7 +11,7 @@
  COPYRIGHT:    Copyright (C) 2004 HydroloGIS / University of Trento / CUDAM, ITALY, GPL
  VERSION:         $version$
  CREATED OR MODIFIED:  Mar 25, 2010
- REVISION:  a, added Type to LinkedHashMap
+ REVISION:  a, added Type to LinkedHashMap and corrected javadoc
  =====================================================================================*/
 
 /* 
@@ -91,7 +91,7 @@ public abstract class Projections
    * get all the projection informations needed from the 
    * projection code (reproduces pj_get_def() of the proj api)
    * 
-   * @param the  proj code or options
+   * @param proj  proj code or options
    * @return the info String
    */
   protected native String getProjInfo(String proj);
@@ -100,7 +100,7 @@ public abstract class Projections
    * get the ellipsoid parameters from the 
    * projection code
    * 
-   * @param the  proj code or options
+   * @param proj proj code or options
    * @return the info String
    */
   protected native String getEllipsInfo(String proj);

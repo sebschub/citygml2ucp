@@ -28,7 +28,7 @@
  * $Date: 2009/07/17 15:23:48 $
  * $State: Exp $
  * 
- * Sebastian Schubert: added hashcode 
+ * Sebastian Schubert: added hashcode and annotations
  */
 
 package javax.vecmath;
@@ -289,7 +289,8 @@ public abstract class Tuple2d implements java.io.Serializable, Cloneable {
      * @param t1  the object with which the comparison is made
      * @return  true or false
      */  
-    public boolean equals(Object t1)
+    @Override
+	public boolean equals(Object t1)
     {
         try {
            Tuple2d t2 = (Tuple2d) t1;
@@ -329,7 +330,8 @@ public abstract class Tuple2d implements java.io.Serializable, Cloneable {
      * The form is (x,y).
      * @return the String representation
      */  
-   public String toString()
+   @Override
+public String toString()
    {
         return("(" + this.x + ", " + this.y + ")");
    }
@@ -511,7 +513,8 @@ public abstract class Tuple2d implements java.io.Serializable, Cloneable {
      * @see java.lang.Cloneable
      * @since vecmath 1.3
      */
-    public Object clone() {
+    @Override
+	public Object clone() {
 	// Since there are no arrays we can just use Object.clone()
 	try {
 	    return super.clone();

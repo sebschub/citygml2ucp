@@ -24,8 +24,8 @@ import org.proj4.Proj4;
 import org.proj4.ProjectionData;
 
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
-import pik.clminputdata.tools.RecSurface;
-import pik.clminputdata.tools.RecSurfaceDistance;
+import pik.clminputdata.tools.Polygon3d;
+import pik.clminputdata.tools.Polygon3dDistance;
 import pik.clminputdata.tools.SymmetricMatrixBoolean;
 import ucar.unidata.geoloc.ProjectionPoint;
 
@@ -119,11 +119,11 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * List of all wall surfaces
 	 */
-	private RecSurface[][] buildingWalls;
+	private Polygon3d[][] buildingWalls;
 	/**
 	 * List of all roof surfaces
 	 */
-	private RecSurface[][] buildingRoofs;
+	private Polygon3d[][] buildingRoofs;
 
 	// for output
 	/**
@@ -200,8 +200,8 @@ class CityGMLConverterThread extends Thread {
 		int size = base.getCityObjectMember().size();
 		bLocation = new Point3d[size];
 		bHeight = new double[size];
-		buildingWalls = new RecSurface[size][];
-		buildingRoofs = new RecSurface[size][];
+		buildingWalls = new Polygon3d[size][];
+		buildingRoofs = new Polygon3d[size][];
 		bArea = new double[size];
 
 		// ID of building
@@ -260,7 +260,7 @@ class CityGMLConverterThread extends Thread {
 					System.out.println("No Roofs! " + filename);
 					// maximum height = height of bounding of bounding box
 					bHeight[bID] = uc.get(2) - lc.get(2);
-					buildingRoofs[bID] = new RecSurface[0];
+					buildingRoofs[bID] = new Polygon3d[0];
 				}
 
 				if (grounds.size() > 0) {
@@ -276,7 +276,7 @@ class CityGMLConverterThread extends Thread {
 				} else {
 					System.out.println("No Walls! " + filename);
 					// ignore this building for visibility for now
-					buildingWalls[bID] = new RecSurface[0];
+					buildingWalls[bID] = new Polygon3d[0];
 				}
 			}
 		}
@@ -373,7 +373,7 @@ class CityGMLConverterThread extends Thread {
 	 *            List of surfaces
 	 * @return Array of polygons
 	 */
-	public <T extends BoundarySurface> RecSurface[] getAllSurfaces(
+	public <T extends BoundarySurface> Polygon3d[] getAllSurfaces(
 			List<T> listSurfaces) {
 
 		int counter = 0;
@@ -386,7 +386,7 @@ class CityGMLConverterThread extends Thread {
 		}
 
 		// new array to include all these surfaces
-		RecSurface[] surfaces = new RecSurface[counter];
+		Polygon3d[] surfaces = new Polygon3d[counter];
 
 		// reset counter again
 		counter = 0;
@@ -395,7 +395,7 @@ class CityGMLConverterThread extends Thread {
 			List<SurfaceProperty> surf = surface.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surf.size(); i++) {
-				surfaces[counter++] = new RecSurface(surf.get(i));
+				surfaces[counter++] = new Polygon3d(surf.get(i));
 			}
 		}
 		return surfaces;
@@ -409,7 +409,7 @@ class CityGMLConverterThread extends Thread {
 	 * @param coID
 	 *            ID of the building which includes the polygon
 	 */
-	private void checkCoplanarity(RecSurface[] surfaces, String coID) {
+	private void checkCoplanarity(Polygon3d[] surfaces, String coID) {
 		for (int i = 0; i < surfaces.length; i++) {
 			if (!surfaces[i].checkCoplanarity()) {
 				NonPlanarList.add(coID);
@@ -569,7 +569,7 @@ class CityGMLConverterThread extends Thread {
 								if (k == m && l == n)
 									continue;
 
-								if (buildingWalls[m][n].contains(
+								if (buildingWalls[m][n].isHitBy(
 										buildingWalls[i][j].getCentroid(),
 										buildingWalls[k][l].getCentroid())) {
 									vis = false;
@@ -582,7 +582,7 @@ class CityGMLConverterThread extends Thread {
 
 							// check roof surfaces
 							for (int n = 0; n < buildingRoofs[m].length; n++) {
-								if (buildingRoofs[m][n].contains(
+								if (buildingRoofs[m][n].isHitBy(
 										buildingWalls[i][j].getCentroid(),
 										buildingWalls[k][l].getCentroid())) {
 									vis = false;
@@ -655,7 +655,7 @@ class CityGMLConverterThread extends Thread {
 					continue;
 				}
 
-				List<RecSurfaceDistance> dist = new LinkedList<RecSurfaceDistance>();
+				List<Polygon3dDistance> dist = new LinkedList<Polygon3dDistance>();
 				int wrcount = -1;
 
 				for (int k = 0; k < bCount; k++) {
@@ -670,7 +670,7 @@ class CityGMLConverterThread extends Thread {
 
 						if (visible.get(wcount, wrcount)) {
 
-							dist.add(new RecSurfaceDistance(
+							dist.add(new Polygon3dDistance(
 									buildingWalls[i][j], buildingWalls[k][l]));
 
 							if (dist.size() > ndistmean) {

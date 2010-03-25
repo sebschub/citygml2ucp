@@ -41,28 +41,30 @@ package org.proj4;
 /**
  * class representing a latitude longitude projection
  */
-public class LatLong extends Projections
-{
+public class LatLong extends Projections {
 
-  public LatLong(String src)
-  {
-    proj = src;
-  }
+	public LatLong(String src) {
+		proj = src;
+	}
 
-  /* (non-Javadoc)
-   * @see Projections#prepareData(DataToProject)
-   */
-  public void prepareData(ProjectionData dataTP)
-  {
-    degreeToRadiant(dataTP.x, dataTP.y);
-  }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see Projections#prepareData(DataToProject)
+	 */
+	@Override
+	public void prepareData(ProjectionData dataTP) {
+		degreeToRadiant(dataTP.x, dataTP.y);
+	}
 
-  /* (non-Javadoc)
-   * @see java.Projections#returnTransformedCoordinates()
-   */
-  public void prepareTransformedData(ProjectionData dataTP)
-  {
-    radiantToDegree(dataTP.x, dataTP.y);
-  }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.Projections#returnTransformedCoordinates()
+	 */
+	@Override
+	public void prepareTransformedData(ProjectionData dataTP) {
+		radiantToDegree(dataTP.x, dataTP.y);
+	}
 
 }
