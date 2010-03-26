@@ -310,6 +310,9 @@ public class CityGMLConverterConf {
 
 		System.out.println("sepString: " + sepString);
 
+		System.out.println();
+		System.out.println();
+
 	}
 
 }

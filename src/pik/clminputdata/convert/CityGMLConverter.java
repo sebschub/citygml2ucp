@@ -153,8 +153,8 @@ public class CityGMLConverter {
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
-		System.out.println(uclm.maxHeight);
-		System.out.println(uclm.minHeight);
+		System.out.println("Largest Building: " + uclm.maxHeight + " m");
+		System.out.println("Smallest Building: " + uclm.minHeight + " m");
 
 		uclm.fakeUrbanClassFrac();
 		uclm.normBuildingFrac();
