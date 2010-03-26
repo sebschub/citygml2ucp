@@ -87,8 +87,8 @@ public class CityGMLConverter {
 		// create new urban configuration
 		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(conf.pollat,
 				conf.pollon, conf.dlat, conf.dlon, conf.startlat_tot,
-				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.ke_tot,
-				conf.nuclasses, conf.streetdir, conf.ke_urban, conf.height);
+				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.nuclasses,
+				conf.streetdir, conf.ke_urban, conf.height);
 
 		Proj4 soldner = new Proj4(conf.proj4code, "+init=epsg:4326 +latlong");
 
@@ -123,8 +123,8 @@ public class CityGMLConverter {
 
 			File file = flist[i];
 
-			System.out.println("Read file " + (i + 1) + "/" + flist.length
-					+ ": " + file);
+			System.out.println("Processing file " + (i + 1) + "/"
+					+ flist.length + ": " + file);
 
 			// unmarshaller has to be in loop, otherwise memory is not freed
 			// (reference in unmarshaller?)
@@ -169,7 +169,8 @@ public class CityGMLConverter {
 
 		long lasted = new Date().getTime() - startTime;
 
-		System.out.println("Program took " + lasted / 1000. / 60. + " minutes.");
+		System.out
+				.println("Program took " + lasted / 1000. / 60. + " minutes.");
 
 	}
 }

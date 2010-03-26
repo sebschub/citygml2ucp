@@ -6,7 +6,6 @@ import java.util.List;
 
 import pik.clminputdata.tools.NetCDFData;
 import pik.clminputdata.tools.WritableAxis;
-import pik.clminputdata.tools.WritableDimension;
 import pik.clminputdata.tools.WritableField;
 import pik.clminputdata.tools.WritableFieldFloat;
 import pik.clminputdata.tools.WritableRotatedPole;
@@ -43,10 +42,10 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	protected final WritableAxis zonalAxis;
 
-	/**
-	 * Vertical dimension
-	 */
-	protected final WritableDimension verticalDimension;
+	//	/**
+	//	 * Vertical dimension
+	//	 */
+	//	protected final WritableDimension verticalDimension;
 
 	/**
 	 * Area of a grid cell, a function of latitude
@@ -63,7 +62,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * 
 	 */
 	public CLMConfiguration() {
-		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51, 20);
+		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51);
 	}
 
 	/**
@@ -74,7 +73,7 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	public CLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot, int ke_tot) throws IllegalArgumentException {
+			int je_tot) throws IllegalArgumentException {
 
 		rotpol = new WritableRotatedPole(pollat, pollon);
 		toWrite.add(rotpol);
@@ -103,9 +102,9 @@ public class CLMConfiguration extends NetCDFData {
 			throw new IllegalArgumentException("je_tot out of range.");
 		}
 
-		if (ke_tot < 0) {
-			throw new IllegalArgumentException("ke_tot out of range.");
-		}
+		// if (ke_tot < 0) {
+		// throw new IllegalArgumentException("ke_tot out of range.");
+		// }
 
 		zonalAxis = new WritableAxis("rlon", ie_tot, "rlon", "X",
 				"grid_longitude", "rotated longitude", "degrees", startlon_tot,
@@ -117,7 +116,7 @@ public class CLMConfiguration extends NetCDFData {
 				dlat);
 		toWrite.add(meridionalAxis);
 
-		verticalDimension = new WritableDimension("level", ke_tot);
+		// verticalDimension = new WritableDimension("level", ke_tot);
 		// toWrite.add(verticalDimension); //add in subclass if needed
 
 		List<Dimension> dimlist = new ArrayList<Dimension>();
@@ -259,14 +258,14 @@ public class CLMConfiguration extends NetCDFData {
 		return meridionalAxis.getLength();
 	}
 
-	/**
-	 * Get total number if grid points in vertical direction.
-	 * 
-	 * @return Number of grid points
-	 */
-	public int getKe_tot() {
-		return verticalDimension.getLength();
-	}
+	//	/**
+	//	 * Get total number if grid points in vertical direction.
+	//	 * 
+	//	 * @return Number of grid points
+	//	 */
+	//	public int getKe_tot() {
+	//		return verticalDimension.getLength();
+	//	}
 
 	/**
 	 * Get geographical longitude of the rotated north pole.
@@ -349,10 +348,14 @@ public class CLMConfiguration extends NetCDFData {
 
 	/**
 	 * Get the geographical latitude for indices.
-	 * @param j Latitude index in rotated system
-	 * @param i Longitude index in rotated system
+	 * 
+	 * @param j
+	 *            Latitude index in rotated system
+	 * @param i
+	 *            Longitude index in rotated system
 	 * @return Geographical latitude
-	 * @throws IllegalArgumentException Index not in range
+	 * @throws IllegalArgumentException
+	 *             Index not in range
 	 */
 	public double getLat(int j, int i) throws IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {
@@ -364,13 +367,17 @@ public class CLMConfiguration extends NetCDFData {
 		Index ind = lat.getIndex();
 		return lat.get(ind.set(j, i));
 	}
-	
+
 	/**
 	 * Get the geographical longitude for indices.
-	 * @param j Latitude index in rotated system
-	 * @param i Longitude index in rotated system
+	 * 
+	 * @param j
+	 *            Latitude index in rotated system
+	 * @param i
+	 *            Longitude index in rotated system
 	 * @return Geographical longitude
-	 * @throws IllegalArgumentException Index not in range
+	 * @throws IllegalArgumentException
+	 *             Index not in range
 	 */
 	public double getLon(int j, int i) throws IllegalArgumentException {
 		if (j >= getJe_tot() || j < 0) {

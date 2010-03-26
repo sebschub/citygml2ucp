@@ -31,6 +31,8 @@ import ucar.unidata.geoloc.ProjectionPoint;
 
 import javax.vecmath.Point3d;
 
+import static pik.clminputdata.tools.Polygon2d.xyProjectedPolygon2d;
+
 /**
  * Calculation of the main properties of a city element.
  * 
@@ -328,7 +330,7 @@ class CityGMLConverterThread extends Thread {
 			for (int i = 0; i < surface.size(); i++) {
 				SurfaceProperty surfaceProperty = surface.get(i);
 
-				roofArea = calcArea(surfaceProperty);
+				roofArea = xyProjectedPolygon2d(surfaceProperty).getArea();
 				sumRoofArea += roofArea;
 
 				// min and max height of surfaceProperty
@@ -362,7 +364,7 @@ class CityGMLConverterThread extends Thread {
 			List<SurfaceProperty> surface = ground.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
 			for (SurfaceProperty surfaceProperty : surface) {
-				area += calcArea(surfaceProperty);
+				area += xyProjectedPolygon2d(surfaceProperty).getArea();
 			}
 		}
 		return area;
@@ -449,44 +451,6 @@ class CityGMLConverterThread extends Thread {
 						}
 					}
 					return new double[] { min, max };
-				}
-				throw new IllegalArgumentException(
-						"Linear ring is no PosList, handle this case!");
-			}
-			throw new IllegalArgumentException(
-					"Polygon is no linear ring, handle this case!");
-		}
-		throw new IllegalArgumentException(
-				"Surface is no Polygon, handle this case!");
-	}
-
-	public static double calcArea(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) surfaceProperty.getSurface();
-			if (polygon.getExterior().getRing() instanceof LinearRing) {
-				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
-				if (lRing.isSetPosList()) {
-					List<Double> coord = lRing.getPosList().getValue();
-
-					double lArea = 0;
-					int pos = 0;
-					int ppos = 3;
-
-					// http://en.wikipedia.org/wiki/Polygon#Area_and_centroid
-					for (int i = 0; i < coord.size() / 3 - 1; i++) {
-						lArea += (coord.get(pos) * coord.get(ppos + 1))
-								- (coord.get(ppos) * coord.get(pos + 1));
-						// System.out.println(lArea);
-						pos = ppos;
-						// System.out.println(pos);
-						ppos += 3;
-					}
-
-					// in pos list, last and first element are equal
-					// lArea += (coord.get(pos) * coord.get(1))
-					// - (coord.get(0) * coord.get(pos + 1));
-					// km^2
-					return 0.0000005 * Math.abs(lArea);
 				}
 				throw new IllegalArgumentException(
 						"Linear ring is no PosList, handle this case!");
