@@ -364,7 +364,8 @@ class CityGMLConverterThread extends Thread {
 			List<SurfaceProperty> surface = ground.getLod2MultiSurface()
 					.getMultiSurface().getSurfaceMember();
 			for (SurfaceProperty surfaceProperty : surface) {
-				area += xyProjectedPolygon2d(surfaceProperty).getArea();
+				// area in km2
+				area += xyProjectedPolygon2d(surfaceProperty).getArea() / 1000000.;
 			}
 		}
 		return area;
