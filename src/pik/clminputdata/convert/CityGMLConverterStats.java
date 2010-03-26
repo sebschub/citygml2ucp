@@ -31,46 +31,46 @@ public class CityGMLConverterStats extends NetCDFData {
 	/**
 	 * List for all non planar polygons
 	 */
-	private List<LinkedList<String>> notPlanarList;
+	private List<LinkedList<String>> notPlanarList = new LinkedList<LinkedList<String>>();
 	/**
 	 * IDs of the entries in {@code notPlanarList}
 	 */
-	private List<Integer> notPlanarListID;
+	private List<Integer> notPlanarListID = new LinkedList<Integer>();
 
 	/**
 	 * List for cell with no wall surfaces taken into account but building
 	 * fraction > 0
 	 */
-	private List<LinkedList<String>> noSurfButBuildFracList;
+	private List<LinkedList<String>> noSurfButBuildFracList = new LinkedList<LinkedList<String>>();
 	/**
 	 * IDs of the entries in {@code noSurfButBuildFracList}
 	 */
-	private List<Integer> noSurfButBuildFracListID;
+	private List<Integer> noSurfButBuildFracListID = new LinkedList<Integer>();
 
 	/**
 	 * List for buildings with no defined wall
 	 */
-	private List<LinkedList<String>> noWallList;
+	private List<LinkedList<String>> noWallList = new LinkedList<LinkedList<String>>();
 	/**
 	 * IDs of the entries in {@code noWallList}
 	 */
-	private List<Integer> noWallListID;
+	private List<Integer> noWallListID = new LinkedList<Integer>();
 	/**
 	 * List for buildings with no defined roof
 	 */
-	private List<LinkedList<String>> noRoofList;
+	private List<LinkedList<String>> noRoofList = new LinkedList<LinkedList<String>>();
 	/**
 	 * IDs of the entries in {@code noRoofList}
 	 */
-	private List<Integer> noRoofListID;
+	private List<Integer> noRoofListID = new LinkedList<Integer>();
 	/**
 	 * List for buildings with no defined ground
 	 */
-	private List<LinkedList<String>> noGroundList;
+	private List<LinkedList<String>> noGroundList = new LinkedList<LinkedList<String>>();
 	/**
 	 * IDs of the entries in {@code noGroundList}
 	 */
-	private List<Integer> noGroundListID;
+	private List<Integer> noGroundListID = new LinkedList<Integer>();
 
 	/**
 	 * All files that are analysed
@@ -110,10 +110,6 @@ public class CityGMLConverterStats extends NetCDFData {
 	 */
 	public CityGMLConverterStats(File[] flist, CityGMLConverterConf conf) {
 		this.conf = conf;
-		notPlanarList = new LinkedList<LinkedList<String>>();
-		notPlanarListID = new LinkedList<Integer>();
-		noSurfButBuildFracList = new LinkedList<LinkedList<String>>();
-		noSurfButBuildFracListID = new LinkedList<Integer>();
 		this.flist = flist;
 
 		unlimetedDimension = new WritableDimension("counter", 0, true, true,

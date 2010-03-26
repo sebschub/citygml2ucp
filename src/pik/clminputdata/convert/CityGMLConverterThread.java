@@ -824,13 +824,14 @@ class CityGMLConverterThread extends Thread {
 	public void run() {
 
 		calcVisibility();
-		System.out.println("Finished visibility determination for " + filename);
+		// System.out.println("Finished visibility determination for " +
+		// filename);
 
 		// calculate irlat and irlon
 		calcLatLonIndices();
 
 		calcStreetProperties();
-		System.out.println("Distance stuff finished for " + filename);
+		// System.out.println("Distance stuff finished for " + filename);
 
 		// sum of areas of buildings
 		for (int i = 0; i < bCount; i++) {
