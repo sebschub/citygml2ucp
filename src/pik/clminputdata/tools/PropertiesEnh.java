@@ -19,6 +19,23 @@ public class PropertiesEnh extends Properties {
 	private static final long serialVersionUID = -1595761753037640465L;
 
 	/**
+	 * Get a single boolean from properties.
+	 * 
+	 * @param key
+	 *            String to look for
+	 * @param defaultValue
+	 *            If key not found, return this
+	 * @return The boolean
+	 */
+	public boolean getBoolean(String key, boolean defaultValue) {
+		String str = getProperty(key);
+		if (str == null) {
+			return defaultValue;
+		}
+		return Boolean.parseBoolean(str.trim());
+	}
+	
+	/**
 	 * Get a single integer from properties.
 	 * 
 	 * @param key

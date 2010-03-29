@@ -286,8 +286,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot, int nuclasses, double[] streetdir,
-			int[] ke_urban, double[] height) throws IllegalArgumentException {
+			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
+			double[] height) throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot);
 		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
@@ -338,10 +338,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	}
 
 	public void setUrbanClassFrac(int uc, int lat, int lon, double val) {
-		if (val > 1. || val < 0.) {
-			throw new IllegalArgumentException(
-					"urban class fraction has to be between 0 and 1");
-		}
 		Index ind = urbanClassFrac.getIndex();
 		urbanClassFrac.set(ind.set(uc, lat, lon), val);
 	}
@@ -414,7 +410,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		if (lev >= getKe_urban(uc) || lev < 0) {
 			throw new IllegalArgumentException("lev not in range");
 		}
-
 		Index ind = buildProb.getIndex();
 		buildProb.set(ind.set(uc, sd, lev, rlati, rloni), value);
 	}
@@ -448,6 +443,39 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return buildingFrac.get(ind.set(uc, irlat, irlon));
 	}
 
+	public void setBuildingFrac(int uc, int lat, int lon, double value) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (lat >= getJe_tot() || lat < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (lon >= getIe_tot() || lon < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+
+		Index ind = buildingFrac.getIndex();
+		buildingFrac.set(ind.set(uc, lat, lon), value);
+	}
+	
+	public void setBuildingWidth(int uc, int dir, int lat, int lon, double value) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (dir >= getNstreedir() || dir < 0) {
+			throw new IllegalArgumentException("dir not in range");
+		}
+		if (lat >= getJe_tot() || lat < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (lon >= getIe_tot() || lon < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+
+		Index ind = buildingWidth.getIndex();
+		buildingWidth.set(ind.set(uc, dir, lat, lon), value);
+	}
+
 	public void incBuildingFrac(int uc, int irlat, int irlon, double incr) {
 		Index ind = buildingFrac.getIndex();
 		ind.set(uc, irlat, irlon);
@@ -461,11 +489,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					Index ind = buildingFrac.getIndex();
-					ind.set(uc, lat, lon);
-
-					buildingFrac.set(ind, buildingFrac.get(ind) / getArea(lat));
-
+					setBuildingFrac(uc,lat,lon, getBuildingFrac(uc,lat,lon) / getArea(lat));
 				}
 			}
 		}
@@ -628,6 +652,34 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							}
 							setStreetFrac(uc, sd, lat, lon, 0.);
 						}
+					}
+				}
+			}
+		}
+	}
+
+	public void defineMissingData() {
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int lat = 0; lat < getJe_tot(); lat++) {
+				for (int lon = 0; lon < getIe_tot(); lon++) {
+					if (getBuildingFrac(uc, lat, lon) < 1.e-12
+							|| getUrbanFrac(lat, lon) < 1. - 12) {
+						for (int sd = 0; sd < getNstreedir(); sd++) {
+							setBuildingWidth(uc, sd, lat, lon,
+									buildingWidth.missingValue);
+							setStreetFrac(uc, sd, lat, lon,
+									streetFrac.missingValue);
+							setStreetWidth(uc, sd, lat, lon,
+									streetFrac.missingValue);
+							setUrbanClassFrac(uc, lat, lon,
+									urbanClassFrac.missingValue);
+							for (int h = 0; h < ke_urbanmax; h++) {
+								setBuildProb(uc, sd, h, lat, lon,
+										buildProb.missingValue);
+							}
+						}
+						setUrbanFrac(lat, lon, urbanFrac.missingValue);
+						setBuildingFrac(uc, lat, lon, buildingFrac.missingValue);
 					}
 				}
 			}

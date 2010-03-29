@@ -23,6 +23,8 @@ import ucar.nc2.Variable;
  */
 public class WritableField extends ArrayDouble implements NetCDFWritable {
 
+	public final double missingValue=-99999;
+	
 	/**
 	 * Name of the field variable in the NetCDF file
 	 */
@@ -96,6 +98,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		ncfile.addVariableAttribute(var, new Attribute("standard_name",
 				standard_name));
 		ncfile.addVariableAttribute(var, new Attribute("long_name", long_name));
+		ncfile.addVariableAttribute(var, new Attribute("_FillValue", missingValue));
 		if (!units.isEmpty()) {
 			ncfile.addVariableAttribute(var, new Attribute("units", units));
 		}

@@ -19,7 +19,7 @@ import pik.clminputdata.tools.PropertiesEnh;
 public class CityGMLConverterConf {
 
 	/**
-	 * If no filename is given, it is tried to open that file 
+	 * If no filename is given, it is tried to open that file
 	 */
 	private static String filenameDefault = "/home/schubert/Documents/workspace/citygml2clm/converter.properties";
 
@@ -38,7 +38,7 @@ public class CityGMLConverterConf {
 	private static final double pollonDefault = -170.0;
 
 	/**
-	 * Grid spacing in meridional direction (rotated latitude) 
+	 * Grid spacing in meridional direction (rotated latitude)
 	 */
 	double dlat;
 	private static final double dlatDefault = 0.008;
@@ -76,91 +76,194 @@ public class CityGMLConverterConf {
 	// int ke_tot;
 	// private static final int ke_totDefault = 20;
 
+	/**
+	 * Number of urban classes (ONLY 1 SUPPORTED AT THE MOMENT)
+	 */
 	int nuclasses;
 	private static final int nuclassesDefault = 1;
 
+	/**
+	 * Angles of street direction
+	 */
 	double[] streetdir;
 	private static final double streetdirDefault[] = { 0., 90. };
 
+	/**
+	 * Number of urban height levels for every urban class
+	 */
 	int[] ke_urban;
 	private static final int ke_urbanDefault[] = { 10 };
 
+	/**
+	 * Urban height levels
+	 */
 	double[] height;
 	private static final double heightDefault[] = { 0., 5., 10., 15., 20., 25.,
 			30., 35., 40., 45. };
 
+	/**
+	 * Input coordinate system for proj4 transformation
+	 */
 	String proj4code = "+init=epsg:3068";
 	private static String proj4codeDefault = "+init=epsg:3068";
 
+	/**
+	 * Largest distance of buildings for determination of street width
+	 */
 	double maxbuild_radius;
 	double maxbuild_radius_sq;
 	private static final double maxbuild_radiusDefault = 100.;
 
+	/**
+	 * Largest distance building can be in the way
+	 */
 	double maxcheck_radius;
 	private static final double maxcheck_radiusDefault = 100.;
 
+	/**
+	 * Minimal distance of surface for street width
+	 */
 	double mindist;
 	private static final double mindistDefault = 2.;
 
+	/**
+	 * Number of maximal parallel threads
+	 */
 	int nThreads;
 	private static int nThreadsDefault = 1;
 
+	/**
+	 * Maximum threads in the queue
+	 */
 	int nThreadsQueue;
 	private static int nThreadsQueueDefault = 1;
 
+	/**
+	 * Folder/File of the CityGML data set
+	 */
 	String inputGMLFolder;
 	private static String inputGMLFolderDefault = "/home/schubert/Documents/workspace/datasets/gml/";
 
+	/**
+	 * Output folder
+	 */
 	String outputFolder;
 	private static String outputFolderDefault = "/home/schubert/";
 
+	/**
+	 * Log for non planar surfaces (relative to outputFolder)
+	 */
 	String logNonPlanar;
 	private static String logNonPlanarDefault = "NonPlanar.log";
 
+	/**
+	 * Log for no distance but surface fraction in a grid cell (relative to
+	 * outputFolder)
+	 */
 	String logNoSurfButBuildFrac;
 	private static String logNoSurfButBuildFracDefault = "NoSurfButBuildingFrac.log";
 
+	/**
+	 * Log for No defined roofs (relative to outputFolder)
+	 */
 	String logNoRoof;
 	private static String logNoRoofDefault = "NoRoof.log";
 
+	/**
+	 * Log for No defined walls (relative to outputFolder)
+	 */
 	String logNoWall;
 	private static String logNoWallDefault = "NoWall.log";
 
+	/**
+	 * Log for No defined grounds (relative to outputFolder)
+	 */
 	String logNoGround;
 	private static String logNoGroundDefault = "NoGround.log";
 
+	/**
+	 * Name of the main output file (relative to outputFolder)
+	 */
 	String outputFile;
 	private static String outputFileDefault = "city.nc";
 
+	/**
+	 * Building statistics (relative to outputFolder)
+	 */
 	String statsFile;
 	private static String statsFileDefault = "stats.nc";
 
+	/**
+	 * ASCII file which includes the impervious surface
+	 */
 	String impSurfFile;
 	private static String impSurfFileDefault = "/home/schubert/Documents/workspace/datasets/vg";
 
+	/**
+	 * Row of latitude in impSurfFile
+	 */
 	int rowLat;
 	private static int rowLatDefault = 2;
 
+	/**
+	 * Row of longitude in impSurfFile
+	 */
 	int rowLon;
 	private static int rowLonDefault = 1;
 
+	/**
+	 * Row of impervious surface in impSurfFile
+	 */
 	int rowImpSurf;
 	private static int rowImpSurfDefault = 3;
 
+	/**
+	 * Number of lines to skip at the at end of the file
+	 */
 	int skipLines;
 	private static int skipLinesDefault = 0;
 
+	/**
+	 * String separating the values in impSurfFile
+	 */
 	String sepString;
 	private static String sepStringDefault = ",";
 
+	/**
+	 * Output all fields only where building and urban fraction > 1e-12?
+	 */
+	boolean consistentOutput;
+	private static boolean consistentOutputDefault = true;
+
+	/**
+	 * Constructor reading from default configuration file.
+	 * 
+	 * @throws IOException
+	 */
 	public CityGMLConverterConf() throws IOException {
 		readConf(new File(filenameDefault), false);
 	}
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param confFilename
+	 *            Name of configuration file
+	 * @throws IOException
+	 */
 	public CityGMLConverterConf(String confFilename) throws IOException {
 		readConf(new File(confFilename), true);
 	}
 
+	/**
+	 * Read a configuration file.
+	 * 
+	 * @param confFile
+	 *            Configuration file
+	 * @param explicitlyGivenFile
+	 *            Explicitly given or from default?
+	 * @throws IOException
+	 */
 	private void readConf(File confFile, boolean explicitlyGivenFile)
 			throws IOException {
 		if (confFile.exists()) {
@@ -180,7 +283,7 @@ public class CityGMLConverterConf {
 
 			ie_tot = prop.getInt("ie_tot", ie_totDefault);
 			je_tot = prop.getInt("je_tot", je_totDefault);
-//			ke_tot = prop.getInt("ke_tot", ke_totDefault);
+			// ke_tot = prop.getInt("ke_tot", ke_totDefault);
 
 			nuclasses = prop.getInt("nuclasses", nuclassesDefault);
 
@@ -233,6 +336,9 @@ public class CityGMLConverterConf {
 
 			sepString = prop.getString("sepString", sepStringDefault);
 
+			consistentOutput = prop.getBoolean("consistentOutput",
+					consistentOutputDefault);
+
 		} else {
 			if (explicitlyGivenFile) {
 				throw new FileNotFoundException("Configuration file not found");
@@ -242,6 +348,9 @@ public class CityGMLConverterConf {
 		}
 	}
 
+	/**
+	 * Output of the used configuration.
+	 */
 	public void outputConf() {
 
 		System.out.println("CONFIGURATION OF THE RUN");
@@ -257,7 +366,7 @@ public class CityGMLConverterConf {
 
 		System.out.println("ie_tot: " + ie_tot);
 		System.out.println("je_tot: " + je_tot);
-		//		System.out.println("ke_tot: " + ke_tot);
+		// System.out.println("ke_tot: " + ke_tot);
 
 		System.out.println("nuclasses: " + nuclasses);
 
@@ -309,6 +418,8 @@ public class CityGMLConverterConf {
 		System.out.println("skipLines: " + skipLines);
 
 		System.out.println("sepString: " + sepString);
+
+		System.out.println("consistentOutput: " + consistentOutput);
 
 		System.out.println();
 		System.out.println();

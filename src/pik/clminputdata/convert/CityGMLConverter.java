@@ -161,7 +161,10 @@ public class CityGMLConverter {
 		uclm.normBuildProbAndCalcStreetFraction();
 		uclm.normStreetWidth();
 		uclm.calculateBuildingWidth();
-
+		if (conf.consistentOutput) {
+			uclm.defineMissingData();
+		}
+		
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
