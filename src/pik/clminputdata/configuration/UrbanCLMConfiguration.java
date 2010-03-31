@@ -196,7 +196,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
 
-		this.urbanClassFrac = new WritableFieldFloat("FR_URBAN_CLASS", ldim,
+		this.urbanClassFrac = new WritableFieldFloat("FR_URBANCL", ldim,
 				"urban_classes_fraction", "urban classes fraction", "1",
 				"rotated_pole");
 		toWrite.add(this.urbanClassFrac);
@@ -211,7 +211,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
 
-		this.streetFrac = new WritableFieldFloat("STREET_FRAC", ldim,
+		this.streetFrac = new WritableFieldFloat("FR_STREET", ldim,
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
@@ -222,13 +222,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		calculateStreetLength();
 
 		// street width
-		this.streetWidth = new WritableFieldFloat("STREET_WIDTH", ldim,
+		this.streetWidth = new WritableFieldFloat("STREET_WID", ldim,
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
 
 		// building width
-		this.buildingWidth = new WritableFieldFloat("BUILD_WIDTH", ldim,
+		this.buildingWidth = new WritableFieldFloat("BUILD_WID", ldim,
 				"building_width", "building width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.buildingWidth);
