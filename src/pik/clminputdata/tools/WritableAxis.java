@@ -66,6 +66,34 @@ public class WritableAxis extends WritableDimension {
 	private double dv = 0.;
 
 	/**
+	 * Constructor for non-periodic axis with the name of the axis equal to the
+	 * name of the dimension.
+	 * 
+	 * NetCDF can use the values instead the index numbers.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param values
+	 *            Axis values
+	 */
+	public WritableAxis(String name, int size, String axistype,
+			String standard_name, String long_name, String units,
+			double[] values) {
+		this(name, size, name, axistype, standard_name, long_name, units,
+				values);
+	}
+
+	/**
 	 * Constructor for non-periodic axis.
 	 * 
 	 * @param name
@@ -129,6 +157,36 @@ public class WritableAxis extends WritableDimension {
 	}
 
 	/**
+	 * Constructor for periodic axis with the name of the axis equal to the name
+	 * of the dimension.
+	 * 
+	 * NetCDF can use the values instead the index numbers.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length, or UNLIMITED.length or UNKNOWN.length
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param values
+	 *            Axis values
+	 * @param pbc
+	 *            x+pbc = pbc
+	 */
+	public WritableAxis(String name, int size, String axistype,
+			String standard_name, String long_name, String units,
+			double[] values, double pbc) {
+		this(name, size, name, axistype, standard_name, long_name, units,
+				values, pbc);
+	}
+
+	/**
 	 * Constructor for periodic axis.
 	 * 
 	 * @param name
@@ -160,6 +218,36 @@ public class WritableAxis extends WritableDimension {
 	}
 
 	/**
+	 * Constructor for axis with fixed grid spacing with the name of the axis
+	 * equal to the name of the dimension.
+	 * 
+	 * NetCDF can use the values instead the index numbers.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param startvalue
+	 *            First axis value
+	 * @param dv
+	 *            Grid spacing
+	 */
+	public WritableAxis(String name, int size, String axistype,
+			String standard_name, String long_name, String units,
+			double startvalue, double dv) {
+		this(name, size, name, axistype, standard_name, long_name, units,
+				startvalue, dv);
+	}
+
+	/**
 	 * Constructor for axis with fixed grid spacing.
 	 * 
 	 * @param name
@@ -188,6 +276,38 @@ public class WritableAxis extends WritableDimension {
 				generate_valuefield(size, startvalue, dv));
 		isRegular = true;
 		this.dv = dv;
+	}
+
+	/**
+	 * Constructor for periodic axis with fixed grid spacing with the name of the axis
+	 * equal to the name of the dimension.
+	 * 
+	 * NetCDF can use the values instead the index numbers.
+	 * 
+	 * @param name
+	 *            Name must be unique within group
+	 * @param size
+	 *            Length
+	 * @param axistype
+	 *            either "X", "Y", "Z", "T" or ""
+	 * @param standard_name
+	 *            Standard name
+	 * @param long_name
+	 *            Descriptive name
+	 * @param units
+	 *            Unit of the axis
+	 * @param startvalue
+	 *            First axis value
+	 * @param dv
+	 *            Grid spacing
+	 * @param pbc
+	 *            x+pbc=pbc
+	 */
+	public WritableAxis(String name, int size, String axistype,
+			String standard_name, String long_name, String units,
+			double startvalue, double dv, double pbc) {
+		this(name, size, name, axistype, standard_name, long_name, units,
+				startvalue, dv, pbc);
 	}
 
 	/**

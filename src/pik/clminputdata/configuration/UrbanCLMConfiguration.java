@@ -163,9 +163,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						"height must increase with index.");
 			}
 		}
-		this.height = new WritableAxis("level_urban", ke_urbanmax,
-				"height_urban", "Z", "urban_height", "height above surface",
-				"", height);
+		this.height = new WritableAxis("uheight", ke_urbanmax, "Z",
+				"urban_height", "height above surface", "", height);
 		toWrite.add(this.height);
 
 		if (streetdir[0] < -90. || streetdir[streetdir.length - 1] > 90.)
@@ -177,9 +176,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						"streetdir must increase with index.");
 			}
 		}
-		this.streetdir = new WritableAxis("street_dir", streetdir.length,
-				"degree_street", "", "degree_street",
-				"degree of street direction", "degrees", streetdir, 180.);
+		this.streetdir = new WritableAxis("streetdir", streetdir.length, "",
+				"degree_street", "degree of street direction", "degrees",
+				streetdir, 180.);
 		toWrite.add(this.streetdir);
 
 		List<Dimension> ldim = new LinkedList<Dimension>();
@@ -457,7 +456,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		Index ind = buildingFrac.getIndex();
 		buildingFrac.set(ind.set(uc, lat, lon), value);
 	}
-	
+
 	public void setBuildingWidth(int uc, int dir, int lat, int lon, double value) {
 		if (uc >= getNuclasses() || uc < 0) {
 			throw new IllegalArgumentException("uc not in range");
@@ -489,7 +488,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					setBuildingFrac(uc,lat,lon, getBuildingFrac(uc,lat,lon) / getArea(lat));
+					setBuildingFrac(uc, lat, lon, getBuildingFrac(uc, lat, lon)
+							/ getArea(lat));
 				}
 			}
 		}
