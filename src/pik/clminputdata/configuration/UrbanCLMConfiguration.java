@@ -210,7 +210,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
 
-		this.streetFrac = new WritableFieldFloat("FR_STREET", ldim,
+		this.streetFrac = new WritableFieldFloat("FR_STREETD", ldim,
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
@@ -221,13 +221,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		calculateStreetLength();
 
 		// street width
-		this.streetWidth = new WritableFieldFloat("STREET_WID", ldim,
+		this.streetWidth = new WritableFieldFloat("STREET_W", ldim,
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
 
 		// building width
-		this.buildingWidth = new WritableFieldFloat("BUILD_WID", ldim,
+		this.buildingWidth = new WritableFieldFloat("BUILD_W", ldim,
 				"building_width", "building width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.buildingWidth);
