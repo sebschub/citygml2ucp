@@ -163,7 +163,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						"height must increase with index.");
 			}
 		}
-		this.height = new WritableAxis("uheight", ke_urbanmax, "Z",
+		this.height = new WritableAxis("uheight1", ke_urbanmax, "Z",
 				"urban_height", "height above surface", "", height);
 		toWrite.add(this.height);
 
