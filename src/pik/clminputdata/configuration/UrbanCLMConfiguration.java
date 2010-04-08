@@ -56,7 +56,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	/**
 	 * Dimension for the urban height
 	 */
-	protected WritableAxis height;
+	protected WritableAxis height, height1;
+	protected double[] heighta;
 
 	/**
 	 * Probability to have a building on a certain height level
@@ -92,6 +93,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 * Fraction of an urban class in a grid cell
 	 */
 	protected WritableField urbanClassFrac;
+
+	protected WritableField fgow;
 
 	/**
 	 * Sum of areas in a street (used for normalization).
@@ -150,6 +153,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ke_urbanmax = maxv;
 
 		// height
+		this.heighta = height;
 		if (height.length != ke_urbanmax) {
 			throw new IllegalArgumentException(
 					"height must be given for maximal number of urban level.");
@@ -163,9 +167,20 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						"height must increase with index.");
 			}
 		}
-		this.height = new WritableAxis("uheight1", ke_urbanmax, "Z",
-				"urban_height", "height above surface", "", height);
+
+		double[] heightWalls = new double[ke_urbanmax - 1];
+		for (int i = 0; i < heightWalls.length; i++) {
+			heightWalls[i] = 0.5 * (height[i] + height[i + 1]);
+		}
+		this.height = new WritableAxis("uheight", ke_urbanmax - 1, "Z",
+				"urban_height_walls", "height above surface for walls", "",
+				heightWalls);
 		toWrite.add(this.height);
+
+		this.height1 = new WritableAxis("uheight1", ke_urbanmax, "Z",
+				"urban_height_roofs", "height above surface for roofs", "",
+				height);
+		toWrite.add(this.height1);
 
 		if (streetdir[0] < -90. || streetdir[streetdir.length - 1] > 90.)
 			throw new IllegalArgumentException(
@@ -232,7 +247,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"rotated_pole");
 		toWrite.add(this.buildingWidth);
 
-		ldim.add(2, this.height);
+		ldim.add(2, this.height1);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
 		// building probability
@@ -243,6 +258,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		toWrite.add(this.buildProb);
 
 		streetSurfaceSum = new double[getNuclasses()][getNstreedir()][getJe_tot()][getIe_tot()];
+
+		ldim.add(2, this.height);
+		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
+		
+		fgow = new WritableFieldFloat("FGOW", ldim, "SVF_ground2otherwall",
+				"skyview factor from ground to wall of other canyon", "1",
+				"rotated_pole");
+		toWrite.add(this.fgow);
 
 	}
 
@@ -379,6 +402,24 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				}
 			}
 		}
+	}
+
+	public double getBuildingWidth(int uc, int dir, int lat, int lon) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (dir >= getNstreedir() || dir < 0) {
+			throw new IllegalArgumentException("dir not in range");
+		}
+		if (lat >= getJe_tot() || lat < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (lon >= getIe_tot() || lon < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+
+		Index ind = buildingWidth.getIndex();
+		return buildingWidth.get(ind.set(uc, dir, lat, lon));
 	}
 
 	public void setStreetFrac(int uc, int sd, int rlati, int rloni, double value) {
@@ -663,7 +704,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
 					if (getBuildingFrac(uc, lat, lon) < 1.e-12
-							|| getUrbanFrac(lat, lon) < 1. - 12) {
+							|| getUrbanFrac(lat, lon) < 1.e-12) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							setBuildingWidth(uc, sd, lat, lon,
 									buildingWidth.missingValue);
@@ -691,12 +732,26 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return ke_urban.getInt(ind.set(uc));
 	}
 
+	public double[] getHeightA() {
+		return this.heighta;
+	}
+
 	public int getHeightIndex(double height) {
-		return this.height.getIndexOf(height);
+		return this.height1.getIndexOf(height);
 	}
 
 	public int getStreetdirIndex(double angle) {
 		return streetdir.getIndexOf(angle);
+	}
+
+	public void setFgow(int uc, int id, int j, int i, double[][] fgow) {
+		Index ind = this.fgow.getIndex();
+		for (int k = 0; k < fgow.length; k++) {
+			for (int k2 = 0; k2 < fgow[k].length; k2++) {
+				ind.set(uc,id,k2,k,j,i);
+				this.fgow.set(ind, fgow[k][k2]);
+			}
+		}
 	}
 
 }
