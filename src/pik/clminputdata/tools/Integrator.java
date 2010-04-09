@@ -46,7 +46,7 @@ public class Integrator {
 		w[4] = (322. - 13. * sqrt(70.)) / 900.;
 	}
 
-	public double integral(Integrable f, double a, double b) {
+	public double integral(Integrable f, double a, double b) throws NoConvergenceException {
 
 		if (a == b)
 			return 0.;
@@ -76,8 +76,7 @@ public class Integrator {
 			}
 			intStepN = intStepN1;
 		}
-		System.err.println("Number of integration intervals exceeded.");
-		return integral;
+		throw new NoConvergenceException("Number of integration intervals exceeded.", integral);
 	}
 
 	/**

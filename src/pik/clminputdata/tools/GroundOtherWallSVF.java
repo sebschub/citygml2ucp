@@ -50,9 +50,9 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 				}
 
 				if (sNonVis < 2 * ws + bs) {
-//					System.out.println(height[i]);
-//					System.out.println(height[j] + " " + height[j + 1]);
-//					System.out.println("=============================");
+					// System.out.println(height[i]);
+					// System.out.println(height[j] + " " + height[j + 1]);
+					// System.out.println("=============================");
 					wallIndex = j;
 					// begin of fully visible fraction
 					double sFullVis;
@@ -70,10 +70,20 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 					// only the part that has varying visibility of
 					// receiving wall has to be integrated (sending area of that
 					// part is already included)
-					fgow[i][j] = itg.integral(this, sNonVis, sFullVis);
+					try {
+						fgow[i][j] = itg.integral(this, sNonVis, sFullVis);
+					} catch (NoConvergenceException e) {
+						// use result anyway
+						fgow[i][j] = e.getResult();
+						System.out
+								.printf(
+										"Integration of FGS at uc=%i, nd=%i,j=%i, i=%i, wheight=%i and rheight=%i exceeded maximum number of steps.",
+										this.iurb, this.id, this.jindex,
+										this.iindex, j, i);
+					}
 					// plus part that is fully visible (sending area of that
 					// part is included)
-					fgow[i][j] += fnrm14(sNonVis, sFullVis, height[j],
+					fgow[i][j] += fnrm14(sFullVis, 2 * ws + bs, height[j],
 							height[j + 1], ls);
 					// /sending * sending/receiving
 					fgow[i][j] *= 1. / (height[j + 1] - height[j]);
@@ -101,11 +111,27 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 
 	@Override
 	protected void saveToGlobal() {
-//		for (int i = 0; i < fgow.length; i++) {
-//			for (int j = 0; j < fgow[i].length; j++) {
-//				System.out.println(fgow[i][j]);
-//			}
-//		}
+		// for (int i = 0; i < fgow.length; i++) {
+		// for (int j = 0; j < fgow[i].length; j++) {
+		// System.out.println(fgow[i][j]);
+		// }
+		// }
 		uclm.setFgow(iurb, id, jindex, iindex, fgow);
 	}
+
+	public static void main(String[] args) {
+		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration();
+		Integrator itg = new Integrator();
+		uclm.setBuildingWidth(0, 0, 20, 30, 10.);
+		uclm.setStreetWidth(0, 0, 20, 30, 20.);
+		GroundOtherWallSVF svf = new GroundOtherWallSVF(0, 0, 20, 30, uclm, itg);
+		svf.run();
+		System.out.println(uclm.getStreetLength(0, 20));
+		for (int i = 0; i < uclm.getHeightA().length; i++) {
+			for (int j = 0; j < uclm.getHeightA().length - 1; j++) {
+				System.out.println(i + "  " + j + "  " + svf.fgow[i][j]);
+			}
+		}
+	}
+
 }

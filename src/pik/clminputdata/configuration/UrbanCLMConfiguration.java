@@ -95,6 +95,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	protected WritableField urbanClassFrac;
 
 	protected WritableField fgow;
+	
+	protected WritableField fgs;
 
 	/**
 	 * Sum of areas in a street (used for normalization).
@@ -259,6 +261,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		streetSurfaceSum = new double[getNuclasses()][getNstreedir()][getJe_tot()][getIe_tot()];
 
+		fgs = new WritableFieldFloat("FGS", ldim, "SVF_ground2sky",
+				"skyview factor from ground to sky with building in beetween", "1",
+				"rotated_pole");
+		toWrite.add(this.fgs);
+		
+		
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
 		
@@ -754,4 +762,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	public void setFgs(int uc, int id, int j, int i, double[] fgs) {
+		Index ind = this.fgs.getIndex();
+		for (int k = 0; k < fgs.length; k++) {
+				ind.set(uc,id,k,j,i);
+				this.fgow.set(ind, fgs[k]);
+		}
+	}
+	
 }
