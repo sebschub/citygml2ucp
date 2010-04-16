@@ -8,6 +8,7 @@ import static java.lang.Math.log;
 import static java.lang.Math.atan;
 import static java.lang.Math.pow;
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 
 /**
@@ -156,7 +157,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		return h2 * (fnrms(z2, ls, h2) - fnrms(z1, ls, h2)) + h1
 				* (fnrms(z1, ls, h1) - fnrms(z2, ls, h1));
 	}
-	
+
 	/**
 	 * Area*Skyview
 	 * 
@@ -167,7 +168,16 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 	 * @return
 	 */
 	public static double fprl134(double g, double s, double h, double ls) {
-		return 0.5*(s*fprls(s, ls, h)+g*fprls(g, ls, h)-(s-g)*fprls(s-g, ls, h));
+		return 0.5 * (s * fprls(s, ls, h) + g * fprls(g, ls, h) - (s - g)
+				* fprls(s - g, ls, h));
 	}
-	
+
+	public static double fprl16(double s1, double s2, double r1, double r2,
+			double ls, double d) {
+		return 0.5 * (abs(r2 - s1) * fprls(ls, abs(r2 - s1), d) - abs(r2 - s2)
+				* fprls(ls, abs(r2 - s2), d) - abs(r1 - s1)
+				* fprls(ls, abs(r1 - s1), d) + abs(r1 - s2)
+				* fprls(ls, abs(r1 - s2), d));
+	}
+
 }

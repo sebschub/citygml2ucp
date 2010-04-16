@@ -77,7 +77,7 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 						fgow[i][j] = e.getResult();
 						System.out
 								.printf(
-										"Integration of FGS at uc=%i, nd=%i,j=%i, i=%i, wheight=%i and rheight=%i exceeded maximum number of steps.",
+										"Integration of FGS at uc=%d, nd=%d,j=%d, i=%d, wheight=%d and rheight=%d exceeded maximum number of steps.",
 										this.iurb, this.id, this.jindex,
 										this.iindex, j, i);
 					}

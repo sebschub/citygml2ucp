@@ -97,6 +97,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	protected WritableField fgow;
 	
 	protected WritableField fgs;
+	
+	protected WritableField fww;
 
 	/**
 	 * Sum of areas in a street (used for normalization).
@@ -231,7 +233,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
-		this.streetLength = new WritableFieldFloat("STREET_LENGTH", ldim
+		this.streetLength = new WritableFieldFloat("STREET_LGT", ldim
 				.subList(1, 3), "Street Length", "average street length", "km",
 				"rotated_pole");
 		toWrite.add(streetLength);
@@ -274,6 +276,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
 		toWrite.add(this.fgow);
+		
+		ldim.add(4, this.height);
+		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwall, latdim, londim
+		
+		fww = new WritableFieldFloat("FWW", ldim, "SVF_wall2wall",
+				"skyview factor from wall to wall of other canyon", "1",
+				"rotated_pole");
+		toWrite.add(this.fww);
 
 	}
 
@@ -767,6 +777,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int k = 0; k < fgs.length; k++) {
 				ind.set(uc,id,k,j,i);
 				this.fgow.set(ind, fgs[k]);
+		}
+	}
+	
+	public void setFww(int uc, int id, int j, int i, double[][][] fww) {
+		Index ind = this.fww.getIndex();
+		for (int k = 0; k < fww.length; k++) {
+			for (int l = 0; l < fww[k].length; l++) {
+				for (int m = 0; m < fww[k][l].length; m++) {
+					ind.set(uc,id,m,l,k,j,i);
+					this.fgow.set(ind, fww[k][l][m]);
+				}
+			}
 		}
 	}
 	
