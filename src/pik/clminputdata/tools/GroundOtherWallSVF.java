@@ -105,8 +105,8 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 		double rec = Math.max(height[wallIndex + 1]
 				- Math.max(x * height[roofIndex] / (x - ws - bs),
 						height[wallIndex]), 0.);
-		return NrmLRec(height[wallIndex + 1], ls, x)
-				- NrmLRec(height[wallIndex + 1] - rec, ls, x);
+		return nrmLRec(height[wallIndex + 1], ls, x)
+				- nrmLRec(height[wallIndex + 1] - rec, ls, x);
 	}
 
 	@Override

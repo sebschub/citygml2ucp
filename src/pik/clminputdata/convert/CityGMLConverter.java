@@ -27,6 +27,7 @@ import pik.clminputdata.tools.GMLFilenameFilter;
 import pik.clminputdata.tools.GroundOtherWallSVF;
 import pik.clminputdata.tools.GroundSkySVF;
 import pik.clminputdata.tools.Integrator;
+import pik.clminputdata.tools.WallWallSVF;
 import ucar.ma2.InvalidRangeException;
 
 public class CityGMLConverter {
@@ -189,12 +190,15 @@ public class CityGMLConverter {
 									iurb, id, j, i, uclm, itg);
 							GroundSkySVF gs = new GroundSkySVF(
 									iurb, id, j, i, uclm, itg);
+							WallWallSVF wws = new WallWallSVF(iurb, id, j, i, uclm, itg);
 							if (conf.nThreads > 1) {
 								exec.execute(gow);
 								exec.execute(gs);
+								exec.execute(wws);
 							} else {
 								gow.run();
 								gs.run();
+								wws.run();
 							}							
 						}
 					}

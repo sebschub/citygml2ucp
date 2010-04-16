@@ -80,8 +80,8 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 		} else {
 			skyvis = 2 * ws + bs - x;
 		}
-		return PrlLRec(x, ls, height[height.length - 1])
-				+ PrlLRec(skyvis, ls, height[height.length - 1]);
+		return prlLRec(x, ls, height[height.length - 1])
+				+ prlLRec(skyvis, ls, height[height.length - 1]);
 
 	}
 

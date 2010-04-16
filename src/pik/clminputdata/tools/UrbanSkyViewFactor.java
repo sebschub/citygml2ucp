@@ -44,7 +44,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 
 	protected abstract void saveToGlobal();
 
-	public static double PrlLRec(double a, double b, double c) {
+	public static double prlLRec(double a, double b, double c) {
 		if (c == 0.) {
 			return 0.5;
 		}
@@ -73,7 +73,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 	 *            Distance of line element to rectangle
 	 * @return Skyview factor
 	 */
-	public static double NrmLRec(double a, double b, double c) {
+	public static double nrmLRec(double a, double b, double c) {
 		if (b == 0) {
 			return 0.;
 		}
