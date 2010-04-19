@@ -42,7 +42,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 				double sFullVis;
 				if (height[i] > 0) {
 					if (height[i] < height[j + 1]) {
-						sNonVis = max(((2 * ws + bs) * height[i] + ws
+						sNonVis = max(((2 * ws + bs) * height[i] - ws
 								* height[j + 1])
 								/ (ws + bs), 0.);
 					} else {
@@ -51,12 +51,12 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 								height[height.length - 1]);
 					}
 					if (height[i] < height[j]) {
-						sFullVis = max(((2 * ws + bs) * height[i] + ws
+						sFullVis = max(((2 * ws + bs) * height[i] - ws
 								* height[j])
 								/ (ws + bs), 0.);
 					} else {
 						sFullVis = min((2 * ws + bs) / ws
-								* (height[i] - height[j + 1]) + height[j + 1],
+								* (height[i] - height[j]) + height[j],
 								height[height.length - 1]);
 					}
 				} else {
@@ -65,7 +65,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 				}
 
 				for (int j2 = j; j2 < height.length - 1; j2++) {
-					if (sNonVis < height[j2]) {
+					if (sNonVis < height[j2 + 1]) {
 						// only the part that has varying visibility of
 						// receiving wall has to be integrated (sending area of
 						// that
@@ -82,11 +82,14 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 											this.iurb, this.id, this.jindex,
 											this.iindex, j, i, j2);
 						}
-						// plus part that is fully visible (sending area of that
-						// part is included)
-						fww[j][j][j2] += fprl16(height[j], height[j + 1], max(
-								sFullVis, height[j2]), height[j2 + 1], ls, 2
-								* ws + bs);
+						if (sFullVis < height[j2 + 1]) {
+							// plus part that is fully visible (sending area of
+							// that
+							// part is included)
+							fww[j][j][j2] += fprl16(height[j], height[j + 1],
+									max(sFullVis, height[j2]), height[j2 + 1],
+									ls, 2 * ws + bs);
+						}
 						// /sending * sending/receiving
 						fww[j][i][j2] *= 1. / (height[j + 1] - height[j]);
 						fww[j2][i][j] = fww[j][i][j2];
@@ -110,10 +113,11 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		if (height[roofIndex] <= x) {
 			hvis = ((2 * ws + bs) * height[roofIndex] - ws * x) / (ws + bs);
 			return prlLRec(x - hvis, ls, 2 * ws + bs)
-			- prlLRec(x - height[wallIndex + 1], ls, 2 * ws + bs);
+					- prlLRec(x - height[wallIndex + 1], ls, 2 * ws + bs);
 		}
-		hvis = x+(height[roofIndex]-x)*(2*ws+bs)/ws;
-		return prlLRec(height[wallIndex]-x, ls, 2*ws+bs) - prlLRec(hvis - x, ls, 2*ws+bs);
+		hvis = x + (height[roofIndex] - x) * (2 * ws + bs) / ws;
+		return prlLRec(height[wallIndex] - x, ls, 2 * ws + bs)
+				- prlLRec(hvis - x, ls, 2 * ws + bs);
 	}
 
 	@Override
