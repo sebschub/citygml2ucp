@@ -776,7 +776,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		Index ind = this.fgs.getIndex();
 		for (int k = 0; k < fgs.length; k++) {
 				ind.set(uc,id,k,j,i);
-				this.fgow.set(ind, fgs[k]);
+				this.fgs.set(ind, fgs[k]);
 		}
 	}
 	
@@ -786,7 +786,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			for (int l = 0; l < fww[k].length; l++) {
 				for (int m = 0; m < fww[k][l].length; m++) {
 					ind.set(uc,id,m,l,k,j,i);
-					this.fgow.set(ind, fww[k][l][m]);
+					this.fww.set(ind, fww[k][l][m]);
 				}
 			}
 		}

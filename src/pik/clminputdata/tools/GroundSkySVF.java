@@ -52,7 +52,7 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 				fgs[i] = e.getResult();
 				System.out
 						.printf(
-								"Integration of FGS at uc=%d, nd=%d,j=%d, i=%d and rheight=%d exceeded maximum number of steps.",
+								"Integration of FGS at uc=%d, nd=%d,j=%d, i=%d and rheight=%d exceeded maximum number of steps.%n",
 								this.iurb, this.id, this.jindex, this.iindex, i);
 			}
 			// plus part that is fully visible (sending area of that
