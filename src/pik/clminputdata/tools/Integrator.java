@@ -4,6 +4,7 @@
 package pik.clminputdata.tools;
 
 import static java.lang.Math.sqrt;
+import static java.lang.Math.abs;
 
 /**
  * @author Sebastian Schubert
@@ -66,12 +67,11 @@ public class Integrator {
 			intStepN1 = intStep(f, a, b, k);
 			// error is N^(2*nx), so factor 2^(2*nx) between stepN and stepN1
 			integral = (errorFac * intStepN1 - intStepN) / (errorFac - 1.);
-//			System.out.println(integral);
-			if (integral > 1.e-15) {
-				if (Math.abs((integral - intStepN1) / integral) < eps)
+			if (abs(integral) > 1.e-15) {
+				if (abs((integral - intStepN1) / integral) < eps)
 					return integral;
 			} else {
-				if (Math.abs(integral - intStepN1) < eps)
+				if (abs(integral - intStepN1) < eps)
 					return integral;
 			}
 			intStepN = intStepN1;

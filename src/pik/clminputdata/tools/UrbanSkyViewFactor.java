@@ -44,6 +44,20 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 
 	protected abstract void saveToGlobal();
 
+	/**
+	 * Skyview factor from a line element (somehow parallel) to a rectangle
+	 *    ________ 
+	 *   /       /
+	 *  /b 	    / 
+	 * /_______/ /	    
+	 *    a	   c/ 
+	 *         /  
+	 * 
+	 * @param a Parameter of rectangle
+	 * @param b Parameter of rectangle
+	 * @param c Distance of rectangle to line element
+	 * @return Skyview factor
+	 */
 	public static double prlLRec(double a, double b, double c) {
 		if (c == 0.) {
 			return 0.5;
@@ -95,6 +109,14 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 
 	}
 
+	/**
+	 * Skyview factor of rectangles normal to each other.
+	 * 
+	 * @param a Width of receiving rectangle
+	 * @param b Common side of rectangle
+	 * @param c Width of sending rectangle
+	 * @return Skyview factor
+	 */
 	public static double fnrms(double a, double b, double c) {
 		if (b <= 1.e-13) {
 			return 0.;
@@ -119,6 +141,14 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		return (0.25 * (a1 + a2 + a3) + a4 + a5 - a6) / (PI * y);
 	}
 
+	/**
+	 * Skyview factor of two parallel rectangles of equal size.
+	 * 
+	 * @param a Width of rectangles
+	 * @param b Height of rectangles
+	 * @param c Distance of rectangles
+	 * @return Skyview factor
+	 */
 	public static double fprls(double a, double b, double c) {
 
 		if (a <= 1.e-13 || b <= 1.e-13) {
@@ -172,6 +202,17 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 				* fprls(s - g, ls, h));
 	}
 
+	/**
+	 * Sending Area * Skyview factor
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @param r1
+	 * @param r2
+	 * @param ls
+	 * @param d
+	 * @return
+	 */
 	public static double fprl16(double s1, double s2, double r1, double r2,
 			double ls, double d) {
 		return 0.5 * (abs(r2 - s1) * fprls(ls, abs(r2 - s1), d) - abs(r2 - s2)

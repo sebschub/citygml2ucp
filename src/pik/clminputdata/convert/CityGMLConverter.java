@@ -172,6 +172,8 @@ public class CityGMLConverter {
 		long lasted = new Date().getTime() - startTime;
 		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
 				lasted / 1000. / 60.);
+
+		System.out.println("Starting calculation of Skyview factors.");
 		startTime = new Date().getTime();
 
 		Integrator itg = new Integrator();
@@ -188,9 +190,13 @@ public class CityGMLConverter {
 						if (uclm.getUrbanFrac(j, i) > 1.e-12) {
 							GroundOtherWallSVF gow = new GroundOtherWallSVF(
 									iurb, id, j, i, uclm, itg);
-							GroundSkySVF gs = new GroundSkySVF(
-									iurb, id, j, i, uclm, itg);
-							WallWallSVF wws = new WallWallSVF(iurb, id, j, i, uclm, itg);
+							GroundSkySVF gs = new GroundSkySVF(iurb, id, j, i,
+									uclm, itg);
+							WallWallSVF wws = new WallWallSVF(iurb, id, j, i,
+									uclm, itg);
+							System.out.println("Calculation for iurb = " + iurb
+									+ ", id = " + id + ", j = " + j + ", i = "
+									+ i);
 							if (conf.nThreads > 1) {
 								exec.execute(gow);
 								exec.execute(gs);
@@ -199,7 +205,7 @@ public class CityGMLConverter {
 								gow.run();
 								gs.run();
 								wws.run();
-							}							
+							}
 						}
 					}
 				}
@@ -208,14 +214,15 @@ public class CityGMLConverter {
 
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		
+
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
 		stats.toNetCDFfile(conf.statsFile);
 
 		lasted = new Date().getTime() - startTime;
-		System.out.printf("Urban skyview factor calculation took %.3f minutes.%n",
+		System.out.printf(
+				"Urban skyview factor calculation took %.3f minutes.%n",
 				lasted / 1000. / 60.);
 	}
 }

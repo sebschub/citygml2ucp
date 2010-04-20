@@ -56,7 +56,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	/**
 	 * Dimension for the urban height
 	 */
-	protected WritableAxis height, height1;
+	protected WritableAxis height, height1, heightsend;
 	protected double[] heighta;
 
 	/**
@@ -95,9 +95,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	protected WritableField urbanClassFrac;
 
 	protected WritableField fgow;
-	
+
 	protected WritableField fgs;
-	
+
 	protected WritableField fww;
 
 	/**
@@ -186,6 +186,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				height);
 		toWrite.add(this.height1);
 
+		this.heightsend = new WritableAxis("uheights", ke_urbanmax - 1, "Z",
+				"urban_height_sending_walls",
+				"height above surface for radiation sending walls", "",
+				heightWalls);
+		toWrite.add(this.heightsend);
+
 		if (streetdir[0] < -90. || streetdir[streetdir.length - 1] > 90.)
 			throw new IllegalArgumentException(
 					"smalles street direction must be larger than -90 deg");
@@ -233,8 +239,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
-		this.streetLength = new WritableFieldFloat("STREET_LGT", ldim
-				.subList(1, 3), "Street Length", "average street length", "km",
+		this.streetLength = new WritableFieldFloat("STREET_LGT", ldim.subList(
+				1, 3), "Street Length", "average street length", "km",
 				"rotated_pole");
 		toWrite.add(streetLength);
 		calculateStreetLength();
@@ -264,22 +270,22 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		streetSurfaceSum = new double[getNuclasses()][getNstreedir()][getJe_tot()][getIe_tot()];
 
 		fgs = new WritableFieldFloat("FGS", ldim, "SVF_ground2sky",
-				"skyview factor from ground to sky with building in beetween", "1",
-				"rotated_pole");
+				"skyview factor from ground to sky with building in beetween",
+				"1", "rotated_pole");
 		toWrite.add(this.fgs);
-		
-		
+
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
-		
+
 		fgow = new WritableFieldFloat("FGOW", ldim, "SVF_ground2otherwall",
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
 		toWrite.add(this.fgow);
-		
-		ldim.add(4, this.height);
-		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwall, latdim, londim
-		
+
+		ldim.add(4, this.heightsend);
+		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwallsend, latdim,
+		// londim
+
 		fww = new WritableFieldFloat("FWW", ldim, "SVF_wall2wall",
 				"skyview factor from wall to wall of other canyon", "1",
 				"rotated_pole");
@@ -766,7 +772,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		Index ind = this.fgow.getIndex();
 		for (int k = 0; k < fgow.length; k++) {
 			for (int k2 = 0; k2 < fgow[k].length; k2++) {
-				ind.set(uc,id,k2,k,j,i);
+				ind.set(uc, id, k2, k, j, i);
 				this.fgow.set(ind, fgow[k][k2]);
 			}
 		}
@@ -775,21 +781,21 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public void setFgs(int uc, int id, int j, int i, double[] fgs) {
 		Index ind = this.fgs.getIndex();
 		for (int k = 0; k < fgs.length; k++) {
-				ind.set(uc,id,k,j,i);
-				this.fgs.set(ind, fgs[k]);
+			ind.set(uc, id, k, j, i);
+			this.fgs.set(ind, fgs[k]);
 		}
 	}
-	
+
 	public void setFww(int uc, int id, int j, int i, double[][][] fww) {
 		Index ind = this.fww.getIndex();
 		for (int k = 0; k < fww.length; k++) {
 			for (int l = 0; l < fww[k].length; l++) {
 				for (int m = 0; m < fww[k][l].length; m++) {
-					ind.set(uc,id,m,l,k,j,i);
+					ind.set(uc, id, m, l, k, j, i);
 					this.fww.set(ind, fww[k][l][m]);
 				}
 			}
 		}
 	}
-	
+
 }

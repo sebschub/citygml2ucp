@@ -70,17 +70,19 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						// receiving wall has to be integrated (sending area of
 						// that
 						// part is already included)
-						try {
-							fww[j][i][j2] = itg.integral(this, max(sNonVis,
-									height[j2]), min(sFullVis, height[j2 + 1]));
-						} catch (NoConvergenceException e) {
-							// use result anyway
-							fww[j][i][j2] = e.getResult();
-							System.out
-									.printf(
-											"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
-											this.iurb, this.id, this.jindex,
-											this.iindex, j, i, j2);
+						if (sFullVis > height[j2]) {
+							try {
+								fww[j][i][j2] = itg.integral(this, max(sNonVis,
+										height[j2]), min(sFullVis, height[j2 + 1]));
+							} catch (NoConvergenceException e) {
+								// use result anyway
+								fww[j][i][j2] = e.getResult();
+								System.out
+								.printf(
+										"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
+										this.iurb, this.id, this.jindex,
+										this.iindex, j, i, j2);
+							}
 						}
 						if (sFullVis < height[j2 + 1]) {
 							// plus part that is fully visible (sending area of
