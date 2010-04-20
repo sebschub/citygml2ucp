@@ -15,9 +15,7 @@ import javax.xml.bind.JAXBElement; //import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import javax.xml.parsers.ParserConfigurationException;
 import org.proj4.Proj4;
-import org.xml.sax.SAXException;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.factory.CityGMLFactory;
 import org.citygml4j.model.citygml.core.CityModel;
@@ -26,8 +24,24 @@ import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.GMLFilenameFilter;
 import ucar.ma2.InvalidRangeException;
 
+/**
+ * Main programme.
+ * 
+ * @author Sebastian Schubert
+ * 
+ */
 public class CityGMLConverter {
 
+	/**
+	 * Read data of impervious surfaces.
+	 * 
+	 * @param conf
+	 *            Configuration of this run (includes file information)
+	 * @param uclm
+	 *            Urban configuration to store the data to
+	 * @throws IOException
+	 *             File from conf not found
+	 */
 	private static void readImpSurfaceFile(CityGMLConverterConf conf,
 			UrbanCLMConfiguration uclm) throws IOException {
 		Scanner scanner = new Scanner(new File(conf.impSurfFile));
@@ -55,20 +69,18 @@ public class CityGMLConverter {
 
 	}
 
-	static List<CityGMLConverterThread> lThreads = new LinkedList<CityGMLConverterThread>();
-
 	/**
+	 * Main routine of the converter.
+	 * 
 	 * @param args
-	 * @throws SAXException
+	 *            Path to properties of the run
 	 * @throws IOException
-	 * @throws ParserConfigurationException
 	 * @throws JAXBException
-	 * @throws InvalidRangeException
 	 * @throws IllegalArgumentException
+	 * @throws InvalidRangeException
 	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) throws IOException, SAXException,
-			ParserConfigurationException, JAXBException,
+	public static void main(String[] args) throws IOException, JAXBException,
 			IllegalArgumentException, InvalidRangeException,
 			InterruptedException {
 
@@ -164,7 +176,7 @@ public class CityGMLConverter {
 		if (conf.consistentOutput) {
 			uclm.defineMissingData();
 		}
-		
+
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
