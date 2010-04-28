@@ -11,6 +11,16 @@ import org.citygml4j.model.gml.LinearRing;
 import org.citygml4j.model.gml.Polygon;
 import org.citygml4j.model.gml.SurfaceProperty;
 
+/**
+ * Planar polygon in 3d space.
+ * 
+ * It included a Polygon2d which represents the polygon in its plane and the two
+ * base vectors for these 2d coordinates. Also a vector normal to the surface is
+ * calculated.
+ * 
+ * @author Sebastian Schubert
+ * 
+ */
 public class Polygon3d extends ClosedSurface<Point3d> {
 
 	/**

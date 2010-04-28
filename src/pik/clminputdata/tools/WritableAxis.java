@@ -279,8 +279,8 @@ public class WritableAxis extends WritableDimension {
 	}
 
 	/**
-	 * Constructor for periodic axis with fixed grid spacing with the name of the axis
-	 * equal to the name of the dimension.
+	 * Constructor for periodic axis with fixed grid spacing with the name of
+	 * the axis equal to the name of the dimension.
 	 * 
 	 * NetCDF can use the values instead the index numbers.
 	 * 
@@ -529,8 +529,8 @@ public class WritableAxis extends WritableDimension {
 	}
 
 	/**
-	 * Get the grid spacing between a value of a given index and the next value
-	 * for a given set of axis values.
+	 * Get the grid spacing between a value of a given index and the former
+	 * value for a given set of axis values.
 	 * 
 	 * @param i
 	 *            Index of the first value
@@ -548,10 +548,10 @@ public class WritableAxis extends WritableDimension {
 		if (isRegular) {
 			return dv;
 		}
-		if (i == values.length - 1) {
-			return values[i] - values[i - 1];
+		if (i == 0) {
+			return values[i + 1] - values[i];
 		}
-		return values[i + 1] - values[i];
+		return values[i] - values[i - 1];
 	}
 
 }
