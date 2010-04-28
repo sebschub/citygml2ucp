@@ -751,6 +751,32 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	public void defineMissingDataSVF() {
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int lat = 0; lat < getJe_tot(); lat++) {
+				for (int lon = 0; lon < getIe_tot(); lon++) {
+					if (getBuildingFrac(uc, lat, lon) < 1.e-12
+							|| getUrbanFrac(lat, lon) < 1.e-12) {
+						for (int sd = 0; sd < getNstreedir(); sd++) {
+							for (int h = 0; h < ke_urbanmax; h++) {
+								Index index = fgs.getIndex();
+								fgs.set(index.set(uc,sd,h,lat,lon), fgs.missingValue);
+								for (int h2 = 0; h2 < ke_urbanmax-1; h2++) {
+									index = fgow.getIndex();
+									fgow.set(index.set(uc,sd,h2,h,lat,lon), fgow.missingValue);
+									index = fww.getIndex();
+									for (int h3 = 0; h3 < ke_urbanmax-1; h3++) {
+										fww.set(index.set(uc,sd,h2,h,h3,lat,lon), fww.missingValue);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	public int getKe_urban(int uc) {
 		Index ind = ke_urban.getIndex();
 		return ke_urban.getInt(ind.set(uc));

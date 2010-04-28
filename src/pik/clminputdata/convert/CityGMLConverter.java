@@ -194,7 +194,7 @@ public class CityGMLConverter {
 									uclm, itg);
 							WallWallSVF wws = new WallWallSVF(iurb, id, j, i,
 									uclm, itg);
-							System.out.println("Calculation for iurb = " + iurb
+							System.out.println("SVF Calculation for iurb = " + iurb
 									+ ", id = " + id + ", j = " + j + ", i = "
 									+ i);
 							if (conf.nThreads > 1) {
@@ -214,7 +214,9 @@ public class CityGMLConverter {
 
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-
+		uclm.defineMissingDataSVF();
+		
+		
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
