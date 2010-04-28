@@ -94,7 +94,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						}
 						// /sending * sending/receiving
 						fww[j][i][j2] *= 1. / (height[j + 1] - height[j]);
-						fww[j2][i][j] = fww[j][i][j2];
+						fww[j2][i][j] = (height[j + 1] - height[j])/(height[j2 + 1] - height[j2])* fww[j][i][j2];
 					}
 				}
 			}
