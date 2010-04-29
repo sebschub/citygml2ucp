@@ -42,6 +42,18 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		this.jindex = jindex;
 	}
 
+	public UrbanSkyViewFactor(double ws, double bs, double ls, double[] height,
+			int iurb, int id, int iindex, int jindex) {
+		this.ws = ws;
+		this.bs = bs;
+		this.ls = ls;
+		this.height = height;
+		this.iurb = iurb;
+		this.id = id;
+		this.iindex = iindex;
+		this.jindex = jindex;
+	}
+
 	protected abstract void saveToGlobal();
 
 	/**

@@ -29,6 +29,25 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		fww = new double[height.length - 1][height.length][height.length - 1];
 	}
 
+	/**
+	 * Constructor for testing purposed
+	 * @param ws
+	 * @param bs
+	 * @param ls
+	 * @param height
+	 * @param iurb
+	 * @param id
+	 * @param iindex
+	 * @param jindex
+	 */
+	private WallWallSVF(double ws, double bs, double ls, double[] height,
+			int iurb, int id, int iindex, int jindex) {
+		super(ws, bs, ls, height, iurb, id, iindex, jindex);
+		this.itg = new Integrator();
+		this.uclm = new UrbanCLMConfiguration();
+		fww = new double[height.length - 1][height.length][height.length - 1];
+	}
+	
 	@Override
 	public void run() {
 		// height of the building in middle
@@ -61,7 +80,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 					}
 				} else {
 					sNonVis = 0.;
-					sFullVis = height[height.length - 1];
+					sFullVis = 0.;
 				}
 
 				for (int j2 = j; j2 < height.length - 1; j2++) {
@@ -88,7 +107,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 							// plus part that is fully visible (sending area of
 							// that
 							// part is included)
-							fww[j][j][j2] += fprl16(height[j], height[j + 1],
+							fww[j][i][j2] += fprl16(height[j], height[j + 1],
 									max(sFullVis, height[j2]), height[j2 + 1],
 									ls, 2 * ws + bs);
 						}
@@ -140,9 +159,11 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		WallWallSVF svf = new WallWallSVF(0, 0, 20, 30, uclm, itg);
 		svf.run();
 		System.out.println(uclm.getStreetLength(0, 20));
-		for (int i = 0; i < uclm.getHeightA().length; i++) {
-			for (int j = 0; j < uclm.getHeightA().length - 1; j++) {
-				System.out.println(i + "  " + j + "  " + svf.fww[i][j]);
+		for (int i = 0; i < uclm.getHeightA().length-1; i++) {
+			for (int j = 0; j < uclm.getHeightA().length; j++) {
+				for (int k = 0; k < uclm.getHeightA().length-1; k++) {
+					System.out.println(i + "  " + j + "  " + k + "  " + svf.fww[i][j][k]);
+				}
 			}
 		}
 	}
