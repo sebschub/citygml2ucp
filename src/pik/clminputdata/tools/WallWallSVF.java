@@ -91,11 +91,11 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						// part is already included)
 						if (sFullVis > height[j2]) {
 							try {
-								fww[j][i][j2] = itg.integral(this, max(sNonVis,
+								fww[j2][i][j] = itg.integral(this, max(sNonVis,
 										height[j2]), min(sFullVis, height[j2 + 1]));
 							} catch (NoConvergenceException e) {
 								// use result anyway
-								fww[j][i][j2] = e.getResult();
+								fww[j2][i][j] = e.getResult();
 								System.out
 								.printf(
 										"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
@@ -107,13 +107,13 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 							// plus part that is fully visible (sending area of
 							// that
 							// part is included)
-							fww[j][i][j2] += fprl16(height[j], height[j + 1],
+							fww[j2][i][j] += fprl16(height[j], height[j + 1],
 									max(sFullVis, height[j2]), height[j2 + 1],
 									ls, 2 * ws + bs);
 						}
 						// /sending * sending/receiving
-						fww[j][i][j2] *= 1. / (height[j + 1] - height[j]);
-						fww[j2][i][j] = (height[j + 1] - height[j])/(height[j2 + 1] - height[j2])* fww[j][i][j2];
+						fww[j2][i][j] *= 1. / (height[j2 + 1] - height[j2]);
+						fww[j][i][j2] = (height[j2 + 1] - height[j2])/(height[j + 1] - height[j])* fww[j2][i][j];
 					}
 				}
 			}
