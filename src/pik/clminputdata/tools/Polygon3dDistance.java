@@ -1,6 +1,9 @@
 package pik.clminputdata.tools;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
+
+import static java.lang.Math.abs;
 
 /**
  * Class for the distance between two polygons, which can be compared and,
@@ -26,22 +29,38 @@ public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 	 */
 	public final double distance;
 
+	private double cosAngle;
+	private boolean isSetCosAngle = false;
+
 	/**
 	 * Constructor.
+	 * 
+	 * The constructor calculates the distance between the centroids of the
+	 * sending and receiving polygon. If {@code eff=true}, the distance is
+	 * multiplied by the absolute value of the cosine of the angle between the
+	 * sending's normal and the connection between the centroids. This is the
+	 * distance it would be if the centroid was on the direction of the normal
+	 * of the sending surface.
 	 * 
 	 * @param sending
 	 *            Sending surface
 	 * @param receiving
 	 *            Receiving surface
+	 * @param eff
+	 *            use effective distance?
 	 */
-	public Polygon3dDistance(Polygon3d sending, Polygon3d receiving) {
+	public Polygon3dDistance(Polygon3d sending, Polygon3d receiving, boolean eff) {
 		this.sending = sending;
 		this.receiving = receiving;
 
 		Point3d p1 = sending.getCentroid();
 		Point3d p2 = receiving.getCentroid();
 
-		distance = p1.distance(p2);
+		if (eff) {
+			distance = p1.distance(p2) * abs(getCosAngle());
+		} else {
+			distance = p1.distance(p2);
+		}
 	}
 
 	@Override
@@ -56,6 +75,26 @@ public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 			return 1;
 
 		return 0;
+	}
+
+	public double getCosAngle() {
+		if (isSetCosAngle) {
+			return cosAngle;
+		}
+
+		Vector3d connect = new Vector3d();
+
+		connect.sub(receiving.getCentroid(), sending.getCentroid());
+		double l1 = connect.length();
+		double l2 = sending.uvn.length();
+
+		if (l1 < 1.e-12 || l2 < 1.e-12) {
+			cosAngle = 0.;
+		} else {
+			cosAngle = connect.dot(sending.uvn) / l1 / l2;
+		}
+		isSetCosAngle = true;
+		return cosAngle;
 	}
 
 	/*
