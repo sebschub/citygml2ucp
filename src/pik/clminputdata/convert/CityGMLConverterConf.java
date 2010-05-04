@@ -126,6 +126,10 @@ public class CityGMLConverterConf {
 	double mindist;
 	private static final double mindistDefault = 2.;
 
+	boolean doHeightReduction = false;
+	double heightReductionP;
+	private static final double heightReductionPDefault = 0.;
+	
 	/**
 	 * Number of maximal parallel threads
 	 */
@@ -299,7 +303,10 @@ public class CityGMLConverterConf {
 			maxcheck_radius = prop.getDouble("maxcheck_radius",
 					maxcheck_radiusDefault);
 			mindist = prop.getDouble("mindist", mindistDefault);
-
+			
+			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
+			if (heightReductionP > 0.) doHeightReduction = true;
+			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
 
@@ -390,6 +397,8 @@ public class CityGMLConverterConf {
 		System.out.println("maxcheck_radius: " + maxcheck_radius);
 		System.out.println("mindist: " + mindist);
 
+		System.out.println("heightReductionP: " + heightReductionP);
+		
 		System.out.println("proj4code: " + proj4code);
 
 		System.out.println("nThreads: " + nThreads);

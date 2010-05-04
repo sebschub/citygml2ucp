@@ -176,7 +176,10 @@ public class CityGMLConverter {
 		if (conf.consistentOutput) {
 			uclm.defineMissingData();
 		}
-
+		if (conf.doHeightReduction) {
+			uclm.reduceHeight(conf.heightReductionP);
+		}
+		
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
