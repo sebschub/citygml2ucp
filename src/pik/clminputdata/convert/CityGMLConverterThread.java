@@ -684,6 +684,7 @@ class CityGMLConverterThread extends Thread {
 
 					ind += 1;
 				} while (sumArea < maxArea && ind < dist.size());
+				if (sumArea < 1.e-5) continue;
 				distance /= sumArea;
 
 				int indexAngle = 0;
