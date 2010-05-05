@@ -717,10 +717,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			setKe_urban(uc, maxHeight[uc]);
 		}
 		ke_urbanmax = maxmaxHeight;
+		System.out.println("Height reduce to " + ke_urbanmax + " levels.");
 		
 		height.setLength(maxmaxHeight);
 		
-		buildProb.setOutputPartDim(2, maxmaxHeight);
+		buildProb.resetDim();
 		
 	}
 

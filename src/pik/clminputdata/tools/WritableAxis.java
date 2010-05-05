@@ -64,7 +64,7 @@ public class WritableAxis extends WritableDimension {
 	 * Grid spacing
 	 */
 	private double dv = 0.;
-	
+
 	private boolean reduceLength = false;
 
 	/**
@@ -566,10 +566,16 @@ public class WritableAxis extends WritableDimension {
 
 	@Override
 	public void setLength(int n) {
+		if (values != null) {
+			if (n > values.length) {
+				throw new IllegalArgumentException("New length of axis "
+						+ this.axisname
+						+ " has to be smaller than the initial value "
+						+ values.length);
+			}
+			reduceLength = true;
+		}
 		super.setLength(n);
-		reduceLength = true;
 	}
 
-	
-	
 }

@@ -90,16 +90,13 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		this.outputType = outputType;
 	}
 
-	public void setOutputPartDim(int dim, int height) {
+	public void resetDim() {
 		int[] origin = new int[dimlist.size()];
 		int[] shape = new int[dimlist.size()];
 		for (int i = 0; i < origin.length; i++) {
 			origin[i] = 0;
-			shape[i] = 0;
+			shape[i] = dimlist.get(i).getLength();
 		}
-
-		shape[dim] = height;
-		
 		setOutputPart(origin, shape);
 	}
 	
@@ -152,7 +149,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
 			throws IOException, InvalidRangeException {
 		if (doOutputPart) {
-			ncfile.write(name, this.section(originPart, shapePart));
+			ncfile.write(name, this.sectionNoReduce(originPart, shapePart, null));
 		} else {
 			ncfile.write(name, this);
 		}
