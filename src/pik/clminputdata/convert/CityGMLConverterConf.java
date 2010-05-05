@@ -137,6 +137,9 @@ public class CityGMLConverterConf {
 	double heightReductionP;
 	private static final double heightReductionPDefault = 0.;
 	
+	boolean calcSVF;
+	private static final boolean calcSVFDefault = true;
+	
 	/**
 	 * Number of maximal parallel threads
 	 */
@@ -317,6 +320,8 @@ public class CityGMLConverterConf {
 			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
 			if (heightReductionP > 0.) doHeightReduction = true;
 			
+			calcSVF = prop.getBoolean("calcSVF", calcSVFDefault);
+			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
 
@@ -410,6 +415,8 @@ public class CityGMLConverterConf {
 		System.out.println("effDist: " + effDist);
 
 		System.out.println("heightReductionP: " + heightReductionP);
+		
+		System.out.println("calcSVF: " + calcSVF);
 		
 		System.out.println("proj4code: " + proj4code);
 

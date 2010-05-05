@@ -183,64 +183,69 @@ public class CityGMLConverter {
 		if (conf.doHeightReduction) {
 			uclm.reduceHeight(conf.heightReductionP);
 		}
-		
 
 		long lasted = new Date().getTime() - startTime;
 		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
 				lasted / 1000. / 60.);
 
-		System.out.println("Starting calculation of Skyview factors.");
-		startTime = new Date().getTime();
+		if (conf.calcSVF) {
 
-		Integrator itg = new Integrator();
+			System.out.println("Starting calculation of Skyview factors.");
+			startTime = new Date().getTime();
 
-		exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
-				Long.MAX_VALUE, TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
-				new ThreadPoolExecutor.CallerRunsPolicy());
+			uclm.initalizeSVFFields();
+			
+			Integrator itg = new Integrator();
 
-		for (int iurb = 0; iurb < uclm.getNuclasses(); iurb++) {
-			for (int id = 0; id < uclm.getNstreedir(); id++) {
-				for (int j = 0; j < uclm.getJe_tot(); j++) {
-					for (int i = 0; i < uclm.getIe_tot(); i++) {
-						if (uclm.getUrbanFrac(j, i) > 1.e-12) {
-							GroundOtherWallSVF gow = new GroundOtherWallSVF(
-									iurb, id, j, i, uclm, itg);
-							GroundSkySVF gs = new GroundSkySVF(iurb, id, j, i,
-									uclm, itg);
-							WallWallSVF wws = new WallWallSVF(iurb, id, j, i,
-									uclm, itg);
-							System.out.println("SVF Calculation for iurb = " + iurb
-									+ ", id = " + id + ", j = " + j + ", i = "
-									+ i);
-							if (conf.nThreads > 1) {
-								exec.execute(gow);
-								exec.execute(gs);
-								exec.execute(wws);
-							} else {
-								gow.run();
-								gs.run();
-								wws.run();
+			exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
+					Long.MAX_VALUE, TimeUnit.MILLISECONDS,
+					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
+					new ThreadPoolExecutor.CallerRunsPolicy());
+
+			for (int iurb = 0; iurb < uclm.getNuclasses(); iurb++) {
+				for (int id = 0; id < uclm.getNstreedir(); id++) {
+					for (int j = 0; j < uclm.getJe_tot(); j++) {
+						for (int i = 0; i < uclm.getIe_tot(); i++) {
+							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
+								GroundOtherWallSVF gow = new GroundOtherWallSVF(
+										iurb, id, j, i, uclm, itg);
+								GroundSkySVF gs = new GroundSkySVF(iurb, id, j,
+										i, uclm, itg);
+								WallWallSVF wws = new WallWallSVF(iurb, id, j,
+										i, uclm, itg);
+								System.out
+										.println("SVF Calculation for iurb = "
+												+ iurb + ", id = " + id
+												+ ", j = " + j + ", i = " + i);
+								if (conf.nThreads > 1) {
+									exec.execute(gow);
+									exec.execute(gs);
+									exec.execute(wws);
+								} else {
+									gow.run();
+									gs.run();
+									wws.run();
+								}
 							}
 						}
 					}
 				}
 			}
+
+			exec.shutdown();
+			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			uclm.defineMissingDataSVF();
+
+			lasted = new Date().getTime() - startTime;
+			System.out.printf(
+					"Urban skyview factor calculation took %.3f minutes.%n",
+					lasted / 1000. / 60.);
 		}
 
-		exec.shutdown();
-		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		uclm.defineMissingDataSVF();
-		
-		
 		uclm.toNetCDFfile(conf.outputFile);
 
 		stats.writeLogs();
 		stats.toNetCDFfile(conf.statsFile);
 
-		lasted = new Date().getTime() - startTime;
-		System.out.printf(
-				"Urban skyview factor calculation took %.3f minutes.%n",
-				lasted / 1000. / 60.);
 	}
 }

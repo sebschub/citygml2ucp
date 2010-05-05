@@ -171,25 +171,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			}
 		}
 
-		double[] heightWalls = new double[ke_urbanmax - 1];
-		for (int i = 0; i < heightWalls.length; i++) {
-			heightWalls[i] = 0.5 * (height[i] + height[i + 1]);
-		}
-		this.height = new WritableAxis("uheight", ke_urbanmax - 1, "Z",
-				"urban_height_walls", "height above surface for walls", "",
-				heightWalls);
-		toWrite.add(this.height);
-
 		this.height1 = new WritableAxis("uheight1", ke_urbanmax, "Z",
 				"urban_height_roofs", "height above surface for roofs", "",
 				height);
 		toWrite.add(this.height1);
-
-		this.heightsend = new WritableAxis("uheights", ke_urbanmax - 1, "Z",
-				"urban_height_sending_walls",
-				"height above surface for radiation sending walls", "",
-				heightWalls);
-		toWrite.add(this.heightsend);
 
 		if (streetdir[0] < -90. || streetdir[streetdir.length - 1] > 90.)
 			throw new IllegalArgumentException(
@@ -268,14 +253,41 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		streetSurfaceSum = new double[getNuclasses()][getNstreedir()][getJe_tot()][getIe_tot()];
 
+	}
+
+	public void initalizeSVFFields() {
+		
+		double[] heightWalls = new double[ke_urbanmax - 1];
+		for (int i = 0; i < heightWalls.length; i++) {
+			heightWalls[i] = 0.5 * (heighta[i] + heighta[i + 1]);
+		}
+		this.height = new WritableAxis("uheight", ke_urbanmax - 1, "Z",
+				"urban_height_walls", "height above surface for walls", "",
+				heightWalls);
+		toWrite.add(this.height);
+
+		this.heightsend = new WritableAxis("uheights", ke_urbanmax - 1, "Z",
+				"urban_height_sending_walls",
+				"height above surface for radiation sending walls", "",
+				heightWalls);
+		toWrite.add(this.heightsend);
+		
+		List<Dimension> ldim = new LinkedList<Dimension>();
+		ldim.add(this.nuclasses);
+		ldim.add(this.streetdir);
+		ldim.add(this.height1);
+		ldim.add(this.meridionalAxis);
+		ldim.add(this.zonalAxis);
+		// dims is now nucdim, streetdir, zdim, latdim, londim
+		
 		fgs = new WritableFieldFloat("FGS", ldim, "SVF_ground2sky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
 		toWrite.add(this.fgs);
-
+		
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
-
+		
 		fgow = new WritableFieldFloat("FGOW", ldim, "SVF_ground2otherwall",
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
@@ -291,7 +303,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		toWrite.add(this.fww);
 
 	}
-
+	
 	private void calculateStreetLength() {
 
 		Index ind = streetLength.getIndex();
@@ -784,7 +796,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ke_urbanmax = maxmaxHeight;
 		System.out.println("Height reduce to " + ke_urbanmax + " levels.");
 		
-		height.setLength(maxmaxHeight);
+		height1.setLength(maxmaxHeight);
 		
 		buildProb.resetDim();
 		
