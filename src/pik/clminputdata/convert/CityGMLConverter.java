@@ -180,6 +180,10 @@ public class CityGMLConverter {
 		if (conf.consistentOutput) {
 			uclm.defineMissingData();
 		}
+		if (conf.doHeightReduction) {
+			uclm.reduceHeight(conf.heightReductionP);
+		}
+		
 
 		long lasted = new Date().getTime() - startTime;
 		System.out.printf("Urban parameter calculation took %.3f minutes.%n",

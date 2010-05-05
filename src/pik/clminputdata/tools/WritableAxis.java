@@ -65,6 +65,8 @@ public class WritableAxis extends WritableDimension {
 	 */
 	private double dv = 0.;
 
+	private boolean reduceLength = false;
+
 	/**
 	 * Constructor for non-periodic axis with the name of the axis equal to the
 	 * name of the dimension.
@@ -400,7 +402,15 @@ public class WritableAxis extends WritableDimension {
 	@Override
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
 			throws IOException, InvalidRangeException {
-		ncfile.write(axisname, Array.factory(values));
+		if (reduceLength) {
+			double[] val = new double[this.getLength()];
+			for (int i = 0; i < val.length; i++) {
+				val[i] = values[i];
+			}
+			ncfile.write(axisname, Array.factory(val));
+		} else {
+			ncfile.write(axisname, Array.factory(values));
+		}
 	}
 
 	/**
@@ -552,6 +562,20 @@ public class WritableAxis extends WritableDimension {
 			return values[i + 1] - values[i];
 		}
 		return values[i] - values[i - 1];
+	}
+
+	@Override
+	public void setLength(int n) {
+		if (values != null) {
+			if (n > values.length) {
+				throw new IllegalArgumentException("New length of axis "
+						+ this.axisname
+						+ " has to be smaller than the initial value "
+						+ values.length);
+			}
+			reduceLength = true;
+		}
+		super.setLength(n);
 	}
 
 }

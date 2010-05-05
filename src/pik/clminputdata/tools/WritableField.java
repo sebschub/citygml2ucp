@@ -56,6 +56,11 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	 */
 	protected final DataType outputType;
 	
+	private boolean doOutputPart = false;
+	
+	private int[] originPart;
+	private int[] shapePart;
+	
 	/**
 	 * Get the length of a list of dimensions.
 	 * 
@@ -83,6 +88,30 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		this.dimlist = new LinkedList<Dimension>();
 		this.dimlist.addAll(dimlist);
 		this.outputType = outputType;
+	}
+
+	public void resetDim() {
+		int[] origin = new int[dimlist.size()];
+		int[] shape = new int[dimlist.size()];
+		for (int i = 0; i < origin.length; i++) {
+			origin[i] = 0;
+			shape[i] = dimlist.get(i).getLength();
+		}
+		setOutputPart(origin, shape);
+	}
+	
+	public void setOutputPart(int[] origin, int[] shape) {
+		doOutputPart = true;
+		this.originPart = origin;
+		this.shapePart = shape;
+	}
+	
+	public int[] getOriginPart() {
+		return originPart;
+	}
+
+	public int[] getShapePart() {
+		return shapePart;
 	}
 
 	/*
@@ -119,6 +148,10 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	@Override
 	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
 			throws IOException, InvalidRangeException {
-		ncfile.write(name, this);
+		if (doOutputPart) {
+			ncfile.write(name, this.sectionNoReduce(originPart, shapePart, null));
+		} else {
+			ncfile.write(name, this);
+		}
 	}
 }
