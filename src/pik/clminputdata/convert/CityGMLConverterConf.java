@@ -127,6 +127,13 @@ public class CityGMLConverterConf {
 	private static final double mindistDefault = 2.;
 
 	/**
+	 * Use effective distance between two surfaces (as they would be just
+	 * opposite of each other?)
+	 */
+	boolean effDist;
+	private static final boolean effDistDefault = false;
+
+	/**
 	 * Number of maximal parallel threads
 	 */
 	int nThreads;
@@ -300,6 +307,8 @@ public class CityGMLConverterConf {
 					maxcheck_radiusDefault);
 			mindist = prop.getDouble("mindist", mindistDefault);
 
+			effDist = prop.getBoolean("effDist", effDistDefault);
+
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
 
@@ -389,6 +398,8 @@ public class CityGMLConverterConf {
 		System.out.println("maxbuild_radius: " + maxbuild_radius);
 		System.out.println("maxcheck_radius: " + maxcheck_radius);
 		System.out.println("mindist: " + mindist);
+
+		System.out.println("effDist: " + effDist);
 
 		System.out.println("proj4code: " + proj4code);
 

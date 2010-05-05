@@ -640,7 +640,7 @@ class CityGMLConverterThread extends Thread {
 						if (visible.get(wcount, wrcount)) {
 
 							dist.add(new Polygon3dDistance(buildingWalls[i][j],
-									buildingWalls[k][l]));
+									buildingWalls[k][l], conf.effDist));
 
 							if (dist.size() > ndistmean) {
 								Collections.sort(dist);
@@ -674,11 +674,17 @@ class CityGMLConverterThread extends Thread {
 					if (Double.isNaN(dist.get(ind).distance)) {
 						System.out.println("distance is nan");
 					}
-					distance += dist.get(ind).distance
-							* dist.get(ind).receiving.getArea();
-					sumArea += dist.get(ind).receiving.getArea();
+
+					double weight = dist.get(ind).receiving.getArea();
+					if (conf.effDist) {
+						weight *= Math.abs(dist.get(ind).getCosAngle());
+					}
+					distance += dist.get(ind).distance * weight;
+					sumArea += weight;
+
 					ind += 1;
 				} while (sumArea < maxArea && ind < dist.size());
+				if (sumArea < 1.e-5) continue;
 				distance /= sumArea;
 
 				int indexAngle = 0;

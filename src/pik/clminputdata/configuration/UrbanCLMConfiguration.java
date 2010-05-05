@@ -326,8 +326,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public UrbanCLMConfiguration() throws IllegalArgumentException {
 		super();
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
-				new int[] { 10 }, new double[] { 0.f, 3.f, 7.f, 10.f, 13.f,
-						19.f, 25.f, 30.f, 38.f, 45.f });
+				new int[] { 10 }, new double[] { 0., 3., 7., 10., 13.,
+						19., 25., 30., 38., 45. });
 	}
 
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
