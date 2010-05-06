@@ -94,10 +94,19 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	protected WritableField urbanClassFrac;
 
+	/**
+	 * Skyview factor from ground to a wall of adjacent street canyon
+	 */
 	protected WritableField fgow;
 
+	/**
+	 * Skyview factor from ground to the sky of two canyons
+	 */
 	protected WritableField fgs;
 
+	/**
+	 * Skyview factor from wall to wall of adjacent canyon
+	 */
 	protected WritableField fww;
 
 	/**
@@ -255,8 +264,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 	}
 
+	/**
+	 * Create fields necessary for skyview factor calculation.
+	 */
 	public void initalizeSVFFields() {
-		
+
 		double[] heightWalls = new double[ke_urbanmax - 1];
 		for (int i = 0; i < heightWalls.length; i++) {
 			heightWalls[i] = 0.5 * (heighta[i] + heighta[i + 1]);
@@ -271,7 +283,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"height above surface for radiation sending walls", "",
 				heightWalls);
 		toWrite.add(this.heightsend);
-		
+
 		List<Dimension> ldim = new LinkedList<Dimension>();
 		ldim.add(this.nuclasses);
 		ldim.add(this.streetdir);
@@ -279,15 +291,15 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(this.meridionalAxis);
 		ldim.add(this.zonalAxis);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
-		
+
 		fgs = new WritableFieldFloat("FGS", ldim, "SVF_ground2sky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
 		toWrite.add(this.fgs);
-		
+
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
-		
+
 		fgow = new WritableFieldFloat("FGOW", ldim, "SVF_ground2otherwall",
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
@@ -303,7 +315,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		toWrite.add(this.fww);
 
 	}
-	
+
+	/**
+	 * Calculate the average distance in a grid cell with a given angle.
+	 * 
+	 * The grid cell is assumed to be rectangular.
+	 */
 	private void calculateStreetLength() {
 
 		Index ind = streetLength.getIndex();
@@ -734,6 +751,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	/**
+	 * Find the highest index for which the summed probability over that level
+	 * is smaller than {@code ignoreBP}, set all height parameters
+	 * correspondingly and reduce output size.
+	 * 
+	 * @param ignoredBP
+	 *            Percentage of ignored buildings
+	 */
 	public void reduceHeight(double ignoredBP) {
 
 		int[] maxHeight = new int[getNuclasses()];
@@ -761,11 +786,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		int maxmaxHeight = 0;
 		for (int uc = 0; uc < getNuclasses(); uc++) {
-			if (maxmaxHeight< maxHeight[uc]) {
+			if (maxmaxHeight < maxHeight[uc]) {
 				maxmaxHeight = maxHeight[uc];
 			}
 		}
-		
+
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
@@ -777,9 +802,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							}
 							sum = 1. / sum;
 							for (int lev = 0; lev < maxHeight[uc]; lev++) {
-								setBuildProb(uc, sd, lev, lat, lon, getBuildProb(
-										uc, sd, lev, lat, lon)
-										* sum);
+								setBuildProb(uc, sd, lev, lat, lon,
+										getBuildProb(uc, sd, lev, lat, lon)
+												* sum);
 							}
 							for (int lev = maxHeight[uc]; lev < maxmaxHeight; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
@@ -789,19 +814,24 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				}
 			}
 		}
-		
+
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			setKe_urban(uc, maxHeight[uc]);
 		}
 		ke_urbanmax = maxmaxHeight;
 		System.out.println("Height reduce to " + ke_urbanmax + " levels.");
-		
+
 		height1.setLength(maxmaxHeight);
-		
+
 		buildProb.resetDim();
-		
+
 	}
 
+	/**
+	 * Set fields to the missing value where not defined.
+	 * 
+	 * Building and urban fraction > 1.e-12 define an urban cell.
+	 */
 	public void defineMissingData() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
@@ -830,6 +860,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
+	/**
+	 * Set svf fields to the missing value where not defined.
+	 * 
+	 * Building and urban fraction > 1.e-12 define an urban cell.
+	 */
 	public void defineMissingDataSVF() {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
@@ -839,13 +874,17 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							for (int h = 0; h < ke_urbanmax; h++) {
 								Index index = fgs.getIndex();
-								fgs.set(index.set(uc,sd,h,lat,lon), fgs.missingValue);
-								for (int h2 = 0; h2 < ke_urbanmax-1; h2++) {
+								fgs.set(index.set(uc, sd, h, lat, lon),
+										fgs.missingValue);
+								for (int h2 = 0; h2 < ke_urbanmax - 1; h2++) {
 									index = fgow.getIndex();
-									fgow.set(index.set(uc,sd,h2,h,lat,lon), fgow.missingValue);
+									fgow.set(
+											index.set(uc, sd, h2, h, lat, lon),
+											fgow.missingValue);
 									index = fww.getIndex();
-									for (int h3 = 0; h3 < ke_urbanmax-1; h3++) {
-										fww.set(index.set(uc,sd,h2,h,h3,lat,lon), fww.missingValue);
+									for (int h3 = 0; h3 < ke_urbanmax - 1; h3++) {
+										fww.set(index.set(uc, sd, h2, h, h3,
+												lat, lon), fww.missingValue);
 									}
 								}
 							}
@@ -855,16 +894,16 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			}
 		}
 	}
-	
+
 	public int getKe_urbanMax() {
 		return ke_urbanmax;
 	}
-	
+
 	public int getKe_urban(int uc) {
 		Index ind = ke_urban.getIndex();
 		return ke_urban.getInt(ind.set(uc));
 	}
-	
+
 	public void setKe_urban(int uc, int ke) {
 		Index ind = ke_urban.getIndex();
 		ke_urban.setInt(ind.set(uc), ke);

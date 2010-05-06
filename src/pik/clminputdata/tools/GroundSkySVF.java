@@ -7,6 +7,9 @@ import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import static java.lang.Math.min;
 
 /**
+ * Class for the calculation of skyview factor from ground to sky of two
+ * adjacent street canyon.
+ * 
  * @author Sebastian Schubert
  * 
  */

@@ -133,10 +133,19 @@ public class CityGMLConverterConf {
 	boolean effDist;
 	private static final boolean effDistDefault = false;
 
+	/**
+	 * Do a height reduction ignoring large buildings?
+	 */
 	boolean doHeightReduction = false;
+	/**
+	 * Value of summed probablity which is ok to ignore
+	 */
 	double heightReductionP;
 	private static final double heightReductionPDefault = 0.;
 	
+	/**
+	 * Calculate skyview factors?
+	 */
 	boolean calcSVF;
 	private static final boolean calcSVFDefault = true;
 	

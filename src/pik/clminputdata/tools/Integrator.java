@@ -7,24 +7,53 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.abs;
 
 /**
+ * Class for integration using Gauss Legendre integration.
+ * 
  * @author Sebastian Schubert
  * 
  */
 public class Integrator {
 
+	/**
+	 * Precision
+	 */
 	public final double eps;
 
+	/**
+	 * Maximal number of integration intervals
+	 */
 	private final int maxk = 33554432;
 
+	/**
+	 * Nodes (zeros of Legendre Polynomials)
+	 */
 	private final double[] xNST;
+	/**
+	 * Nodes used for calculation.
+	 * 
+	 * Declared so is does not have to create every step.
+	 */
 	private final double[] modx;
+	/**
+	 * Weights
+	 */
 	private final double[] w;
+	/**
+	 * Number of nodes
+	 */
 	private final int nx;
 
 	public Integrator() {
 		this(4e-15);
 	}
 
+	/**
+	 * Calculate nodes and weights for Gauss Legendre integration of 5th order
+	 * and set user specified precision.
+	 * 
+	 * @param eps
+	 *            Precision for integration
+	 */
 	public Integrator(double eps) {
 		this.eps = eps;
 
@@ -47,7 +76,21 @@ public class Integrator {
 		w[4] = (322. - 13. * sqrt(70.)) / 900.;
 	}
 
-	public double integral(Integrable f, double a, double b) throws NoConvergenceException {
+	/**
+	 * Integrate.
+	 * 
+	 * @param f
+	 *            Integrable function
+	 * @param a
+	 *            Lower boundary
+	 * @param b
+	 *            Upper boundary
+	 * @return Calculated integral
+	 * @throws NoConvergenceException
+	 *             Maximal number of integration steps exceeded.
+	 */
+	public double integral(Integrable f, double a, double b)
+			throws NoConvergenceException {
 
 		if (a == b)
 			return 0.;
@@ -76,7 +119,8 @@ public class Integrator {
 			}
 			intStepN = intStepN1;
 		}
-		throw new NoConvergenceException("Number of integration intervals exceeded.", integral);
+		throw new NoConvergenceException(
+				"Number of integration intervals exceeded.", integral);
 	}
 
 	/**
@@ -88,10 +132,14 @@ public class Integrator {
 	 * Abramowitz and Stegun p. 887.
 	 * 
 	 * @param f
+	 *            Function
 	 * @param a
+	 *            Lower boundary
 	 * @param b
+	 *            Upper boundary
 	 * @param nIntvalls
-	 * @return
+	 *            Number of integration intervals
+	 * @return Integral for specific number of intervals
 	 */
 	private double intStep(Integrable f, double a, double b, int nIntvalls) {
 		double h = (b - a) / nIntvalls;

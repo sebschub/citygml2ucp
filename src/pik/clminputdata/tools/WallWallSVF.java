@@ -8,6 +8,9 @@ import static java.lang.Math.max;
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 
 /**
+ * Class for the calculation of skyview factor from wall to wall element of
+ * adjacent street canyon.
+ * 
  * @author Sebastian Schubert
  * 
  */
@@ -30,7 +33,8 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 	}
 
 	/**
-	 * Constructor for testing purposed
+	 * Constructor for testing purposes
+	 * 
 	 * @param ws
 	 * @param bs
 	 * @param ls
@@ -47,7 +51,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		this.uclm = new UrbanCLMConfiguration();
 		fww = new double[heightLength - 1][heightLength][heightLength - 1];
 	}
-	
+
 	@Override
 	public void run() {
 		// height of the building in middle
@@ -92,15 +96,17 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						if (sFullVis > height[j2]) {
 							try {
 								fww[j2][i][j] = itg.integral(this, max(sNonVis,
-										height[j2]), min(sFullVis, height[j2 + 1]));
+										height[j2]), min(sFullVis,
+										height[j2 + 1]));
 							} catch (NoConvergenceException e) {
 								// use result anyway
 								fww[j2][i][j] = e.getResult();
 								System.out
-								.printf(
-										"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
-										this.iurb, this.id, this.jindex,
-										this.iindex, j, i, j2);
+										.printf(
+												"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
+												this.iurb, this.id,
+												this.jindex, this.iindex, j, i,
+												j2);
 							}
 						}
 						if (sFullVis < height[j2 + 1]) {
@@ -113,7 +119,8 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						}
 						// /sending * sending/receiving
 						fww[j2][i][j] *= 1. / (height[j2 + 1] - height[j2]);
-						fww[j][i][j2] = (height[j2 + 1] - height[j2])/(height[j + 1] - height[j])* fww[j2][i][j];
+						fww[j][i][j2] = (height[j2 + 1] - height[j2])
+								/ (height[j + 1] - height[j]) * fww[j2][i][j];
 					}
 				}
 			}
@@ -159,10 +166,11 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		WallWallSVF svf = new WallWallSVF(0, 0, 20, 30, uclm, itg);
 		svf.run();
 		System.out.println(uclm.getStreetLength(0, 20));
-		for (int i = 0; i < uclm.getHeightA().length-1; i++) {
+		for (int i = 0; i < uclm.getHeightA().length - 1; i++) {
 			for (int j = 0; j < uclm.getHeightA().length; j++) {
-				for (int k = 0; k < uclm.getHeightA().length-1; k++) {
-					System.out.println(i + "  " + j + "  " + k + "  " + svf.fww[i][j][k]);
+				for (int k = 0; k < uclm.getHeightA().length - 1; k++) {
+					System.out.println(i + "  " + j + "  " + k + "  "
+							+ svf.fww[i][j][k]);
 				}
 			}
 		}
