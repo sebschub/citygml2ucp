@@ -26,7 +26,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		super(iurb, id, jindex, iindex, uclm);
 		this.itg = itg;
 		this.uclm = uclm;
-		fww = new double[height.length - 1][height.length][height.length - 1];
+		fww = new double[heightLength - 1][heightLength][heightLength - 1];
 	}
 
 	/**
@@ -45,15 +45,15 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		super(ws, bs, ls, height, iurb, id, iindex, jindex);
 		this.itg = new Integrator();
 		this.uclm = new UrbanCLMConfiguration();
-		fww = new double[height.length - 1][height.length][height.length - 1];
+		fww = new double[heightLength - 1][heightLength][heightLength - 1];
 	}
 	
 	@Override
 	public void run() {
 		// height of the building in middle
-		for (int i = 0; i < height.length; i++) {
+		for (int i = 0; i < heightLength; i++) {
 			roofIndex = i;
-			for (int j = 0; j < height.length - 1; j++) {
+			for (int j = 0; j < heightLength - 1; j++) {
 				wallIndex = j;
 				// height of non visible fraction
 				double sNonVis;
@@ -67,7 +67,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 					} else {
 						sNonVis = min((2 * ws + bs) / ws
 								* (height[i] - height[j + 1]) + height[j + 1],
-								height[height.length - 1]);
+								height[heightLength - 1]);
 					}
 					if (height[i] < height[j]) {
 						sFullVis = max(((2 * ws + bs) * height[i] - ws
@@ -76,14 +76,14 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 					} else {
 						sFullVis = min((2 * ws + bs) / ws
 								* (height[i] - height[j]) + height[j],
-								height[height.length - 1]);
+								height[heightLength - 1]);
 					}
 				} else {
 					sNonVis = 0.;
 					sFullVis = 0.;
 				}
 
-				for (int j2 = j; j2 < height.length - 1; j2++) {
+				for (int j2 = j; j2 < heightLength - 1; j2++) {
 					if (sNonVis < height[j2 + 1]) {
 						// only the part that has varying visibility of
 						// receiving wall has to be integrated (sending area of

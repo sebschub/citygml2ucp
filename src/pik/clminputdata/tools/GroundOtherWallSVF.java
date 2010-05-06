@@ -26,7 +26,7 @@ public class GroundOtherWallSVF extends UrbanSkyViewFactor implements
 		super(iurb, id, jindex, iindex, uclm);
 		this.itg = itg;
 		this.uclm = uclm;
-		fgow = new double[height.length][height.length - 1];
+		fgow = new double[heightLength][heightLength - 1];
 	}
 
 	@Override

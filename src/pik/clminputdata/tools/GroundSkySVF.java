@@ -25,7 +25,7 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 		super(iurb, id, jindex, iindex, uclm);
 		this.itg = itg;
 		this.uclm = uclm;
-		fgs = new double[height.length];
+		fgs = new double[heightLength];
 	}
 
 	@Override
@@ -35,9 +35,9 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 			roofIndex = i;
 			// partly visible length
 			double sPartVis;
-			if (height[i] < height[height.length - 1]) {
+			if (height[i] < height[heightLength - 1]) {
 				sPartVis = min(height[i]
-						/ (height[height.length - 1] - height[i]) * (ws + bs),
+						/ (height[heightLength - 1] - height[i]) * (ws + bs),
 						ws);
 			} else {
 				sPartVis = ws;
@@ -58,7 +58,7 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 			// plus part that is fully visible (sending area of that
 			// part is included)
 			fgs[i] += fprl134(ws - sPartVis, 2 * ws + bs,
-					height[height.length - 1], ls);
+					height[heightLength - 1], ls);
 			// /sending * sending/receiving
 			fgs[i] *= 1. / (2 * ws + bs);
 		}
@@ -76,12 +76,12 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 	public double f(double x) {
 		double skyvis;
 		if (height[roofIndex] > 0) {
-			skyvis = height[height.length - 1] / height[roofIndex] * (ws - x);
+			skyvis = height[heightLength - 1] / height[roofIndex] * (ws - x);
 		} else {
 			skyvis = 2 * ws + bs - x;
 		}
-		return prlLRec(x, ls, height[height.length - 1])
-				+ prlLRec(skyvis, ls, height[height.length - 1]);
+		return prlLRec(x, ls, height[heightLength - 1])
+				+ prlLRec(skyvis, ls, height[heightLength - 1]);
 
 	}
 

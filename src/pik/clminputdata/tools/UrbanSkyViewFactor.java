@@ -21,6 +21,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 	public final double bs;
 	public final double ls;
 	public final double[] height;
+	public final int heightLength;
 
 	public final int iurb;
 	public final int id;
@@ -36,6 +37,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		this.ls = uclm.getStreetLength(id, jindex) * 1000;
 		// System.out.println(ls);
 		this.height = uclm.getHeightA();
+		this.heightLength = uclm.getKe_urbanMax();
 		this.iurb = iurb;
 		this.id = id;
 		this.iindex = iindex;
@@ -48,6 +50,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		this.bs = bs;
 		this.ls = ls;
 		this.height = height;
+		this.heightLength = height.length;
 		this.iurb = iurb;
 		this.id = id;
 		this.iindex = iindex;

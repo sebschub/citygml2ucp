@@ -856,6 +856,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 	
+	public int getKe_urbanMax() {
+		return ke_urbanmax;
+	}
+	
 	public int getKe_urban(int uc) {
 		Index ind = ke_urban.getIndex();
 		return ke_urban.getInt(ind.set(uc));
