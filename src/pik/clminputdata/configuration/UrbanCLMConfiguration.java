@@ -761,33 +761,33 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	public void reduceHeight(double ignoredBP) {
 
-		int[] maxHeight = new int[getNuclasses()];
+		int[] maxLength = new int[getNuclasses()];
 		// get the height above which buildings can be ignored
 		for (int uc = 0; uc < getNuclasses(); uc++) {
-			maxHeight[uc] = 0;
+			maxLength[uc] = 0;
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
 					if (getBuildingFrac(uc, lat, lon) > 1.e-12) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
-							int localeMaxHeight = getKe_urban(uc);
+							int localeMaxLength = getKe_urban(uc);
 							double ignored = 0;
 							for (int lev = getKe_urban(uc) - 1; lev >= 0.; lev--) {
 								ignored += getBuildProb(uc, sd, lev, lat, lon);
 								if (ignored < ignoredBP)
-									localeMaxHeight--;
+									localeMaxLength--;
 							}
-							if (localeMaxHeight > maxHeight[uc])
-								maxHeight[uc] = localeMaxHeight;
+							if (localeMaxLength > maxLength[uc])
+								maxLength[uc] = localeMaxLength;
 						}
 					}
 				}
 			}
 		}
 
-		int maxmaxHeight = 0;
+		int maxmaxLength = 0;
 		for (int uc = 0; uc < getNuclasses(); uc++) {
-			if (maxmaxHeight < maxHeight[uc]) {
-				maxmaxHeight = maxHeight[uc];
+			if (maxmaxLength < maxLength[uc]) {
+				maxmaxLength = maxLength[uc];
 			}
 		}
 
@@ -797,16 +797,16 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 					if (getBuildingFrac(uc, lat, lon) > 1.e-12) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							double sum = 0.;
-							for (int lev = 0; lev < maxHeight[uc]; lev++) {
+							for (int lev = 0; lev < maxLength[uc]; lev++) {
 								sum += getBuildProb(uc, sd, lev, lat, lon);
 							}
 							sum = 1. / sum;
-							for (int lev = 0; lev < maxHeight[uc]; lev++) {
+							for (int lev = 0; lev < maxLength[uc]; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon,
 										getBuildProb(uc, sd, lev, lat, lon)
 												* sum);
 							}
-							for (int lev = maxHeight[uc]; lev < maxmaxHeight; lev++) {
+							for (int lev = maxLength[uc]; lev < maxmaxLength; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
 							}
 						}
@@ -816,12 +816,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 
 		for (int uc = 0; uc < getNuclasses(); uc++) {
-			setKe_urban(uc, maxHeight[uc]);
+			setKe_urban(uc, maxLength[uc]);
 		}
-		ke_urbanmax = maxmaxHeight;
+		ke_urbanmax = maxmaxLength;
 		System.out.println("Height reduce to " + ke_urbanmax + " levels.");
 
-		height1.setLength(maxmaxHeight);
+		height1.setLength(maxmaxLength);
 
 		buildProb.resetDim();
 
