@@ -110,6 +110,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	protected WritableField fwow;
 
 	/**
+	 * Skyview factor from wall to sky of two adjacent canyons
+	 */
+	protected WritableField fwos;
+
+	/**
 	 * Sum of areas in a street (used for normalization).
 	 */
 	private double streetSurfaceSum[][][][];
@@ -292,7 +297,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(this.zonalAxis);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
-		fgos = new WritableFieldFloat("FGOS", ldim, "SVF_ground2sky",
+		fgos = new WritableFieldFloat("FGOS", ldim, "SVF_ground2othersky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
 		toWrite.add(this.fgos);
@@ -309,8 +314,15 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwallsend, latdim,
 		// londim
 
-		fwow = new WritableFieldFloat("FWOW", ldim, "SVF_wall2wall",
+		fwow = new WritableFieldFloat("FWOW", ldim, "SVF_wall2otherwall",
 				"skyview factor from wall to wall of other canyon", "1",
+				"rotated_pole");
+		toWrite.add(this.fwow);
+
+		ldim.remove(2);
+		// dims is now nucdim, streetdir, zdim, zdimwallsend, latdim, londim
+		fwos = new WritableFieldFloat("FWOS", ldim, "SVF_wall2othersky",
+				"skyview factor from wall to sky of two canyons", "1",
 				"rotated_pole");
 		toWrite.add(this.fwow);
 
@@ -947,6 +959,16 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 					ind.set(uc, id, m, l, k, j, i);
 					this.fwow.set(ind, fww[k][l][m]);
 				}
+			}
+		}
+	}
+
+	public void setFwos(int uc, int id, int j, int i, double[][] fws) {
+		Index ind = this.fwos.getIndex();
+		for (int k = 0; k < fws.length; k++) {
+			for (int l = 0; l < fws[k].length; l++) {
+				ind.set(uc, id, l, k, j, i);
+				this.fwos.set(ind, fws[k][l]);
 			}
 		}
 	}

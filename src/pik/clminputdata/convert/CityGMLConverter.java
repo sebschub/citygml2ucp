@@ -25,6 +25,7 @@ import pik.clminputdata.tools.GMLFilenameFilter;
 import pik.clminputdata.tools.GroundOtherWallSVF;
 import pik.clminputdata.tools.GroundOtherSkySVF;
 import pik.clminputdata.tools.Integrator;
+import pik.clminputdata.tools.WallOtherSkySVF;
 import pik.clminputdata.tools.WallOtherWallSVF;
 import ucar.ma2.InvalidRangeException;
 
@@ -213,6 +214,8 @@ public class CityGMLConverter {
 										i, uclm, itg);
 								WallOtherWallSVF wws = new WallOtherWallSVF(iurb, id, j,
 										i, uclm, itg);
+								WallOtherSkySVF wss = new WallOtherSkySVF(iurb, id, j,
+										i, uclm, itg);
 								System.out
 										.println("SVF Calculation for iurb = "
 												+ iurb + ", id = " + id
@@ -221,10 +224,12 @@ public class CityGMLConverter {
 									exec.execute(gow);
 									exec.execute(gs);
 									exec.execute(wws);
+									exec.execute(wss);
 								} else {
 									gow.run();
 									gs.run();
 									wws.run();
+									wss.run();
 								}
 							}
 						}
