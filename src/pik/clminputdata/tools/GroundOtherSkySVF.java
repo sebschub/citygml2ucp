@@ -13,7 +13,7 @@ import static java.lang.Math.min;
  * @author Sebastian Schubert
  * 
  */
-public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
+public class GroundOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 
 	private final double[] fgs;
 
@@ -23,7 +23,7 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 
 	private int roofIndex;
 
-	public GroundSkySVF(int iurb, int id, int jindex, int iindex,
+	public GroundOtherSkySVF(int iurb, int id, int jindex, int iindex,
 			UrbanCLMConfiguration uclm, Integrator itg) {
 		super(iurb, id, jindex, iindex, uclm);
 		this.itg = itg;
@@ -95,6 +95,6 @@ public class GroundSkySVF extends UrbanSkyViewFactor implements Integrable {
 		// System.out.println(fgow[i][j]);
 		// }
 		// }
-		uclm.setFgs(iurb, id, jindex, iindex, fgs);
+		uclm.setFgos(iurb, id, jindex, iindex, fgs);
 	}
 }

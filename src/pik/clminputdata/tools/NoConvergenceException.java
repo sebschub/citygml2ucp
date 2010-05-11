@@ -36,7 +36,7 @@ public class NoConvergenceException extends Exception {
 	/**
 	 * Get the latest (hopefully best) result of the non-converging algorithm.
 	 * 
-	 * @return
+	 * @return Latest result of non-converging algorithm
 	 */
 	public double getResult() {
 		return result;

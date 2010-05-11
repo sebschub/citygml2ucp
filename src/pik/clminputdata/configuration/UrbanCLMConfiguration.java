@@ -102,12 +102,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	/**
 	 * Skyview factor from ground to the sky of two canyons
 	 */
-	protected WritableField fgs;
+	protected WritableField fgos;
 
 	/**
 	 * Skyview factor from wall to wall of adjacent canyon
 	 */
-	protected WritableField fww;
+	protected WritableField fwow;
 
 	/**
 	 * Sum of areas in a street (used for normalization).
@@ -292,10 +292,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(this.zonalAxis);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
-		fgs = new WritableFieldFloat("FGS", ldim, "SVF_ground2sky",
+		fgos = new WritableFieldFloat("FGOS", ldim, "SVF_ground2sky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
-		toWrite.add(this.fgs);
+		toWrite.add(this.fgos);
 
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
@@ -309,10 +309,10 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwallsend, latdim,
 		// londim
 
-		fww = new WritableFieldFloat("FWW", ldim, "SVF_wall2wall",
+		fwow = new WritableFieldFloat("FWOW", ldim, "SVF_wall2wall",
 				"skyview factor from wall to wall of other canyon", "1",
 				"rotated_pole");
-		toWrite.add(this.fww);
+		toWrite.add(this.fwow);
 
 	}
 
@@ -873,18 +873,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							|| getUrbanFrac(lat, lon) < 1.e-12) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							for (int h = 0; h < ke_urbanmax; h++) {
-								Index index = fgs.getIndex();
-								fgs.set(index.set(uc, sd, h, lat, lon),
-										fgs.missingValue);
+								Index index = fgos.getIndex();
+								fgos.set(index.set(uc, sd, h, lat, lon),
+										fgos.missingValue);
 								for (int h2 = 0; h2 < ke_urbanmax - 1; h2++) {
 									index = fgow.getIndex();
 									fgow.set(
 											index.set(uc, sd, h2, h, lat, lon),
 											fgow.missingValue);
-									index = fww.getIndex();
+									index = fwow.getIndex();
 									for (int h3 = 0; h3 < ke_urbanmax - 1; h3++) {
-										fww.set(index.set(uc, sd, h2, h, h3,
-												lat, lon), fww.missingValue);
+										fwow.set(index.set(uc, sd, h2, h, h3,
+												lat, lon), fwow.missingValue);
 									}
 								}
 							}
@@ -931,21 +931,21 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	public void setFgs(int uc, int id, int j, int i, double[] fgs) {
-		Index ind = this.fgs.getIndex();
+	public void setFgos(int uc, int id, int j, int i, double[] fgs) {
+		Index ind = this.fgos.getIndex();
 		for (int k = 0; k < fgs.length; k++) {
 			ind.set(uc, id, k, j, i);
-			this.fgs.set(ind, fgs[k]);
+			this.fgos.set(ind, fgs[k]);
 		}
 	}
 
-	public void setFww(int uc, int id, int j, int i, double[][][] fww) {
-		Index ind = this.fww.getIndex();
+	public void setFwow(int uc, int id, int j, int i, double[][][] fww) {
+		Index ind = this.fwow.getIndex();
 		for (int k = 0; k < fww.length; k++) {
 			for (int l = 0; l < fww[k].length; l++) {
 				for (int m = 0; m < fww[k][l].length; m++) {
 					ind.set(uc, id, m, l, k, j, i);
-					this.fww.set(ind, fww[k][l][m]);
+					this.fwow.set(ind, fww[k][l][m]);
 				}
 			}
 		}

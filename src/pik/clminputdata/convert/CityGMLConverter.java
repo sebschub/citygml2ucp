@@ -23,9 +23,9 @@ import org.citygml4j.model.citygml.core.CityModel;
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.GMLFilenameFilter;
 import pik.clminputdata.tools.GroundOtherWallSVF;
-import pik.clminputdata.tools.GroundSkySVF;
+import pik.clminputdata.tools.GroundOtherSkySVF;
 import pik.clminputdata.tools.Integrator;
-import pik.clminputdata.tools.WallWallSVF;
+import pik.clminputdata.tools.WallOtherWallSVF;
 import ucar.ma2.InvalidRangeException;
 
 /**
@@ -209,9 +209,9 @@ public class CityGMLConverter {
 							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
 								GroundOtherWallSVF gow = new GroundOtherWallSVF(
 										iurb, id, j, i, uclm, itg);
-								GroundSkySVF gs = new GroundSkySVF(iurb, id, j,
+								GroundOtherSkySVF gs = new GroundOtherSkySVF(iurb, id, j,
 										i, uclm, itg);
-								WallWallSVF wws = new WallWallSVF(iurb, id, j,
+								WallOtherWallSVF wws = new WallOtherWallSVF(iurb, id, j,
 										i, uclm, itg);
 								System.out
 										.println("SVF Calculation for iurb = "

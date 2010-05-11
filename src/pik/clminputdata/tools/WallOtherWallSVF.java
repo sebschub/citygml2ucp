@@ -14,9 +14,9 @@ import pik.clminputdata.configuration.UrbanCLMConfiguration;
  * @author Sebastian Schubert
  * 
  */
-public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
+public class WallOtherWallSVF extends UrbanSkyViewFactor implements Integrable {
 
-	private final double[][][] fww;
+	private final double[][][] fwow;
 
 	private final Integrator itg;
 
@@ -24,12 +24,12 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 
 	private int wallIndex, roofIndex;
 
-	public WallWallSVF(int iurb, int id, int jindex, int iindex,
+	public WallOtherWallSVF(int iurb, int id, int jindex, int iindex,
 			UrbanCLMConfiguration uclm, Integrator itg) {
 		super(iurb, id, jindex, iindex, uclm);
 		this.itg = itg;
 		this.uclm = uclm;
-		fww = new double[heightLength - 1][heightLength][heightLength - 1];
+		fwow = new double[heightLength - 1][heightLength][heightLength - 1];
 	}
 
 	/**
@@ -44,12 +44,12 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 	 * @param iindex
 	 * @param jindex
 	 */
-	private WallWallSVF(double ws, double bs, double ls, double[] height,
+	private WallOtherWallSVF(double ws, double bs, double ls, double[] height,
 			int iurb, int id, int iindex, int jindex) {
 		super(ws, bs, ls, height, iurb, id, iindex, jindex);
 		this.itg = new Integrator();
 		this.uclm = new UrbanCLMConfiguration();
-		fww = new double[heightLength - 1][heightLength][heightLength - 1];
+		fwow = new double[heightLength - 1][heightLength][heightLength - 1];
 	}
 
 	@Override
@@ -95,12 +95,12 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 						// part is already included)
 						if (sFullVis > height[j2]) {
 							try {
-								fww[j2][i][j] = itg.integral(this, max(sNonVis,
+								fwow[j2][i][j] = itg.integral(this, max(sNonVis,
 										height[j2]), min(sFullVis,
 										height[j2 + 1]));
 							} catch (NoConvergenceException e) {
 								// use result anyway
-								fww[j2][i][j] = e.getResult();
+								fwow[j2][i][j] = e.getResult();
 								System.out
 										.printf(
 												"Integration of FWW at uc=%d, nd=%d,j=%d, i=%d, wheight=%d, rheight=%d and wheight=%d exceeded maximum number of steps.%n",
@@ -113,14 +113,14 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 							// plus part that is fully visible (sending area of
 							// that
 							// part is included)
-							fww[j2][i][j] += fprl16(height[j], height[j + 1],
+							fwow[j2][i][j] += fprl16(height[j], height[j + 1],
 									max(sFullVis, height[j2]), height[j2 + 1],
 									ls, 2 * ws + bs);
 						}
 						// /sending * sending/receiving
-						fww[j2][i][j] *= 1. / (height[j2 + 1] - height[j2]);
-						fww[j][i][j2] = (height[j2 + 1] - height[j2])
-								/ (height[j + 1] - height[j]) * fww[j2][i][j];
+						fwow[j2][i][j] *= 1. / (height[j2 + 1] - height[j2]);
+						fwow[j][i][j2] = (height[j2 + 1] - height[j2])
+								/ (height[j + 1] - height[j]) * fwow[j2][i][j];
 					}
 				}
 			}
@@ -155,7 +155,7 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		// System.out.println(fgow[i][j]);
 		// }
 		// }
-		uclm.setFww(iurb, id, jindex, iindex, fww);
+		uclm.setFwow(iurb, id, jindex, iindex, fwow);
 	}
 
 	public static void main(String[] args) {
@@ -163,14 +163,14 @@ public class WallWallSVF extends UrbanSkyViewFactor implements Integrable {
 		Integrator itg = new Integrator();
 		uclm.setBuildingWidth(0, 0, 20, 30, 10.);
 		uclm.setStreetWidth(0, 0, 20, 30, 20.);
-		WallWallSVF svf = new WallWallSVF(0, 0, 20, 30, uclm, itg);
+		WallOtherWallSVF svf = new WallOtherWallSVF(0, 0, 20, 30, uclm, itg);
 		svf.run();
 		System.out.println(uclm.getStreetLength(0, 20));
 		for (int i = 0; i < uclm.getHeightA().length - 1; i++) {
 			for (int j = 0; j < uclm.getHeightA().length; j++) {
 				for (int k = 0; k < uclm.getHeightA().length - 1; k++) {
 					System.out.println(i + "  " + j + "  " + k + "  "
-							+ svf.fww[i][j][k]);
+							+ svf.fwow[i][j][k]);
 				}
 			}
 		}
