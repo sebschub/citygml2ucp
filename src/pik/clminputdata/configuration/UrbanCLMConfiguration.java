@@ -324,7 +324,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		fwos = new WritableFieldFloat("FWOS", ldim, "SVF_wall2othersky",
 				"skyview factor from wall to sky of two canyons", "1",
 				"rotated_pole");
-		toWrite.add(this.fwow);
+		toWrite.add(this.fwos);
 
 	}
 
@@ -893,6 +893,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 									fgow.set(
 											index.set(uc, sd, h2, h, lat, lon),
 											fgow.missingValue);
+									index = fwos.getIndex();
+									fwos.set(index.set(uc,sd,h,h2,lat,lon), fwos.missingValue);
 									index = fwow.getIndex();
 									for (int h3 = 0; h3 < ke_urbanmax - 1; h3++) {
 										fwow.set(index.set(uc, sd, h2, h, h3,

@@ -245,12 +245,17 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 	}
 
 	/**
-	 * Skyview factor * sending area for two normal elements 1 to 3 (12 normal to 3)
+	 * Skyview factor * sending area for two normal elements 1 to 3 (12 normal
+	 * to 3)
 	 * 
-	 * @param h1 Larger distance from 3
-	 * @param h2 Smaller distance from 3
-	 * @param z Size of 3
-	 * @param ls Common side of 12 and 3 (street length)
+	 * @param h1
+	 *            Larger distance from 3
+	 * @param h2
+	 *            Smaller distance from 3
+	 * @param z
+	 *            Size of 3
+	 * @param ls
+	 *            Common side of 12 and 3 (street length)
 	 * @return
 	 */
 	public static double fnrm13(double h1, double h2, double z, double ls) {

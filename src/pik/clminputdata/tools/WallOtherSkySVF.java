@@ -23,6 +23,7 @@ public class WallOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 	private final UrbanCLMConfiguration uclm;
 
 	private int roofIndex;
+
 	public WallOtherSkySVF(int iurb, int id, int jindex, int iindex,
 			UrbanCLMConfiguration uclm, Integrator itg) {
 		super(iurb, id, jindex, iindex, uclm);
@@ -33,8 +34,8 @@ public class WallOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 
 	@Override
 	public void run() {
-		// height of the building in middle
-		for (int i = 0; i < heightLength; i++) {
+		// height of the building in middle, case treated extra
+		for (int i = 0; i < heightLength - 1; i++) {
 			roofIndex = i;
 			// partly visible length
 			double sFullVis;
@@ -63,18 +64,25 @@ public class WallOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 					// plus part that is fully visible (sending area of that
 					// part is included)
 					fws[j][i] += fnrm13(height[heightLength - 1]
-							- max(sFullVis, height[j]), height[j + 1], 2 * ws
-							+ bs, ls);
+							- max(sFullVis, height[j]),
+							height[heightLength - 1] - height[j + 1], 2 * ws
+									+ bs, ls);
 				}
 				// /sending * sending/receiving
 				fws[j][i] *= 1. / (2 * ws + bs);
 			}
 		}
+		for (int j = 0; j < heightLength - 1; j++) {
+			fws[j][heightLength - 1] = fnrm13(height[heightLength - 1]
+					- height[j], height[heightLength - 1] - height[j + 1], ws,
+					ls);
+			fws[j][heightLength - 1] *= 1. / (2 * ws + bs);
+		}
 		saveToGlobal();
 	}
 
 	/*
-	 * Skyview factor has to be devided by the sending surface area at the end
+	 * Skyview factor has to be divided by the sending surface area at the end
 	 * 
 	 * (non-Javadoc)
 	 * 
@@ -82,19 +90,32 @@ public class WallOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 	 */
 	@Override
 	public double f(double x) {
-		double l = (2 * ws + bs) / (height[heightLength - 1] - x)
-				* (height[heightLength - 1] - height[roofIndex]);
+		double l = ws * (height[heightLength - 1] - x)
+				/ (height[roofIndex] - x);
 		return nrmLRec(l, ls, height[heightLength - 1] - x);
 
 	}
 
 	@Override
 	protected void saveToGlobal() {
-		// for (int i = 0; i < fgow.length; i++) {
-		// for (int j = 0; j < fgow[i].length; j++) {
-		// System.out.println(fgow[i][j]);
-		// }
-		// }
 		uclm.setFwos(iurb, id, jindex, iindex, fws);
+	}
+
+	public static void main(String[] args) {
+		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration();
+		uclm.initalizeSVFFields();
+		Integrator itg = new Integrator();
+		uclm.setBuildingWidth(0, 0, 20, 30, 10.);
+		uclm.setStreetWidth(0, 0, 20, 30, 20.);
+		WallOtherSkySVF svf = new WallOtherSkySVF(0, 0, 20, 30, uclm, itg);
+		svf.run();
+		System.out.println(svf.ls);
+		System.out.println(svf.ws);
+		System.out.println(svf.bs);
+		for (int i = 0; i < uclm.getHeightA().length - 1; i++) {
+			for (int j = 0; j < uclm.getHeightA().length; j++) {
+				System.out.println(i + "  " + j + "  " + "  " + svf.fws[i][j]);
+			}
+		}
 	}
 }
