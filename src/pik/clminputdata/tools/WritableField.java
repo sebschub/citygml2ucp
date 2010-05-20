@@ -23,7 +23,7 @@ import ucar.nc2.Variable;
  */
 public class WritableField extends ArrayDouble implements NetCDFWritable {
 
-	public final double missingValue=-99999;
+	public final double missingValue=-999.;
 	
 	/**
 	 * Name of the field variable in the NetCDF file
