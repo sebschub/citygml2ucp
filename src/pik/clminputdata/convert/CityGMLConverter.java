@@ -196,7 +196,7 @@ public class CityGMLConverter {
 
 			uclm.initalizeSVFFields();
 			
-			Integrator itg = new Integrator();
+//			Integrator itg = new Integrator();
 
 			exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
 					Long.MAX_VALUE, TimeUnit.MILLISECONDS,
@@ -209,13 +209,13 @@ public class CityGMLConverter {
 						for (int i = 0; i < uclm.getIe_tot(); i++) {
 							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
 								GroundOtherWallSVF gow = new GroundOtherWallSVF(
-										iurb, id, j, i, uclm, itg);
+										iurb, id, j, i, uclm, new Integrator());
 								GroundOtherSkySVF gs = new GroundOtherSkySVF(iurb, id, j,
-										i, uclm, itg);
+										i, uclm, new Integrator());
 								WallOtherWallSVF wws = new WallOtherWallSVF(iurb, id, j,
-										i, uclm, itg);
+										i, uclm, new Integrator());
 								WallOtherSkySVF wss = new WallOtherSkySVF(iurb, id, j,
-										i, uclm, itg);
+										i, uclm, new Integrator());
 								System.out
 										.println("SVF Calculation for iurb = "
 												+ iurb + ", id = " + id

@@ -831,8 +831,23 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			setKe_urban(uc, maxLength[uc]);
 		}
 		ke_urbanmax = maxmaxLength;
-		System.out.println("Height reduce to " + ke_urbanmax + " levels.");
+		System.out.println("Height reduced to " + ke_urbanmax + " levels.");
+		
+		double maxnow = Double.MIN_VALUE;
+		for (int uc = 0; uc < getNuclasses(); uc++) {
+			for (int lat = 0; lat < getJe_tot(); lat++) {
+				for (int lon = 0; lon < getIe_tot(); lon++) {
+					for (int sd = 0; sd < getNstreedir(); sd++) {
+						if (getBuildProb(uc, sd, ke_urbanmax-1, lat, lon) > maxnow) {
+							maxnow = getBuildProb(uc, sd, ke_urbanmax-1, lat, lon);
+						}
+					}
+				}
+			}
+		}
 
+		System.out.println("Highest building probability on the highest level is now " + maxnow);
+		
 		height1.setLength(maxmaxLength);
 
 		buildProb.resetDim();
@@ -959,7 +974,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			for (int l = 0; l < fww[k].length; l++) {
 				for (int m = 0; m < fww[k][l].length; m++) {
 					ind.set(uc, id, m, l, k, j, i);
-					this.fwow.set(ind, fww[k][l][m]);
+					this.fwow.set(ind, fww[m][l][k]);
 				}
 			}
 		}
