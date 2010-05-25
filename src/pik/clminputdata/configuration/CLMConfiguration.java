@@ -7,7 +7,7 @@ import java.util.List;
 import pik.clminputdata.tools.NetCDFData;
 import pik.clminputdata.tools.WritableAxis;
 import pik.clminputdata.tools.WritableField;
-import pik.clminputdata.tools.WritableFieldFloat;
+import pik.clminputdata.tools.WritableFieldDouble;
 import pik.clminputdata.tools.WritableRotatedPole;
 
 import ucar.ma2.Index;
@@ -122,18 +122,18 @@ public class CLMConfiguration extends NetCDFData {
 		List<Dimension> dimlist = new ArrayList<Dimension>();
 		dimlist.add(meridionalAxis);
 
-		area = new WritableFieldFloat("area", dimlist, "area_element",
+		area = new WritableFieldDouble("area", dimlist, "area_element",
 				"size of area element", "km2", "");
 		calculateArea();
 		toWrite.add(area);
 
 		dimlist.add(zonalAxis);
 
-		lon = new WritableFieldFloat("lon", dimlist, "longitude", "longitude",
+		lon = new WritableFieldDouble("lon", dimlist, "longitude", "longitude",
 				"degrees east", "");
 		toWrite.add(lon);
 
-		lat = new WritableFieldFloat("lat", dimlist, "latitude", "latitude",
+		lat = new WritableFieldDouble("lat", dimlist, "latitude", "latitude",
 				"degrees north", "");
 		toWrite.add(lat);
 

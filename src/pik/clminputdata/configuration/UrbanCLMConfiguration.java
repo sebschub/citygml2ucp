@@ -9,7 +9,7 @@ import java.util.List;
 import pik.clminputdata.tools.WritableAxis;
 import pik.clminputdata.tools.WritableDimension;
 import pik.clminputdata.tools.WritableField;
-import pik.clminputdata.tools.WritableFieldFloat;
+import pik.clminputdata.tools.WritableFieldDouble;
 import pik.clminputdata.tools.WritableFieldInt;
 
 import ucar.ma2.Index;
@@ -210,7 +210,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// ldim is now latdim, londim
 
 		// impervious surface fraction
-		this.urbanFrac = new WritableFieldFloat("FR_URBAN", ldim,
+		this.urbanFrac = new WritableFieldDouble("FR_URBAN", ldim,
 				"urban_fraction", "fraction of urban surfaces in grid cell",
 				"1", "rotated_pole");
 		toWrite.add(this.urbanFrac);
@@ -218,13 +218,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
 
-		this.urbanClassFrac = new WritableFieldFloat("FR_URBANCL", ldim,
+		this.urbanClassFrac = new WritableFieldDouble("FR_URBANCL", ldim,
 				"urban_classes_fraction", "urban classes fraction", "1",
 				"rotated_pole");
 		toWrite.add(this.urbanClassFrac);
 
 		// building fraction
-		this.buildingFrac = new WritableFieldFloat("FR_BUILD", ldim,
+		this.buildingFrac = new WritableFieldDouble("FR_BUILD", ldim,
 				"building_fraction",
 				"fraction of building surface in grid cell", "1",
 				"rotated_pole");
@@ -233,24 +233,24 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
 
-		this.streetFrac = new WritableFieldFloat("FR_STREETD", ldim,
+		this.streetFrac = new WritableFieldDouble("FR_STREETD", ldim,
 				"street_fraction", "street fraction", "1", "rotated_pole");
 		toWrite.add(streetFrac);
 
-		this.streetLength = new WritableFieldFloat("STREET_LGT", ldim.subList(
+		this.streetLength = new WritableFieldDouble("STREET_LGT", ldim.subList(
 				1, 3), "Street Length", "average street length", "km",
 				"rotated_pole");
 		toWrite.add(streetLength);
 		calculateStreetLength();
 
 		// street width
-		this.streetWidth = new WritableFieldFloat("STREET_W", ldim,
+		this.streetWidth = new WritableFieldDouble("STREET_W", ldim,
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.streetWidth);
 
 		// building width
-		this.buildingWidth = new WritableFieldFloat("BUILD_W", ldim,
+		this.buildingWidth = new WritableFieldDouble("BUILD_W", ldim,
 				"building_width", "building width in grid cell", "m",
 				"rotated_pole");
 		toWrite.add(this.buildingWidth);
@@ -259,7 +259,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
 		// building probability
-		this.buildProb = new WritableFieldFloat("BUILD_PROP", ldim,
+		this.buildProb = new WritableFieldDouble("BUILD_PROP", ldim,
 				"building_probability",
 				"probability to have a building at the height", "1",
 				"rotated_pole");
@@ -297,7 +297,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(this.zonalAxis);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
 
-		fgos = new WritableFieldFloat("FGOS", ldim, "SVF_ground2othersky",
+		fgos = new WritableFieldDouble("FGOS", ldim, "SVF_ground2othersky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
 		toWrite.add(this.fgos);
@@ -305,7 +305,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
 
-		fgow = new WritableFieldFloat("FGOW", ldim, "SVF_ground2otherwall",
+		fgow = new WritableFieldDouble("FGOW", ldim, "SVF_ground2otherwall",
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
 		toWrite.add(this.fgow);
@@ -314,14 +314,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwallsend, latdim,
 		// londim
 
-		fwow = new WritableFieldFloat("FWOW", ldim, "SVF_wall2otherwall",
+		fwow = new WritableFieldDouble("FWOW", ldim, "SVF_wall2otherwall",
 				"skyview factor from wall to wall of other canyon", "1",
 				"rotated_pole");
 		toWrite.add(this.fwow);
 
 		ldim.remove(2);
 		// dims is now nucdim, streetdir, zdim, zdimwallsend, latdim, londim
-		fwos = new WritableFieldFloat("FWOS", ldim, "SVF_wall2othersky",
+		fwos = new WritableFieldDouble("FWOS", ldim, "SVF_wall2othersky",
 				"skyview factor from wall to sky of two canyons", "1",
 				"rotated_pole");
 		toWrite.add(this.fwos);
