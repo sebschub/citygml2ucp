@@ -101,6 +101,15 @@ public class CityGMLConverterConf {
 	private static final double heightDefault[] = { 0., 5., 10., 15., 20., 25.,
 			30., 35., 40., 45. };
 
+	boolean useClasses;
+	private static final boolean useClassesDefault = false;
+	
+	int nClass;
+	private static final int nClassDefault = 6;
+	
+	int[] classIndex;
+	private static final int classIndexDefault[] = {6,7,8,9,10,11};
+	
 	/**
 	 * Input coordinate system for proj4 transformation
 	 */
@@ -314,6 +323,10 @@ public class CityGMLConverterConf {
 			ke_urban = prop.getIntArray("ke_urban", ke_urbanDefault);
 			height = prop.getDoubleArray("height", heightDefault);
 
+			useClasses = prop.getBoolean("useClasses", useClassesDefault);
+			nClass = prop.getInt("nClass", nClassDefault);
+			classIndex = prop.getIntArray("classIndex", classIndexDefault );
+			
 			proj4code = prop.getString("proj4code", proj4codeDefault);
 
 			maxbuild_radius = prop.getDouble("maxbuild_radius",
@@ -416,7 +429,15 @@ public class CityGMLConverterConf {
 			System.out.print(height[i] + " ");
 		}
 		System.out.println();
-
+		
+		System.out.println("useClasses: " + useClasses);
+		System.out.println("nClass: " + nClass);
+		System.out.print("classIndex: ");
+		for (int i = 0; i < classIndex.length; i++) {
+			System.out.print(classIndex[i] + " ");
+		}
+		System.out.println();
+		
 		System.out.println("maxbuild_radius: " + maxbuild_radius);
 		System.out.println("maxcheck_radius: " + maxcheck_radius);
 		System.out.println("mindist: " + mindist);

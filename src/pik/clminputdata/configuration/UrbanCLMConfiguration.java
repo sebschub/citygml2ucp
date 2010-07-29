@@ -16,6 +16,7 @@ import ucar.ma2.Index;
 import ucar.nc2.Dimension;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionPoint;
+import visad.TextControl.Justification;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
@@ -132,9 +133,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 * Minimum height of buildings
 	 */
 	public double minHeight = Double.MAX_VALUE;
+	
+	private boolean justClasses;
 
 	private void initalizeUrbanFields(int nuclasses, double[] streetdir,
-			int[] ke_urban, double[] height) {
+			int[] ke_urban, double[] height, boolean justClasses) {
+		
+		this.justClasses = justClasses;
+		
 		if (nuclasses < 1) {
 			throw new IllegalArgumentException("nuclasses must be positive");
 		}
@@ -228,7 +234,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"building_fraction",
 				"fraction of building surface in grid cell", "1",
 				"rotated_pole");
-		toWrite.add(this.buildingFrac);
+		if (!justClasses) toWrite.add(this.buildingFrac);
 
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
@@ -367,16 +373,16 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		super();
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
 				new int[] { 10 }, new double[] { 0., 3., 7., 10., 13., 19.,
-						25., 30., 38., 45. });
+						25., 30., 38., 45. }, false);
 	}
 
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height) throws IllegalArgumentException {
+			double[] height, boolean justClasses) throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot);
-		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
+		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height, justClasses);
 	}
 
 	public int getNuclasses() {
@@ -863,8 +869,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					if (getBuildingFrac(uc, lat, lon) < 1.e-12
-							|| getUrbanFrac(lat, lon) < 1.e-12) {
+					boolean setUndef;
+					if (justClasses) {
+						setUndef = getUrbanFrac(lat, lon) < 1.e-12;
+					} else {
+						setUndef = getBuildingFrac(uc, lat, lon) < 1.e-12
+						|| getUrbanFrac(lat, lon) < 1.e-12;
+					}
+					if (setUndef) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							setBuildingWidth(uc, sd, lat, lon,
 									buildingWidth.missingValue);

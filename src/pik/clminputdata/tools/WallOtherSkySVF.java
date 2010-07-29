@@ -102,7 +102,7 @@ public class WallOtherSkySVF extends UrbanSkyViewFactor implements Integrable {
 	}
 
 	public static void main(String[] args) {
-		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(40., -170., 0.025, 0.025, 1., 0., 90, 90, 1, new double[] {-45., 0., 45., 90.}, new int[] {10}, new double[] {0., 5., 10., 15., 20., 30., 40., 55., 70., 80.});
+		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(40., -170., 0.025, 0.025, 1., 0., 90, 90, 1, new double[] {-45., 0., 45., 90.}, new int[] {10}, new double[] {0., 5., 10., 15., 20., 30., 40., 55., 70., 80.}, false);
 		uclm.initalizeSVFFields();
 		Integrator itg = new Integrator();
 		uclm.setBuildingWidth(0, 0, 56, 89, 7.20629);
