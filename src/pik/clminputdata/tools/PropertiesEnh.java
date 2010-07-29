@@ -148,7 +148,7 @@ public class PropertiesEnh extends Properties {
 					cpos = cpos2;
 				} else {
 					temp.add(Integer.parseInt(str.substring(cpos + 1,
-							str.length() - 1).trim()));
+							str.length()).trim()));
 					cpos = -2;
 				}
 			} while (cpos != -2);
