@@ -818,11 +818,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							for (int lev = 0; lev < maxLength[uc]; lev++) {
 								sum += getBuildProb(uc, sd, lev, lat, lon);
 							}
-							sum = 1. / sum;
-							for (int lev = 0; lev < maxLength[uc]; lev++) {
-								setBuildProb(uc, sd, lev, lat, lon,
-										getBuildProb(uc, sd, lev, lat, lon)
-												* sum);
+							if (sum>1.e-14) { 
+								sum = 1. / sum;
+								for (int lev = 0; lev < maxLength[uc]; lev++) {
+									setBuildProb(uc, sd, lev, lat, lon,
+											getBuildProb(uc, sd, lev, lat, lon)
+											* sum);
+								}
 							}
 							for (int lev = maxLength[uc]; lev < maxmaxLength; lev++) {
 								setBuildProb(uc, sd, lev, lat, lon, 0.);
