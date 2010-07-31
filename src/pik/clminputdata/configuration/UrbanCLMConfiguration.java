@@ -16,8 +16,6 @@ import ucar.ma2.Index;
 import ucar.nc2.Dimension;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionPoint;
-import visad.TextControl.Justification;
-
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.tan;
@@ -133,14 +131,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 * Minimum height of buildings
 	 */
 	public double minHeight = Double.MAX_VALUE;
-	
+
 	private boolean justClasses;
 
 	private void initalizeUrbanFields(int nuclasses, double[] streetdir,
 			int[] ke_urban, double[] height, boolean justClasses) {
-		
+
 		this.justClasses = justClasses;
-		
+
 		if (nuclasses < 1) {
 			throw new IllegalArgumentException("nuclasses must be positive");
 		}
@@ -234,7 +232,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"building_fraction",
 				"fraction of building surface in grid cell", "1",
 				"rotated_pole");
-		if (!justClasses) toWrite.add(this.buildingFrac);
+		if (!justClasses)
+			toWrite.add(this.buildingFrac);
 
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
@@ -379,10 +378,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height, boolean justClasses) throws IllegalArgumentException {
+			double[] height, boolean justClasses)
+			throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot);
-		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height, justClasses);
+		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height,
+				justClasses);
 	}
 
 	public int getNuclasses() {
@@ -490,6 +491,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		Index ind = buildingWidth.getIndex();
 		return buildingWidth.get(ind.set(uc, dir, lat, lon));
+	}
+
+	public double getStreetFrac(int uc, int id, int lat, int lon) {
+		Index ind = streetFrac.getIndex();
+		return streetFrac.get(ind.set(uc, id, lat, lon));
 	}
 
 	public void setStreetFrac(int uc, int sd, int rlati, int rloni, double value) {
@@ -818,12 +824,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							for (int lev = 0; lev < maxLength[uc]; lev++) {
 								sum += getBuildProb(uc, sd, lev, lat, lon);
 							}
-							if (sum>1.e-14) { 
+							if (sum > 1.e-14) {
 								sum = 1. / sum;
 								for (int lev = 0; lev < maxLength[uc]; lev++) {
 									setBuildProb(uc, sd, lev, lat, lon,
 											getBuildProb(uc, sd, lev, lat, lon)
-											* sum);
+													* sum);
 								}
 							}
 							for (int lev = maxLength[uc]; lev < maxmaxLength; lev++) {
@@ -840,22 +846,25 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 		ke_urbanmax = maxmaxLength;
 		System.out.println("Height reduced to " + ke_urbanmax + " levels.");
-		
+
 		double maxnow = Double.MIN_VALUE;
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
 					for (int sd = 0; sd < getNstreedir(); sd++) {
-						if (getBuildProb(uc, sd, ke_urbanmax-1, lat, lon) > maxnow) {
-							maxnow = getBuildProb(uc, sd, ke_urbanmax-1, lat, lon);
+						if (getBuildProb(uc, sd, ke_urbanmax - 1, lat, lon) > maxnow) {
+							maxnow = getBuildProb(uc, sd, ke_urbanmax - 1, lat,
+									lon);
 						}
 					}
 				}
 			}
 		}
 
-		System.out.println("Highest building probability on the highest level is now " + maxnow);
-		
+		System.out
+				.println("Highest building probability on the highest level is now "
+						+ maxnow);
+
 		height1.setLength(maxmaxLength);
 
 		buildProb.resetDim();
@@ -871,12 +880,19 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
-					boolean setUndef;
+					boolean setUndef = true;
+					for (int id = 0; id < getNstreedir(); id++) {
+						if (getStreetFrac(uc, id, lat, lon) > 1.e-10) {
+							setUndef = false;
+						}
+					}
 					if (justClasses) {
-						setUndef = getUrbanFrac(lat, lon) < 1.e-12;
+						setUndef = (getUrbanFrac(lat, lon) < 1.e-12)
+								|| setUndef;
 					} else {
-						setUndef = getBuildingFrac(uc, lat, lon) < 1.e-12
-						|| getUrbanFrac(lat, lon) < 1.e-12;
+						setUndef = (getBuildingFrac(uc, lat, lon) < 1.e-12)
+								|| (getUrbanFrac(lat, lon) < 1.e-12)
+								|| setUndef;
 					}
 					if (setUndef) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
@@ -923,7 +939,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 											index.set(uc, sd, h2, h, lat, lon),
 											fgow.missingValue);
 									index = fwos.getIndex();
-									fwos.set(index.set(uc,sd,h,h2,lat,lon), fwos.missingValue);
+									fwos.set(
+											index.set(uc, sd, h, h2, lat, lon),
+											fwos.missingValue);
 									index = fwow.getIndex();
 									for (int h3 = 0; h3 < ke_urbanmax - 1; h3++) {
 										fwow.set(index.set(uc, sd, h2, h, h3,
