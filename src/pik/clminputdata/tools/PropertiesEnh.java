@@ -1,6 +1,5 @@
 package pik.clminputdata.tools;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -84,33 +83,11 @@ public class PropertiesEnh extends Properties {
 			return defaultValue;
 		}
 		str = str.trim();
-
-		ArrayList<Double> temp = new ArrayList<Double>();
-
-		int cpos = str.indexOf(',');
-		if (cpos == -1) {
-			temp.add(Double.parseDouble(str.trim()));
-		} else {
-			// get first element
-			temp.add(Double.parseDouble(str.substring(0, cpos).trim()));
-			int cpos2;
-			do {
-				cpos2 = str.indexOf(',', cpos + 1);
-				if (cpos2 != -1) {
-					temp.add(Double.parseDouble(str.substring(cpos + 1,
-							cpos2).trim()));
-					cpos = cpos2;
-				} else {
-					temp.add(Double.parseDouble(str.substring(cpos + 1,
-							str.length() - 1).trim()));
-					cpos = -2;
-				}
-			} while (cpos != -2);
-		}
-
-		double[] rarray = new double[temp.size()];
+		String[] temp = str.split(",");
+		
+		double[] rarray = new double[temp.length];
 		for (int i = 0; i < rarray.length; i++) {
-			rarray[i] = temp.get(i);
+			rarray[i] = Double.valueOf(temp[i]);
 		}
 		return rarray;
 	}
@@ -130,33 +107,11 @@ public class PropertiesEnh extends Properties {
 			return defaultValue;
 		}
 		str = str.trim();
+		String[] temp = str.split(",");
 
-		ArrayList<Integer> temp = new ArrayList<Integer>();
-
-		int cpos = str.indexOf(',');
-		if (cpos == -1) {
-			temp.add(Integer.parseInt(str.trim()));
-		} else {
-			// get first element
-			temp.add(Integer.parseInt(str.substring(0, cpos).trim()));
-			int cpos2;
-			do {
-				cpos2 = str.indexOf(',', cpos + 1);
-				if (cpos2 != -1) {
-					temp.add(Integer.parseInt(str
-							.substring(cpos + 1, cpos2).trim()));
-					cpos = cpos2;
-				} else {
-					temp.add(Integer.parseInt(str.substring(cpos + 1,
-							str.length()).trim()));
-					cpos = -2;
-				}
-			} while (cpos != -2);
-		}
-
-		int[] rarray = new int[temp.size()];
+		int[] rarray = new int[temp.length];
 		for (int i = 0; i < rarray.length; i++) {
-			rarray[i] = temp.get(i);
+			rarray[i] = Integer.valueOf(temp[i]);
 		}
 		return rarray;
 	}
