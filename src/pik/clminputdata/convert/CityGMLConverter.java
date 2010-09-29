@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement; //import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.proj4.Proj4;
@@ -27,7 +26,6 @@ import pik.clminputdata.tools.GroundOtherSkySVF;
 import pik.clminputdata.tools.Integrator;
 import pik.clminputdata.tools.WallOtherSkySVF;
 import pik.clminputdata.tools.WallOtherWallSVF;
-import ucar.ma2.InvalidRangeException;
 
 /**
  * Main programme.
@@ -151,15 +149,9 @@ public class CityGMLConverter {
 	 * 
 	 * @param args
 	 *            Path to properties of the run
-	 * @throws IOException
-	 * @throws JAXBException
-	 * @throws IllegalArgumentException
-	 * @throws InvalidRangeException
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws IOException, JAXBException,
-			IllegalArgumentException, InvalidRangeException,
-			InterruptedException {
+	public static void main(String[] args) throws Exception {
 
 		long startTime = new Date().getTime();
 
@@ -184,6 +176,24 @@ public class CityGMLConverter {
 			if (conf.consistentOutput) {
 				uclm.defineMissingData();
 			}
+		} else if(conf.fakeParameter) {
+			readImpSurfaceFile(conf, uclm);
+			for (int lon = 0; lon < conf.ie_tot; lon++) {
+				for (int lat = 0; lat < conf.je_tot; lat++) {
+					if (uclm.getUrbanFrac(lat, lon)>0.) {
+						for (int uc = 0; uc < conf.nClass; uc++) {
+							for (int dir = 0; dir < conf.streetdir.length; dir++) {
+								uclm.setStreetFrac(uc, dir, lat, lon, 1./conf.streetdir.length);
+								uclm.setBuildingWidth(uc, dir, lat, lon, conf.buildingWidth);
+								uclm.setStreetWidth(uc, dir, lat, lon, conf.streetWidth);
+								for (int hz = 0; hz < conf.ke_urban[lon]; hz++) {
+									uclm.setBuildProb(uc, dir, hz, lat, lon, conf.buildingProp[hz]);
+								}
+							}
+						}
+					}
+				}
+			}				
 		} else {
 
 			Proj4 soldner = new Proj4(conf.proj4code,

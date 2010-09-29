@@ -3,7 +3,6 @@ package pik.clminputdata.convert;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.Reader;
 import pik.clminputdata.tools.PropertiesEnh;
 
@@ -101,6 +100,22 @@ public class CityGMLConverterConf {
 	private static final double heightDefault[] = { 0., 5., 10., 15., 20., 25.,
 			30., 35., 40., 45. };
 
+	/**
+	 * Use entered parameters
+	 */
+	boolean fakeParameter;
+	private static final boolean fakeParameterDefault = false;
+	
+	double buildingWidth;
+	private static final double buildingWidthDefault = 10;
+	
+	double streetWidth;
+	private static final double streetWidthDefault = 20;
+	
+	double[] buildingProp;
+	private static final double buildingPropDefault[] = { 0., 0.05, 0.25, 0.10, 0.20, 0.20, 0.10, 0.05, 0.05, 0.};
+
+	
 	boolean useClasses;
 	private static final boolean useClassesDefault = false;
 	
@@ -269,10 +284,9 @@ public class CityGMLConverterConf {
 
 	/**
 	 * Constructor reading from default configuration file.
-	 * 
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	public CityGMLConverterConf() throws IOException {
+	public CityGMLConverterConf() throws Exception {
 		readConf(new File(filenameDefault), false);
 	}
 
@@ -281,9 +295,9 @@ public class CityGMLConverterConf {
 	 * 
 	 * @param confFilename
 	 *            Name of configuration file
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	public CityGMLConverterConf(String confFilename) throws IOException {
+	public CityGMLConverterConf(String confFilename) throws Exception {
 		readConf(new File(confFilename), true);
 	}
 
@@ -294,10 +308,10 @@ public class CityGMLConverterConf {
 	 *            Configuration file
 	 * @param explicitlyGivenFile
 	 *            Explicitly given or from default?
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	private void readConf(File confFile, boolean explicitlyGivenFile)
-			throws IOException {
+			throws Exception {
 		if (confFile.exists()) {
 
 			// read the file
@@ -323,9 +337,26 @@ public class CityGMLConverterConf {
 			ke_urban = prop.getIntArray("ke_urban", ke_urbanDefault);
 			height = prop.getDoubleArray("height", heightDefault);
 
+			fakeParameter = prop.getBoolean("fakeParameter", fakeParameterDefault);
+			
 			useClasses = prop.getBoolean("useClasses", useClassesDefault);
-			nClass = prop.getInt("nClass", nClassDefault);
-			classIndex = prop.getIntArray("classIndex", classIndexDefault );
+			if (fakeParameter&&useClasses) {
+				throw new Exception("useClasses and fakeParameter cannot be true at the same time");
+			}
+			
+			if (fakeParameter) {
+				buildingWidth = prop.getDouble("buildingWidth", buildingWidthDefault);
+				streetWidth = prop.getDouble("streetWidth", streetWidthDefault);
+				buildingProp = prop.getDoubleArray("buildingProp", buildingPropDefault);
+				if (buildingProp.length!=height.length) {
+					throw new Exception("Wrong height number of height levels");
+				}
+			}
+			
+			if (useClasses) {
+				nClass = prop.getInt("nClass", nClassDefault);
+				classIndex = prop.getIntArray("classIndex", classIndexDefault );
+			}
 			
 			proj4code = prop.getString("proj4code", proj4codeDefault);
 
@@ -429,12 +460,18 @@ public class CityGMLConverterConf {
 			System.out.print(height[i] + " ");
 		}
 		System.out.println();
-		
+		System.out.println("fakeParameters: " + fakeParameter);
+		if(fakeParameter) {
+			System.out.println("buildingWidth: " + buildingWidth);
+			System.out.println("streetWidth: " + streetWidth);
+		}
 		System.out.println("useClasses: " + useClasses);
-		System.out.println("nClass: " + nClass);
-		System.out.print("classIndex: ");
-		for (int i = 0; i < classIndex.length; i++) {
-			System.out.print(classIndex[i] + " ");
+		if (useClasses) {
+			System.out.println("nClass: " + nClass);
+			System.out.print("classIndex: ");
+			for (int i = 0; i < classIndex.length; i++) {
+				System.out.print(classIndex[i] + " ");
+			}
 		}
 		System.out.println();
 		
