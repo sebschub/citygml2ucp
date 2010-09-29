@@ -776,8 +776,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	}
 
 	/**
-	 * Find the highest index for which the summed probability over that level
-	 * is smaller than {@code ignoreBP}, set all height parameters
+	 * Find the highest index for every grid cell for which the summed probability over that level
+	 * is smaller than {@code ignoreBP}, set height parameters
 	 * correspondingly and reduce output size.
 	 * 
 	 * @param ignoredBP
@@ -800,6 +800,21 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 								if (ignored < ignoredBP)
 									localeMaxLength--;
 							}
+							double sum = 0.;
+							for (int lev = 0; lev < localeMaxLength; lev++) {
+								sum += getBuildProb(uc, sd, lev, lat, lon);
+							}
+							if (sum > 1.e-14) {
+								sum = 1. / sum;
+								for (int lev = 0; lev < localeMaxLength; lev++) {
+									setBuildProb(uc, sd, lev, lat, lon,
+											getBuildProb(uc, sd, lev, lat, lon)
+													* sum);
+								}
+							}
+							for (int lev = localeMaxLength; lev < getKe_urban(uc); lev++) {
+								setBuildProb(uc, sd, lev, lat, lon, 0.);
+							}
 							if (localeMaxLength > maxLength[uc])
 								maxLength[uc] = localeMaxLength;
 						}
@@ -815,55 +830,12 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			}
 		}
 
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			for (int lat = 0; lat < getJe_tot(); lat++) {
-				for (int lon = 0; lon < getIe_tot(); lon++) {
-					if (getBuildingFrac(uc, lat, lon) > 1.e-12) {
-						for (int sd = 0; sd < getNstreedir(); sd++) {
-							double sum = 0.;
-							for (int lev = 0; lev < maxLength[uc]; lev++) {
-								sum += getBuildProb(uc, sd, lev, lat, lon);
-							}
-							if (sum > 1.e-14) {
-								sum = 1. / sum;
-								for (int lev = 0; lev < maxLength[uc]; lev++) {
-									setBuildProb(uc, sd, lev, lat, lon,
-											getBuildProb(uc, sd, lev, lat, lon)
-													* sum);
-								}
-							}
-							for (int lev = maxLength[uc]; lev < maxmaxLength; lev++) {
-								setBuildProb(uc, sd, lev, lat, lon, 0.);
-							}
-						}
-					}
-				}
-			}
-		}
-
+		
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			setKe_urban(uc, maxLength[uc]);
 		}
 		ke_urbanmax = maxmaxLength;
 		System.out.println("Height reduced to " + ke_urbanmax + " levels.");
-
-		double maxnow = Double.MIN_VALUE;
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			for (int lat = 0; lat < getJe_tot(); lat++) {
-				for (int lon = 0; lon < getIe_tot(); lon++) {
-					for (int sd = 0; sd < getNstreedir(); sd++) {
-						if (getBuildProb(uc, sd, ke_urbanmax - 1, lat, lon) > maxnow) {
-							maxnow = getBuildProb(uc, sd, ke_urbanmax - 1, lat,
-									lon);
-						}
-					}
-				}
-			}
-		}
-
-		System.out
-				.println("Highest building probability on the highest level is now "
-						+ maxnow);
 
 		height1.setLength(maxmaxLength);
 
