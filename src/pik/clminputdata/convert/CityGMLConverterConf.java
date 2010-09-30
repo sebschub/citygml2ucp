@@ -1,10 +1,31 @@
 package pik.clminputdata.convert;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import pik.clminputdata.tools.PropertiesEnh;
+import pik.clminputdata.tools.StringUtils;
 
 /**
  * Reading and storing of CityGMLConverter configuration.
@@ -16,11 +37,6 @@ import pik.clminputdata.tools.PropertiesEnh;
  * 
  */
 public class CityGMLConverterConf {
-
-	/**
-	 * If no filename is given, it is tried to open that file
-	 */
-	private static String filenameDefault = "/home/schubert/Documents/workspace/citygml2clm/converter.properties";
 
 	// variables with default
 
@@ -287,7 +303,59 @@ public class CityGMLConverterConf {
 	 * @throws Exception 
 	 */
 	public CityGMLConverterConf() throws Exception {
-		readConf(new File(filenameDefault), false);
+		
+		nuclasses = nuclassesDefault;
+
+		streetdir = streetdirDefault;
+
+		ke_urban = ke_urbanDefault;
+
+		height = heightDefault;
+
+		fakeParameter = fakeParameterDefault;
+		
+		buildingWidth = buildingWidthDefault;
+		streetWidth = streetWidthDefault;
+		buildingProp = buildingPropDefault;
+
+		useClasses = useClassesDefault;
+		nClass = nClassDefault;
+		classIndex = classIndexDefault;
+		
+		proj4code = proj4codeDefault;
+
+		maxbuild_radius = maxbuild_radiusDefault;
+
+		maxcheck_radius = maxcheck_radiusDefault;
+
+		mindist = mindistDefault;
+
+		effDist = effDistDefault;
+
+		heightReductionP = heightReductionPDefault;
+		
+		calcSVF = calcSVFDefault;
+		
+		nThreads = nThreadsDefault;
+		nThreadsQueue = nThreadsQueueDefault;
+
+		logNonPlanar = logNonPlanarDefault;
+		logNoSurfButBuildFrac = logNoSurfButBuildFracDefault;
+		logNoRoof = logNoRoofDefault;
+		logNoWall = logNoWallDefault;
+		logNoGround = logNoGroundDefault;
+
+		outputFile = outputFileDefault;
+		statsFile = statsFileDefault;
+
+		rowLat = rowLatDefault;
+		rowLon = rowLonDefault;
+
+		rowImpSurf = rowImpSurfDefault;
+
+		skipLines = skipLinesDefault;
+
+		sepString = sepStringDefault;
 	}
 
 	/**
@@ -298,19 +366,224 @@ public class CityGMLConverterConf {
 	 * @throws Exception 
 	 */
 	public CityGMLConverterConf(String confFilename) throws Exception {
-		readConf(new File(confFilename), true);
+		readConf(new File(confFilename));
 	}
 
+	
+	static void addComponent( Container cont, 
+			GridBagLayout gbl, 
+			Component c, 
+			int x, int y, 
+			int width, int height, 
+			double weightx, double weighty ) 
+	{ 
+		GridBagConstraints gbc = new GridBagConstraints(); 
+		gbc.fill = GridBagConstraints.BOTH; 
+		gbc.gridx = x; gbc.gridy = y; 
+		gbc.gridwidth = width; gbc.gridheight = height; 
+		gbc.weightx = weightx; gbc.weighty = weighty; 
+		gbl.setConstraints( c, gbc ); 
+		cont.add( c ); 
+	} 
+	
+	public void generateConf() {
+			
+		JFrame f = new JFrame("CityGML2CLM Configuration Generator");
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setSize(400, 300);
+		f.setLocationRelativeTo(null);
+		
+		Container c = f.getContentPane();
+		GridBagLayout gbl = new GridBagLayout();
+		c.setLayout(gbl);
+		
+		JLabel gridText = new JLabel("Grid Parameters", SwingConstants.CENTER);
+		
+		JLabel pollonText = new JLabel("Pollon");
+		JTextField pollonField = new JTextField(String.valueOf(pollon), 4);
+		
+		JLabel pollatText = new JLabel("Pollat");
+		JTextField pollatField = new JTextField(String.valueOf(pollat), 4);
+		
+		JLabel dlonText = new JLabel("dlon");
+		JTextField dlonField = new JTextField(String.valueOf(dlon), 4);
+		
+		JLabel dlatText = new JLabel("dlat");
+		JTextField dlatField = new JTextField(String.valueOf(dlat), 4);
+		
+		JLabel startlonText = new JLabel("startlon");
+		JTextField startlonField = new JTextField(String.valueOf(startlon_tot), 4);
+		
+		JLabel startlatText = new JLabel("startlat");
+		JTextField startlatField = new JTextField(String.valueOf(startlat_tot), 4);
+
+		JLabel ieText = new JLabel("ie_tot");
+		JTextField ieField = new JTextField(String.valueOf(ie_tot), 4);
+		
+		JLabel jeText = new JLabel("je_tot");
+		JTextField jeField = new JTextField(String.valueOf(je_tot), 4);
+		
+		
+		JLabel urbanText = new JLabel("Urban Parameters", SwingConstants.CENTER);
+		
+		JLabel nClassText = new JLabel("Number of urban classes");
+		JTextField nClassField = new JTextField(String.valueOf(nuclasses), 2);
+		
+		JLabel streetDirText = new JLabel("Street directions");
+		JTextField streetDirField = new JTextField(StringUtils.get(streetdir), 30);
+		
+		JLabel nkeurbanText = new JLabel("Number of urban height levels for each class");
+		JTextField nkeurbanField = new JTextField(StringUtils.get(ke_urban), 30);		
+		
+		JLabel keurbanText = new JLabel("Height levels");
+		JTextField keurbanField = new JTextField(StringUtils.get(height), 2);		
+		
+		final JLabel maxbuildText = new JLabel("Max. building distance");
+		final JTextField maxbuildField = new JTextField(String.valueOf(maxbuild_radius), 2);
+		
+		final JLabel maxcheckText = new JLabel("Max. checking distance");
+		final JTextField maxcheckField = new JTextField(String.valueOf(maxcheck_radius), 2);
+		
+		final JLabel mindistText = new JLabel("Min. distance");
+		final JTextField mindistField = new JTextField(String.valueOf(mindist), 2);
+		
+		final JLabel heightRedText = new JLabel("Height Reduction Percentage");
+		final JTextField heightRedField = new JTextField(String.valueOf(heightReductionP), 2);
+		
+		final JLabel proj4Text = new JLabel("proj4 Code");
+		final JTextField proj4Field = new JTextField(String.valueOf(proj4code), 10);
+
+		final JCheckBox effDistBox = new JCheckBox("Effective Distance",effDist);
+		
+		JButton save = new JButton("Save");
+		JButton cancel = new JButton("Cancel");
+		
+		final JRadioButton calcParaButton = new JRadioButton("CityGML Input", !(fakeParameter||useClasses));
+		final JRadioButton classParaButton = new JRadioButton("Class Input", useClasses);
+		final JRadioButton fakeParaButton = new JRadioButton("Fake Input", fakeParameter);
+		ButtonGroup g = new ButtonGroup();
+		g.add(calcParaButton);
+		g.add(classParaButton);
+		g.add(fakeParaButton);
+		
+		JCheckBox calcSVFBox = new JCheckBox("Calculation VF", calcSVF);
+		
+//		actions
+		ItemListener calcMethod = new ItemListener() {
+			@Override public void itemStateChanged(ItemEvent e) {
+				if (calcParaButton.isSelected()) {
+					maxbuildText.setVisible(true);
+					maxbuildField.setVisible(true);
+					maxcheckText.setVisible(true);
+					maxcheckField.setVisible(true);
+					mindistText.setVisible(true);
+					mindistField.setVisible(true);
+					heightRedField.setVisible(true);
+					heightRedText.setVisible(true);
+					proj4Field.setVisible(true);
+					proj4Text.setVisible(true);
+					effDistBox.setVisible(true);
+				} else {
+					maxbuildText.setVisible(false);
+					maxbuildField.setVisible(false);
+					maxcheckText.setVisible(false);
+					maxcheckField.setVisible(false);
+					mindistText.setVisible(false);
+					mindistField.setVisible(false);
+					heightRedField.setVisible(false);
+					heightRedText.setVisible(false);
+					proj4Field.setVisible(false);
+					proj4Text.setVisible(false);
+					effDistBox.setVisible(false);
+				}
+			}
+		};
+		
+		ActionListener bClick = new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				String action = e.getActionCommand();
+				if (action=="Cancel") {
+					System.exit(0);
+				}
+			}
+		};
+		
+		save.addActionListener(bClick);
+		cancel.addActionListener(bClick);
+		
+//		two is enough
+		calcParaButton.addItemListener(calcMethod);
+		classParaButton.addItemListener(calcMethod);
+		
+		int r = 0;
+		addComponent(c, gbl, gridText, 0, r++, 2, 1,0, 0);
+		
+		addComponent(c, gbl, pollonText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, pollonField, 1, r, 1, 1,0, 0);
+		addComponent(c, gbl, pollatText, 2, r, 1, 1,0, 0);
+		addComponent(c, gbl, pollatField, 3, r++, 1, 1,0, 0);
+		
+		addComponent(c, gbl, dlonText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, dlonField, 1, r, 1, 1,0, 0);
+		addComponent(c, gbl, dlatText, 2, r, 1, 1,0, 0);
+		addComponent(c, gbl, dlatField, 3, r++, 1, 1,0, 0);
+		
+		addComponent(c, gbl, startlonText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, startlonField, 1, r, 1, 1,0, 0);
+		addComponent(c, gbl, startlatText, 2, r, 1, 1,0, 0);
+		addComponent(c, gbl, startlatField, 3, r++, 1, 1,0, 0);
+		
+		addComponent(c, gbl, ieText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, ieField, 1, r, 1, 1,0, 0);
+		addComponent(c, gbl, jeText, 2, r, 1, 1,0, 0);
+		addComponent(c, gbl, jeField, 3, r++, 1, 1,0, 0);
+					
+		addComponent(c, gbl, urbanText, 0, r++, 2, 1,0, 0);
+		
+		addComponent(c, gbl, nClassText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, nClassField, 1, r++, 1, 1,0, 0);
+		addComponent(c, gbl, streetDirText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, streetDirField, 1, r++, 1, 1,0, 0);
+		addComponent(c, gbl, nkeurbanText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, nkeurbanField, 1, r++, 1, 1,0, 0);
+		addComponent(c, gbl, keurbanText, 0, r, 1, 1,0, 0);
+		addComponent(c, gbl, keurbanField, 1, r++, 1, 1,0, 0);		
+		
+		int s = r;
+		addComponent(c, gbl, calcParaButton, 0, r++, 1, 1,0, 0);
+		addComponent(c, gbl, classParaButton, 0, r++, 1, 1,0, 0);
+		addComponent(c, gbl, fakeParaButton, 0, r++, 1, 1,0, 0);
+		
+		addComponent(c, gbl, maxbuildText, 2, s, 1, 1,0, 0);
+		addComponent(c, gbl, maxbuildField, 3, s++, 1, 1,0, 0);
+		addComponent(c, gbl, maxcheckText, 2, s, 1, 1,0, 0);
+		addComponent(c, gbl, maxcheckField, 3, s++, 1, 1,0, 0);
+		addComponent(c, gbl, mindistText, 2, s, 1, 1,0, 0);
+		addComponent(c, gbl, mindistField, 3, s++, 1, 1,0, 0);
+		addComponent(c, gbl, heightRedText, 2, s, 1, 1,0, 0);
+		addComponent(c, gbl, heightRedField, 3, s++, 1, 1,0, 0);
+		addComponent(c, gbl, proj4Text, 2, s, 1, 1,0, 0);
+		addComponent(c, gbl, proj4Field, 3, s++, 1, 1,0, 0);
+		addComponent(c, gbl, effDistBox, 3, s++, 1, 1,0, 0);
+
+		
+		addComponent(c, gbl, calcSVFBox, 0, r++, 1, 1,0, 0);
+		
+		addComponent(c, gbl, save, 0, r, 1, 1, 0, 0);
+		addComponent(c, gbl, cancel, 1, r, 1, 1, 0, 0);
+				
+		f.pack();
+		f.setVisible(true);
+	}
+	
 	/**
 	 * Read a configuration file.
 	 * 
 	 * @param confFile
 	 *            Configuration file
-	 * @param explicitlyGivenFile
-	 *            Explicitly given or from default?
 	 * @throws Exception 
 	 */
-	private void readConf(File confFile, boolean explicitlyGivenFile)
+	private void readConf(File confFile)
 			throws Exception {
 		if (confFile.exists()) {
 
@@ -415,11 +688,7 @@ public class CityGMLConverterConf {
 					consistentOutputDefault);
 
 		} else {
-			if (explicitlyGivenFile) {
-				throw new FileNotFoundException("Configuration file not found");
-			}
-			System.err
-					.println("Configuration file not found, using default configuration");
+			throw new FileNotFoundException("Configuration file not found");
 		}
 	}
 

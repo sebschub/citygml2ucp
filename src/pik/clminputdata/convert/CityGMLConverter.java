@@ -156,13 +156,21 @@ public class CityGMLConverter {
 		long startTime = new Date().getTime();
 
 		CityGMLConverterConf conf;
-
-		if (args.length == 1) {
-			conf = new CityGMLConverterConf(args[0]);
-		} else {
+		
+		switch (args.length) {
+		case 0:
+//			run only configuration programme
 			conf = new CityGMLConverterConf();
+			conf.generateConf();
+			return;
+		case 1:
+//			normal input
+			conf = new CityGMLConverterConf(args[0]);
+			break;
+		default:
+			throw new IllegalArgumentException("Wrong number of arguments!");
 		}
-
+		
 		conf.outputConf();
 
 		// create new urban configuration
