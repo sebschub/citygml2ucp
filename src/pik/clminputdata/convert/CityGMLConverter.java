@@ -181,19 +181,24 @@ public class CityGMLConverter {
 			for (int lon = 0; lon < conf.ie_tot; lon++) {
 				for (int lat = 0; lat < conf.je_tot; lat++) {
 					if (uclm.getUrbanFrac(lat, lon)>0.) {
-						for (int uc = 0; uc < conf.nClass; uc++) {
+						for (int uc = 0; uc < conf.nuclasses; uc++) {
 							for (int dir = 0; dir < conf.streetdir.length; dir++) {
 								uclm.setStreetFrac(uc, dir, lat, lon, 1./conf.streetdir.length);
 								uclm.setBuildingWidth(uc, dir, lat, lon, conf.buildingWidth);
 								uclm.setStreetWidth(uc, dir, lat, lon, conf.streetWidth);
-								for (int hz = 0; hz < conf.ke_urban[lon]; hz++) {
+								uclm.setBuildingFrac(uc, lat, lon, 1./(1.+conf.streetWidth/conf.buildingWidth));
+								uclm.setUrbanClassFrac(uc, lat, lon, 1./conf.nuclasses);
+								for (int hz = 0; hz < conf.ke_urban[uc]; hz++) {
 									uclm.setBuildProb(uc, dir, hz, lat, lon, conf.buildingProp[hz]);
 								}
 							}
 						}
 					}
 				}
-			}				
+			}
+			if (conf.consistentOutput) {
+				uclm.defineMissingData();
+			}
 		} else {
 
 			Proj4 soldner = new Proj4(conf.proj4code,
@@ -336,8 +341,9 @@ public class CityGMLConverter {
 
 			exec.shutdown();
 			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-			uclm.defineMissingDataSVF();
-
+			if (conf.consistentOutput) {
+				uclm.defineMissingDataSVF();
+			}
 			lasted = new Date().getTime() - startTime;
 			System.out.printf(
 					"Urban skyview factor calculation took %.3f minutes.%n",
