@@ -60,8 +60,8 @@ public class CityGMLConverter {
 			Scanner lScanner = new Scanner(scanner.nextLine())
 					.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
-			while (lScanner.hasNextDouble()) {
-				values.add(lScanner.nextDouble());
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
 			}
 			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
 			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
