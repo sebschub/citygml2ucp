@@ -1,5 +1,6 @@
 package pik.clminputdata.tools;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -17,6 +18,28 @@ public class PropertiesEnh extends Properties {
 	 */
 	private static final long serialVersionUID = -1595761753037640465L;
 
+	private List<String> items, values;
+	private boolean  fillLists = false;
+	
+	/**
+	 * Constructor which also gets String lists to fill with the read data
+	 * @param items List which will include the read item strings
+	 * @param values List which will include the read value strings
+	 */
+	public PropertiesEnh(List<String> items, List<String> values) {
+		this.items = items;
+		this.values = values;
+		fillLists = true;
+	}
+
+	
+	/**
+	 * Empty Constructor
+	 */
+	public PropertiesEnh() {
+//		nothing to do
+	}
+
 	/**
 	 * Get a single boolean from properties.
 	 * 
@@ -28,10 +51,17 @@ public class PropertiesEnh extends Properties {
 	 */
 	public boolean getBoolean(String key, boolean defaultValue) {
 		String str = getProperty(key);
+		boolean rv;
 		if (str == null) {
-			return defaultValue;
+			rv = defaultValue;
+		} else {
+			rv = Boolean.parseBoolean(str.trim());
 		}
-		return Boolean.parseBoolean(str.trim());
+		if (fillLists) {
+			items.add(key);
+			values.add(String.valueOf(rv));
+		}
+		return rv;
 	}
 	
 	/**
@@ -45,10 +75,17 @@ public class PropertiesEnh extends Properties {
 	 */
 	public int getInt(String key, int defaultValue) {
 		String str = getProperty(key);
+		int rv;
 		if (str == null) {
-			return defaultValue;
+			rv = defaultValue;
+		} else {
+			rv = Integer.parseInt(str.trim());
 		}
-		return Integer.parseInt(str.trim());
+		if (fillLists) {
+			items.add(key);
+			values.add(String.valueOf(rv));
+		}
+		return rv;
 	}
 
 	/**
@@ -62,10 +99,17 @@ public class PropertiesEnh extends Properties {
 	 */
 	public double getDouble(String key, double defaultValue) {
 		String str = getProperty(key);
+		double rv;
 		if (str == null) {
-			return defaultValue;
+			rv = defaultValue;
+		} else {
+			rv = Double.parseDouble(str.trim());
 		}
-		return Double.parseDouble(str.trim());
+		if (fillLists) {
+			items.add(key);
+			values.add(String.valueOf(rv));
+		}
+		return rv;
 	}
 
 	/**
@@ -79,17 +123,28 @@ public class PropertiesEnh extends Properties {
 	 */
 	public double[] getDoubleArray(String key, double[] defaultValue) {
 		String str = getProperty(key);
+		double[] rv;
 		if (str == null) {
-			return defaultValue;
+			rv = defaultValue;
+		} else {
+			str = str.trim();
+			String[] temp = str.split(",");
+			
+			rv = new double[temp.length];
+			for (int i = 0; i < rv.length; i++) {
+				rv[i] = Double.valueOf(temp[i]);
+			}
 		}
-		str = str.trim();
-		String[] temp = str.split(",");
-		
-		double[] rarray = new double[temp.length];
-		for (int i = 0; i < rarray.length; i++) {
-			rarray[i] = Double.valueOf(temp[i]);
+		if (fillLists) {
+			StringBuilder strOut = new StringBuilder();
+			for (int i = 0; i < rv.length-1; i++) {
+				strOut.append(rv[i]+", ");
+			}
+			strOut.append(rv[rv.length-1]);
+			items.add(key);
+			values.add(strOut.toString());
 		}
-		return rarray;
+		return rv;
 	}
 
 	/**
@@ -103,17 +158,28 @@ public class PropertiesEnh extends Properties {
 	 */
 	public int[] getIntArray(String key, int[] defaultValue) {
 		String str = getProperty(key);
+		int[] rv;
 		if (str == null) {
-			return defaultValue;
+			rv = defaultValue;
+		} else {
+			str = str.trim();
+			String[] temp = str.split(",");
+			
+			rv = new int[temp.length];
+			for (int i = 0; i < rv.length; i++) {
+				rv[i] = Integer.valueOf(temp[i]);
+			}
 		}
-		str = str.trim();
-		String[] temp = str.split(",");
-
-		int[] rarray = new int[temp.length];
-		for (int i = 0; i < rarray.length; i++) {
-			rarray[i] = Integer.valueOf(temp[i]);
+		if (fillLists) {
+			StringBuilder strOut = new StringBuilder();
+			for (int i = 0; i < rv.length-1; i++) {
+				strOut.append(rv[i]+", ");
+			}
+			strOut.append(rv[rv.length-1]);
+			items.add(key);
+			values.add(strOut.toString());
 		}
-		return rarray;
+		return rv;
 	}
 
 	/**
@@ -126,7 +192,12 @@ public class PropertiesEnh extends Properties {
 	 * @return The string
 	 */
 	public String getString(String key, String defaultValue) {
-		return getProperty(key, defaultValue).trim();
+		String rv = getProperty(key, defaultValue).trim();
+		if (fillLists) {
+			items.add(key);
+			values.add(rv);
+		}
+		return rv;
 	}
 
 	/**

@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.LinkedList;
+import java.util.List;
+
 import pik.clminputdata.tools.PropertiesEnh;
 
 /**
@@ -282,6 +285,9 @@ public class CityGMLConverterConf {
 	boolean consistentOutput;
 	private static boolean consistentOutputDefault = true;
 
+	List<String> confItems = new LinkedList<String>();
+	List<String> confValues = new LinkedList<String>();
+		
 	/**
 	 * Constructor reading from default configuration file.
 	 * @throws Exception 
@@ -316,7 +322,7 @@ public class CityGMLConverterConf {
 
 			// read the file
 			Reader reader = new FileReader(confFile);
-			PropertiesEnh prop = new PropertiesEnh();
+			PropertiesEnh prop = new PropertiesEnh(confItems,confValues);
 			prop.load(reader);
 
 			pollat = prop.getDouble("pollat", pollatDefault);
@@ -431,90 +437,9 @@ public class CityGMLConverterConf {
 		System.out.println("CONFIGURATION OF THE RUN");
 		System.out.println();
 
-		System.out.println("pollat: " + pollat);
-		System.out.println("pollon: " + pollon);
-		System.out.println("dlat: " + dlat);
-		System.out.println("dlon: " + dlon);
-
-		System.out.println("startlat_tot: " + startlat_tot);
-		System.out.println("startlon_tot: " + startlon_tot);
-
-		System.out.println("ie_tot: " + ie_tot);
-		System.out.println("je_tot: " + je_tot);
-		// System.out.println("ke_tot: " + ke_tot);
-
-		System.out.println("nuclasses: " + nuclasses);
-
-		System.out.print("streetdir: ");
-		for (int i = 0; i < streetdir.length; i++) {
-			System.out.print(streetdir[i] + " ");
+		for (int i = 0; i < confItems.size(); i++) {
+			System.out.println(confItems.get(i)+": " + confValues.get(i));
 		}
-		System.out.println();
-		System.out.print("ke_urban: ");
-		for (int i = 0; i < ke_urban.length; i++) {
-			System.out.print(ke_urban[i] + " ");
-		}
-		System.out.println();
-		System.out.print("height: ");
-		for (int i = 0; i < height.length; i++) {
-			System.out.print(height[i] + " ");
-		}
-		System.out.println();
-		System.out.println("fakeParameters: " + fakeParameter);
-		if(fakeParameter) {
-			System.out.println("buildingWidth: " + buildingWidth);
-			System.out.println("streetWidth: " + streetWidth);
-		}
-		System.out.println("useClasses: " + useClasses);
-		if (useClasses) {
-			System.out.println("nClass: " + nClass);
-			System.out.print("classIndex: ");
-			for (int i = 0; i < classIndex.length; i++) {
-				System.out.print(classIndex[i] + " ");
-			}
-		}
-		System.out.println();
-		
-		System.out.println("maxbuild_radius: " + maxbuild_radius);
-		System.out.println("maxcheck_radius: " + maxcheck_radius);
-		System.out.println("mindist: " + mindist);
-
-		System.out.println("effDist: " + effDist);
-
-		System.out.println("heightReductionP: " + heightReductionP);
-		
-		System.out.println("calcSVF: " + calcSVF);
-		
-		System.out.println("proj4code: " + proj4code);
-
-		System.out.println("nThreads: " + nThreads);
-		System.out.println("nThreadsQueue: " + nThreadsQueue);
-
-		System.out.println("inputGMLFolder: " + inputGMLFolder);
-		System.out.println("outputFolder: " + outputFolder);
-
-		System.out.println("logNonPlanar: " + logNonPlanar);
-		System.out.println("logNoSurfButBuildFrac: " + logNoSurfButBuildFrac);
-
-		System.out.println("LogNoWall: " + logNoWall);
-		System.out.println("LogNoGround: " + logNoGround);
-		System.out.println("LogNoRoof: " + logNoRoof);
-
-		System.out.println("outputFile: " + outputFile);
-
-		System.out.println("statsFile: " + statsFile);
-
-		System.out.println("impSurfFile: " + impSurfFile);
-
-		System.out.println("rowLat: " + rowLat);
-		System.out.println("rowLon: " + rowLon);
-		System.out.println("rowImpSurf: " + rowImpSurf);
-
-		System.out.println("skipLines: " + skipLines);
-
-		System.out.println("sepString: " + sepString);
-
-		System.out.println("consistentOutput: " + consistentOutput);
 
 		System.out.println();
 		System.out.println();

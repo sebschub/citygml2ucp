@@ -169,7 +169,8 @@ public class CityGMLConverter {
 		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(conf.pollat,
 				conf.pollon, conf.dlat, conf.dlon, conf.startlat_tot,
 				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.nuclasses,
-				conf.streetdir, conf.ke_urban, conf.height, conf.useClasses);
+				conf.streetdir, conf.ke_urban, conf.height, conf.useClasses,
+				conf.confItems, conf.confValues);
 
 		if (conf.useClasses) {
 			inputClassData(conf, uclm);

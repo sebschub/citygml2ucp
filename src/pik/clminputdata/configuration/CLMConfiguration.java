@@ -57,6 +57,8 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	protected final WritableField lat, lon;
 
+	private List<String> confItems, confValues;
+	
 	/**
 	 * Initialize with default values of CLM
 	 * 
@@ -65,6 +67,25 @@ public class CLMConfiguration extends NetCDFData {
 		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51);
 	}
 
+	/**
+	 * Initialize with custom values and additional setting fields, checked for
+	 * validity
+	 * 
+	 * @throws IllegalArgumentException
+	 *             One of the arguments is not in the correct range
+	 */
+	public CLMConfiguration(double pollat, double pollon, double dlat,
+			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
+			int je_tot, List<String> confItems, List<String> confValues)
+			throws IllegalArgumentException {
+		this(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot, je_tot);
+		if (confItems.size() != confValues.size())
+			throw new IllegalArgumentException(
+					"Number of setting names and values are not equal");
+		this.confItems = confItems;
+		this.confValues = confValues;
+	}
+	
 	/**
 	 * Initialize with custom values, checked for validity
 	 * 
@@ -185,6 +206,12 @@ public class CLMConfiguration extends NetCDFData {
 		ncfile.addGlobalAttribute("creation_date", df
 				.toDateTimeString(new Date()));
 
+		if (confItems!=null) {
+			for (int i = 0; i < confItems.size(); i++) {
+				ncfile.addGlobalAttribute(confItems.get(i), confValues.get(i));
+			}
+		}
+		
 	}
 
 	/*
