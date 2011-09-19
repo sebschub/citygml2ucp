@@ -143,7 +143,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			throw new IllegalArgumentException("nuclasses must be positive");
 		}
 		this.nuclasses = new WritableDimension("nuc", nuclasses);
-		toWrite.add(this.nuclasses);
+		addToWrite(this.nuclasses);
 
 		List<Dimension> ldim2 = new LinkedList<Dimension>();
 		ldim2.add(this.nuclasses);
@@ -157,7 +157,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		for (int i = 0; i < nuclasses; i++) {
 			setKe_urban(i, ke_urban[i]);
 		}
-		toWrite.add(this.ke_urban);
+		addToWrite(this.ke_urban);
 
 		// find max of ke_urban:
 		int maxv = ke_urban[0];
@@ -192,7 +192,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.height1 = new WritableAxis("uheight1", ke_urbanmax, "Z",
 				"urban_height_roofs", "height above surface for roofs", "",
 				height);
-		toWrite.add(this.height1);
+		addToWrite(this.height1);
 
 		if (streetdir[0] < -90. || streetdir[streetdir.length - 1] > 90.)
 			throw new IllegalArgumentException(
@@ -206,7 +206,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.streetdir = new WritableAxis("streetdir", streetdir.length, "",
 				"degree_street", "degree of street direction", "degrees",
 				streetdir, 180.);
-		toWrite.add(this.streetdir);
+		addToWrite(this.streetdir);
 
 		List<Dimension> ldim = new LinkedList<Dimension>();
 		ldim.add(this.meridionalAxis);
@@ -217,7 +217,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.urbanFrac = new WritableFieldDouble("FR_URBAN", ldim,
 				"urban_fraction", "fraction of urban surfaces in grid cell",
 				"1", "rotated_pole");
-		toWrite.add(this.urbanFrac);
+		addToWrite(this.urbanFrac);
 
 		ldim.add(0, this.nuclasses);
 		// ldim is now nucdim, latdim, londim
@@ -225,7 +225,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.urbanClassFrac = new WritableFieldDouble("FR_URBANCL", ldim,
 				"urban_classes_fraction", "urban classes fraction", "1",
 				"rotated_pole");
-		toWrite.add(this.urbanClassFrac);
+		addToWrite(this.urbanClassFrac);
 
 		// building fraction
 		this.buildingFrac = new WritableFieldDouble("FR_BUILD", ldim,
@@ -233,32 +233,32 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"fraction of building surface in grid cell", "1",
 				"rotated_pole");
 		if (!justClasses)
-			toWrite.add(this.buildingFrac);
+			addToWrite(this.buildingFrac);
 
 		ldim.add(1, this.streetdir);
 		// ldim is now nucdim, streetdir, latdim, londim
 
 		this.streetFrac = new WritableFieldDouble("FR_STREETD", ldim,
 				"street_fraction", "street fraction", "1", "rotated_pole");
-		toWrite.add(streetFrac);
+		addToWrite(streetFrac);
 
 		this.streetLength = new WritableFieldDouble("STREET_LGT", ldim.subList(
 				1, 3), "Street Length", "average street length", "km",
 				"rotated_pole");
-		toWrite.add(streetLength);
+		addToWrite(streetLength);
 		calculateStreetLength();
 
 		// street width
 		this.streetWidth = new WritableFieldDouble("STREET_W", ldim,
 				"street_width", "street width in grid cell", "m",
 				"rotated_pole");
-		toWrite.add(this.streetWidth);
+		addToWrite(this.streetWidth);
 
 		// building width
 		this.buildingWidth = new WritableFieldDouble("BUILD_W", ldim,
 				"building_width", "building width in grid cell", "m",
 				"rotated_pole");
-		toWrite.add(this.buildingWidth);
+		addToWrite(this.buildingWidth);
 
 		ldim.add(2, this.height1);
 		// dims is now nucdim, streetdir, zdim, latdim, londim
@@ -268,7 +268,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"building_probability",
 				"probability to have a building at the height", "1",
 				"rotated_pole");
-		toWrite.add(this.buildProb);
+		addToWrite(this.buildProb);
 
 		streetSurfaceSum = new double[getNuclasses()][getNstreedir()][getJe_tot()][getIe_tot()];
 
@@ -286,13 +286,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.height = new WritableAxis("uheight", ke_urbanmax - 1, "Z",
 				"urban_height_walls", "height above surface for walls", "",
 				heightWalls);
-		toWrite.add(this.height);
+		addToWrite(this.height);
 
 		this.heightsend = new WritableAxis("uheights", ke_urbanmax - 1, "Z",
 				"urban_height_sending_walls",
 				"height above surface for radiation sending walls", "",
 				heightWalls);
-		toWrite.add(this.heightsend);
+		addToWrite(this.heightsend);
 
 		List<Dimension> ldim = new LinkedList<Dimension>();
 		ldim.add(this.nuclasses);
@@ -305,7 +305,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		fgos = new WritableFieldDouble("FGOS", ldim, "SVF_ground2othersky",
 				"skyview factor from ground to sky with building in beetween",
 				"1", "rotated_pole");
-		toWrite.add(this.fgos);
+		addToWrite(this.fgos);
 
 		ldim.add(2, this.height);
 		// dims is now nucdim, streetdir, zdimwall, zdim, latdim, londim
@@ -313,7 +313,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		fgow = new WritableFieldDouble("FGOW", ldim, "SVF_ground2otherwall",
 				"skyview factor from ground to wall of other canyon", "1",
 				"rotated_pole");
-		toWrite.add(this.fgow);
+		addToWrite(this.fgow);
 
 		ldim.add(4, this.heightsend);
 		// dims is now nucdim, streetdir, zdimwall, zdim, zdimwallsend, latdim,
@@ -322,14 +322,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		fwow = new WritableFieldDouble("FWOW", ldim, "SVF_wall2otherwall",
 				"skyview factor from wall to wall of other canyon", "1",
 				"rotated_pole");
-		toWrite.add(this.fwow);
+		addToWrite(this.fwow);
 
 		ldim.remove(2);
 		// dims is now nucdim, streetdir, zdim, zdimwallsend, latdim, londim
 		fwos = new WritableFieldDouble("FWOS", ldim, "SVF_wall2othersky",
 				"skyview factor from wall to sky of two canyons", "1",
 				"rotated_pole");
-		toWrite.add(this.fwos);
+		addToWrite(this.fwos);
 
 	}
 

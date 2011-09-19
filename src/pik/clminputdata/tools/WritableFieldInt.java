@@ -20,4 +20,9 @@ public class WritableFieldInt extends WritableField {
 				DataType.INT);
 	}
 
+	@Override
+	public long getSavedSizeBytes() {
+		return this.getSizeBytes()/2;
+	}
+	
 }

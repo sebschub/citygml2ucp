@@ -114,6 +114,13 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		return shapePart;
 	}
 
+	/**
+	 * @return Size of the field when saved to NetCDF
+	 */
+	public long getSavedSizeBytes() {
+		return this.getSizeBytes();
+	}
+	
 	/*
 	 * (non-Javadoc) Here it is defined to write that field as float.
 	 * 

@@ -22,10 +22,27 @@ import ucar.nc2.NetcdfFileWriteable;
 public class NetCDFData implements NetCDFWritable {
 
 	/**
+	 * size of the data in byte to write to file; controls whether large file
+	 * format is necessary
+	 */
+	protected long dataSize;
+
+	/**
 	 * List of items to write to NetCDF file
 	 */
 	protected List<NetCDFWritable> toWrite = new ArrayList<NetCDFWritable>();
 
+	/**
+	 * add additional NetCDFWritable to output list 
+	 * @param field to output
+	 */
+	protected void addToWrite(NetCDFWritable field) {
+		toWrite.add(field);
+		if (field instanceof WritableField) {
+			dataSize += ((WritableField) field).getSavedSizeBytes();
+		}
+	}
+	
 	/**
 	 * Write data to NetCDF file.
 	 * 
@@ -38,6 +55,12 @@ public class NetCDFData implements NetCDFWritable {
 			InvalidRangeException {
 		NetcdfFileWriteable ncfile = NetcdfFileWriteable.createNew(filename,
 				false);
+		// check whether data is larger than 2GiB (with some safety margin)
+		if (dataSize > 1900000000L) {
+			ncfile.setLargeFile(true);
+		} else {
+			ncfile.setLargeFile(false);
+		}
 		addVariablesToNetCDFfile(ncfile);
 		ncfile.create();
 		writeVariablesToNetCDFfile(ncfile);

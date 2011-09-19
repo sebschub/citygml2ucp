@@ -20,4 +20,9 @@ public class WritableFieldFloat extends WritableField {
 				DataType.FLOAT);
 	}
 
+	@Override
+	public long getSavedSizeBytes() {
+		return this.getSizeBytes()/2;
+	}
+	
 }

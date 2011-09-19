@@ -97,7 +97,7 @@ public class CLMConfiguration extends NetCDFData {
 			int je_tot) throws IllegalArgumentException {
 
 		rotpol = new WritableRotatedPole(pollat, pollon);
-		toWrite.add(rotpol);
+		addToWrite(rotpol);
 
 		if (dlat < 0 || dlat > 90) {
 			throw new IllegalArgumentException("dlat out of range.");
@@ -130,15 +130,15 @@ public class CLMConfiguration extends NetCDFData {
 		zonalAxis = new WritableAxis("rlon", ie_tot, "rlon", "X",
 				"grid_longitude", "rotated longitude", "degrees", startlon_tot,
 				dlon);
-		toWrite.add(zonalAxis);
+		addToWrite(zonalAxis);
 
 		meridionalAxis = new WritableAxis("rlat", je_tot, "rlat", "Y",
 				"grid_latitude", "rotated latitude", "degrees", startlat_tot,
 				dlat);
-		toWrite.add(meridionalAxis);
+		addToWrite(meridionalAxis);
 
 		// verticalDimension = new WritableDimension("level", ke_tot);
-		// toWrite.add(verticalDimension); //add in subclass if needed
+		// addToWrite(verticalDimension); //add in subclass if needed
 
 		List<Dimension> dimlist = new ArrayList<Dimension>();
 		dimlist.add(meridionalAxis);
@@ -146,17 +146,17 @@ public class CLMConfiguration extends NetCDFData {
 		area = new WritableFieldDouble("area", dimlist, "area_element",
 				"size of area element", "km2", "");
 		calculateArea();
-		toWrite.add(area);
+		addToWrite(area);
 
 		dimlist.add(zonalAxis);
 
 		lon = new WritableFieldDouble("lon", dimlist, "longitude", "longitude",
 				"degrees east", "");
-		toWrite.add(lon);
+		addToWrite(lon);
 
 		lat = new WritableFieldDouble("lat", dimlist, "latitude", "latitude",
 				"degrees north", "");
-		toWrite.add(lat);
+		addToWrite(lat);
 
 		calculateTrueLatLon();
 	}
