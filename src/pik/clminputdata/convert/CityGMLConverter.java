@@ -259,99 +259,99 @@ public class CityGMLConverter {
 				featureElem = null;
 				um = null;
 
-				if (conf.nThreads > 1) {
-					exec.execute(cgmlct);
-				} else {
-					cgmlct.run();
-				}
+//				if (conf.nThreads > 1) {
+//					exec.execute(cgmlct);
+//				} else {
+//					cgmlct.run();
+//				}
 			}
 
 			exec.shutdown();
 			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+//
+//			System.out.println("Largest Building: " + uclm.maxHeight + " m");
+//			System.out.println("Smallest Building: " + uclm.minHeight + " m");
 
-			System.out.println("Largest Building: " + uclm.maxHeight + " m");
-			System.out.println("Smallest Building: " + uclm.minHeight + " m");
-
-			uclm.fakeUrbanClassFrac();
-			uclm.normBuildingFrac();
-			uclm.normBuildProbAndCalcStreetFraction();
-			uclm.normStreetWidth();
-			uclm.calculateBuildingWidth();
-			if (conf.consistentOutput) {
-				uclm.defineMissingData();
-			}
-			if (conf.doHeightReduction) {
-				uclm.reduceHeight(conf.heightReductionP);
-			}
-			
-			stats.writeLogs();
-			stats.toNetCDFfile(conf.statsFile);
+//			uclm.fakeUrbanClassFrac();
+//			uclm.normBuildingFrac();
+//			uclm.normBuildProbAndCalcStreetFraction();
+//			uclm.normStreetWidth();
+//			uclm.calculateBuildingWidth();
+//			if (conf.consistentOutput) {
+//				uclm.defineMissingData();
+//			}
+//			if (conf.doHeightReduction) {
+//				uclm.reduceHeight(conf.heightReductionP);
+//			}
+//			
+//			stats.writeLogs();
+//			stats.toNetCDFfile(conf.statsFile);
 		}
 
 		long lasted = new Date().getTime() - startTime;
 		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
 				lasted / 1000. / 60.);
 
-		if (conf.calcSVF) {
+//		if (conf.calcSVF) {
+//
+//			System.out.println("Starting calculation of Skyview factors.");
+//			startTime = new Date().getTime();
+//
+//			uclm.initalizeSVFFields();
+//
+//			// Integrator itg = new Integrator();
+//
+//			ThreadPoolExecutor exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
+//					Long.MAX_VALUE, TimeUnit.MILLISECONDS,
+//					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
+//					new ThreadPoolExecutor.CallerRunsPolicy());
+//
+//			for (int iurb = 0; iurb < uclm.getNuclasses(); iurb++) {
+//				for (int id = 0; id < uclm.getNstreedir(); id++) {
+//					for (int j = 0; j < uclm.getJe_tot(); j++) {
+//						for (int i = 0; i < uclm.getIe_tot(); i++) {
+//							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
+//								GroundOtherWallSVF gow = new GroundOtherWallSVF(
+//										iurb, id, j, i, uclm, new Integrator());
+//								GroundOtherSkySVF gs = new GroundOtherSkySVF(
+//										iurb, id, j, i, uclm, new Integrator());
+//								WallOtherWallSVF wws = new WallOtherWallSVF(
+//										iurb, id, j, i, uclm, new Integrator());
+//								WallOtherSkySVF wss = new WallOtherSkySVF(iurb,
+//										id, j, i, uclm, new Integrator());
+//								System.out
+//										.println("SVF Calculation for iurb = "
+//												+ iurb + ", id = " + id
+//												+ ", j = " + j + ", i = " + i);
+//								if (conf.nThreads > 1) {
+//									exec.execute(gow);
+//									exec.execute(gs);
+//									exec.execute(wws);
+//									exec.execute(wss);
+//								} else {
+//									gow.run();
+//									gs.run();
+//									wws.run();
+//									wss.run();
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
+//
+//			exec.shutdown();
+//			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+//			if (conf.consistentOutput) {
+//				uclm.defineMissingDataSVF();
+//			}
+//			lasted = new Date().getTime() - startTime;
+//			System.out.printf(
+//					"Urban skyview factor calculation took %.3f minutes.%n",
+//					lasted / 1000. / 60.);
+//		}
 
-			System.out.println("Starting calculation of Skyview factors.");
-			startTime = new Date().getTime();
-
-			uclm.initalizeSVFFields();
-
-			// Integrator itg = new Integrator();
-
-			ThreadPoolExecutor exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
-					Long.MAX_VALUE, TimeUnit.MILLISECONDS,
-					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
-					new ThreadPoolExecutor.CallerRunsPolicy());
-
-			for (int iurb = 0; iurb < uclm.getNuclasses(); iurb++) {
-				for (int id = 0; id < uclm.getNstreedir(); id++) {
-					for (int j = 0; j < uclm.getJe_tot(); j++) {
-						for (int i = 0; i < uclm.getIe_tot(); i++) {
-							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
-								GroundOtherWallSVF gow = new GroundOtherWallSVF(
-										iurb, id, j, i, uclm, new Integrator());
-								GroundOtherSkySVF gs = new GroundOtherSkySVF(
-										iurb, id, j, i, uclm, new Integrator());
-								WallOtherWallSVF wws = new WallOtherWallSVF(
-										iurb, id, j, i, uclm, new Integrator());
-								WallOtherSkySVF wss = new WallOtherSkySVF(iurb,
-										id, j, i, uclm, new Integrator());
-								System.out
-										.println("SVF Calculation for iurb = "
-												+ iurb + ", id = " + id
-												+ ", j = " + j + ", i = " + i);
-								if (conf.nThreads > 1) {
-									exec.execute(gow);
-									exec.execute(gs);
-									exec.execute(wws);
-									exec.execute(wss);
-								} else {
-									gow.run();
-									gs.run();
-									wws.run();
-									wss.run();
-								}
-							}
-						}
-					}
-				}
-			}
-
-			exec.shutdown();
-			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-			if (conf.consistentOutput) {
-				uclm.defineMissingDataSVF();
-			}
-			lasted = new Date().getTime() - startTime;
-			System.out.printf(
-					"Urban skyview factor calculation took %.3f minutes.%n",
-					lasted / 1000. / 60.);
-		}
-
-		uclm.toNetCDFfile(conf.outputFile);
+//		uclm.toNetCDFfile(conf.outputFile);
 
 	}
 }

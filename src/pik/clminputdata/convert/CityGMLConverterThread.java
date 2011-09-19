@@ -268,9 +268,12 @@ class CityGMLConverterThread extends Thread {
 					bHeight[bID] = uc.get(2) - lc.get(2);
 					buildingRoofs[bID] = new Polygon3d[0];
 				}
+			
 
 				if (grounds.size() > 0) {
 					bArea[bID] = calcGroundSize(grounds);
+					
+					System.err.println(bHeight[bID]);
 				} else {
 					noGround.add(co.getId());
 				}
@@ -287,26 +290,26 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 
-		visible = new SymmetricMatrixBoolean(globalWallSurfaceCounter, false);
+//		visible = new SymmetricMatrixBoolean(globalWallSurfaceCounter, false);
 		bCount = bID + 1;
 
-		irlat = new int[bCount];
-		irlon = new int[bCount];
-
-		// only one urban class in ke_urban, CHANGE THIS IS IF NECESSARY!
-		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
-
-		buildingDistanceWeighted = new double[uclm.getNuclasses()][uclm
-				.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
-
-		nStreetSurfaces = new int[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getJe_tot()][uclm.getIe_tot()];
-
-		streetSurfaceSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getJe_tot()][uclm.getIe_tot()];
-		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm
-				.getIe_tot()];
+//		irlat = new int[bCount];
+//		irlon = new int[bCount];
+//
+//		// only one urban class in ke_urban, CHANGE THIS IS IF NECESSARY!
+//		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
+//				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
+//
+//		buildingDistanceWeighted = new double[uclm.getNuclasses()][uclm
+//				.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
+//
+//		nStreetSurfaces = new int[uclm.getNuclasses()][uclm.getNstreedir()][uclm
+//				.getJe_tot()][uclm.getIe_tot()];
+//
+//		streetSurfaceSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
+//				.getJe_tot()][uclm.getIe_tot()];
+//		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm
+//				.getIe_tot()];
 	}
 
 	/**

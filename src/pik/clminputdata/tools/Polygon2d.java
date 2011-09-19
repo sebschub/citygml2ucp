@@ -44,7 +44,9 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 					
 					for (int i = 0; i < coord.size() / 3; i++) {
 						xcoord[i] = coord.get(pos);
+						System.out.println(xcoord[i]);
 						ycoord[i] = coord.get(pos+1);
+						System.out.println(ycoord[i]);
 						pos += 3;
 					}
 					return new Polygon2d(xcoord, ycoord); 
