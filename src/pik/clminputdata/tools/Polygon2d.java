@@ -44,9 +44,41 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 					
 					for (int i = 0; i < coord.size() / 3; i++) {
 						xcoord[i] = coord.get(pos);
-						System.out.println(xcoord[i]);
+						System.out.print(xcoord[i] + "  ");
 						ycoord[i] = coord.get(pos+1);
-						System.out.println(ycoord[i]);
+						System.out.print(ycoord[i] + "  ");
+						pos += 3;
+					}
+					System.out.println("");
+					return new Polygon2d(xcoord, ycoord); 
+				}
+				throw new IllegalArgumentException(
+						"Linear ring is no PosList, handle this case!");
+			}
+			throw new IllegalArgumentException(
+					"Polygon is no linear ring, handle this case!");
+		}
+		throw new IllegalArgumentException(
+				"Surface is no Polygon, handle this case!");
+	}
+
+	
+	public static Polygon2d xyProjectedPolygon2dNO(SurfaceProperty surfaceProperty) {
+		if (surfaceProperty.getSurface() instanceof Polygon) {
+			Polygon polygon = (Polygon) surfaceProperty.getSurface();
+			if (polygon.getExterior().getRing() instanceof LinearRing) {
+				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
+				if (lRing.isSetPosList()) {
+					List<Double> coord = lRing.getPosList().getValue();
+					
+					int pos = 0;
+					
+					double[] xcoord = new double[coord.size()/3];
+					double[] ycoord = new double[coord.size()/3];
+					
+					for (int i = 0; i < coord.size() / 3; i++) {
+						xcoord[i] = coord.get(pos);
+						ycoord[i] = coord.get(pos+1);
 						pos += 3;
 					}
 					return new Polygon2d(xcoord, ycoord); 
@@ -61,6 +93,8 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 				"Surface is no Polygon, handle this case!");
 	}
 
+	
+	
 	/**
 	 * Constructor.
 	 * 

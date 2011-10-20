@@ -32,6 +32,7 @@ import ucar.unidata.geoloc.ProjectionPoint;
 import javax.vecmath.Point3d;
 
 import static pik.clminputdata.tools.Polygon2d.xyProjectedPolygon2d;
+import static pik.clminputdata.tools.Polygon2d.xyProjectedPolygon2dNO;
 
 /**
  * Calculation of the main properties of a city element.
@@ -271,9 +272,9 @@ class CityGMLConverterThread extends Thread {
 			
 
 				if (grounds.size() > 0) {
-					bArea[bID] = calcGroundSize(grounds);
+					bArea[bID] = calcGroundSize(grounds,bHeight[bID]);
 					
-					System.err.println(bHeight[bID]);
+//					System.err.println(bHeight[bID]);
 				} else {
 					noGround.add(co.getId());
 				}
@@ -333,7 +334,7 @@ class CityGMLConverterThread extends Thread {
 			for (int i = 0; i < surface.size(); i++) {
 				SurfaceProperty surfaceProperty = surface.get(i);
 
-				roofArea = xyProjectedPolygon2d(surfaceProperty).getArea();
+				roofArea = xyProjectedPolygon2dNO(surfaceProperty).getArea();
 				sumRoofArea += roofArea;
 
 				// min and max height of surfaceProperty
@@ -361,7 +362,7 @@ class CityGMLConverterThread extends Thread {
 	 *            Ground surfaces of the building
 	 * @return Ground area of the building
 	 */
-	public static double calcGroundSize(List<GroundSurface> grounds) {
+	public static double calcGroundSize(List<GroundSurface> grounds, double bH) {
 		double area = 0.;
 		for (GroundSurface ground : grounds) {
 			List<SurfaceProperty> surface = ground.getLod2MultiSurface()
@@ -369,6 +370,7 @@ class CityGMLConverterThread extends Thread {
 			for (SurfaceProperty surfaceProperty : surface) {
 				// area in km2
 				area += xyProjectedPolygon2d(surfaceProperty).getArea() / 1000000.;
+				System.err.println(bH);
 			}
 		}
 		return area;

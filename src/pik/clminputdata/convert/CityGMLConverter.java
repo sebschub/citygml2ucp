@@ -163,7 +163,7 @@ public class CityGMLConverter {
 			conf = new CityGMLConverterConf();
 		}
 
-		conf.outputConf();
+//		conf.outputConf();
 
 		// create new urban configuration
 		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(conf.pollat,
@@ -236,8 +236,8 @@ public class CityGMLConverter {
 
 				File file = flist[i];
 
-				System.out.println("Processing file " + (i + 1) + "/"
-						+ flist.length + ": " + file);
+//				System.out.println("Processing file " + (i + 1) + "/"
+//						+ flist.length + ": " + file);
 
 				// unmarshaller has to be in loop, otherwise memory is not freed
 				// (reference in unmarshaller?)
@@ -288,9 +288,9 @@ public class CityGMLConverter {
 //			stats.toNetCDFfile(conf.statsFile);
 		}
 
-		long lasted = new Date().getTime() - startTime;
-		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
-				lasted / 1000. / 60.);
+//		long lasted = new Date().getTime() - startTime;
+//		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
+//				lasted / 1000. / 60.);
 
 //		if (conf.calcSVF) {
 //
