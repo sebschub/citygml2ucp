@@ -118,6 +118,26 @@ public class CityGMLConverterConf {
 	double[] buildingProp;
 	private static final double buildingPropDefault[] = { 0., 0.05, 0.25, 0.10, 0.20, 0.20, 0.10, 0.05, 0.05, 0.};
 
+	boolean asciiInput;
+	private static final boolean asciiInputDefault = false;
+	
+	String urbFile;
+	private static final String urbFileDefault = "urb";
+	
+	String strFile;
+	private static final String strFileDefault = "str";
+	
+	String bldFile;
+	private static final String bldFileDefault = "bld";
+	
+	String stwFile;
+	private static final String stwFileDefault = "stw";
+
+	String stdFile;
+	private static final String stdFileDefault = "std";
+	
+	String blhFile;
+	private static final String blhFileDefault = "blh";
 	
 	boolean useClasses;
 	private static final boolean useClassesDefault = false;
@@ -364,6 +384,17 @@ public class CityGMLConverterConf {
 				classIndex = prop.getIntArray("classIndex", classIndexDefault );
 			}
 			
+			asciiInput = prop.getBoolean("asciiInput", asciiInputDefault);
+			if (asciiInput) {
+				urbFile = prop.getString("urbFile", urbFileDefault);
+				strFile = prop.getString("strFile", strFileDefault);
+				bldFile = prop.getString("bldFile", bldFileDefault);
+				
+				stwFile = prop.getString("stwFile", stwFileDefault);
+				stdFile = prop.getString("stdFile", stdFileDefault);
+				blhFile = prop.getString("blhFile", blhFileDefault);
+			}
+						
 			proj4code = prop.getString("proj4code", proj4codeDefault);
 
 			maxbuild_radius = prop.getDouble("maxbuild_radius",

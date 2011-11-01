@@ -71,6 +71,233 @@ public class CityGMLConverter {
 		scanner.close();
 
 	}
+	
+	private static void asciiInput(CityGMLConverterConf conf,
+			UrbanCLMConfiguration uclm) throws IOException {
+		
+//		urban fraction
+		Scanner scanner = new Scanner(new File("urb_b"));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
+			lScanner.close();
+		}
+		scanner.close();
+		
+//		building fraction
+		scanner = new Scanner(new File(conf.bldFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			uclm.setBuildingFrac(0,lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
+			lScanner.close();
+		}
+		scanner.close();
+
+//		street width
+		scanner = new Scanner(new File(conf.stwFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(3 - 1));
+			int lon = uclm.getRLonIndex(values.get(1 - 1));
+			for (int id = 0; id < uclm.getNstreedir(); id++) {
+				uclm.setStreetWidth(0,id,lat, lon, values.get(5 - 1));
+			}
+			lScanner.close();
+		}
+		scanner.close();
+		
+		
+//		street direction
+		scanner = new Scanner(new File(conf.stdFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(3 - 1));
+			int lon = uclm.getRLonIndex(values.get(1 - 1));
+			for (int id = 0; id < uclm.getNstreedir(); id++) {
+				uclm.setStreetFrac(0,id,lat, lon, values.get(4 + id));
+			}
+			lScanner.close();
+		}
+		scanner.close();
+		
+		
+//		building height
+		scanner = new Scanner(new File(conf.blhFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(3 - 1));
+			int lon = uclm.getRLonIndex(values.get(1 - 1));
+			double[] bhvalues = new double[uclm.getKe_urbanMax()];
+			double sum = 0;
+			for (int i = 0; i < bhvalues.length; i++) {
+				bhvalues[i]=values.get(4+i);
+				sum+=bhvalues[i];
+			}
+			for (int i = 0; i < bhvalues.length; i++) {
+				bhvalues[i]/=sum;
+				for (int id = 0; id < uclm.getNstreedir(); id++) {
+					uclm.setBuildProb(0, id, i, lat, lon, bhvalues[i]);
+				}
+			}
+					
+			lScanner.close();
+		}
+		scanner.close();
+		
+		System.out.println("correction input");
+		
+//		only little real building data available, use standard there
+		for (int i = 0; i < uclm.getIe_tot(); i++) {
+			for (int j = 0; j < uclm.getJe_tot(); j++) {
+				if (uclm.getUrbanFrac(j, i)<0.05 && uclm.getUrbanFrac(j, i)>0.) {
+					for (int id = 0; id < uclm.getNstreedir(); id++) {
+						for (int k = 0; k < uclm.getKe_urban(0); k++) {
+							uclm.setBuildProb(0, id, k, j, i, 0.);
+						}
+						uclm.setBuildProb(0, id, 0, j, i, 0.05);
+						uclm.setBuildProb(0, id, 1, j, i, 0.2);
+						uclm.setBuildProb(0, id, 2, j, i, 0.40);
+						uclm.setBuildProb(0, id, 3, j, i, 0.3);
+						uclm.setBuildProb(0, id, 4, j, i, 0.05);
+						
+						uclm.setStreetFrac(0, id, j, i, 1./uclm.getNstreedir());
+						uclm.setStreetWidth(0, id, j, i, 25);
+					}
+				}
+			}
+		}
+		
+//		urban fraction
+		scanner = new Scanner(new File(conf.urbFile));
+		for (int i = 0; i < conf.skipLines; i++) {
+			if (scanner.hasNextLine()) {
+				scanner.nextLine();
+			} else {
+				throw new IOException(
+						"Impervious Surface has less lines then skipped at beginning.");
+			}
+		}
+		while (scanner.hasNextLine()) {
+			Scanner lScanner = new Scanner(scanner.nextLine())
+					.useDelimiter(conf.sepString);
+			List<Double> values = new LinkedList<Double>();
+			while (lScanner.hasNext()) {
+				values.add(Double.parseDouble(lScanner.next()));
+			}
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
+			lScanner.close();
+		}
+		scanner.close();
+		
+		for (int i = 0; i < uclm.getIe_tot(); i++) {
+			for (int j = 0; j < uclm.getJe_tot(); j++) {
+				if (uclm.getUrbanFrac(j, i)>0. && !(uclm.getStreetWidth(0, 0, j, i)>0.)) {
+					for (int id = 0; id < uclm.getNstreedir(); id++) {
+						for (int k = 0; k < uclm.getKe_urban(0); k++) {
+							uclm.setBuildProb(0, id, k, j, i, 0.);
+						}
+						uclm.setBuildProb(0, id, 0, j, i, 0.05);
+						uclm.setBuildProb(0, id, 1, j, i, 0.2);
+						uclm.setBuildProb(0, id, 2, j, i, 0.40);
+						uclm.setBuildProb(0, id, 3, j, i, 0.3);
+						uclm.setBuildProb(0, id, 4, j, i, 0.05);
+						
+						uclm.setStreetWidth(0, id, j, i, 25);
+						uclm.setStreetFrac(0, id, j, i, 1./uclm.getNstreedir());
+					}
+				}
+			}
+		}
+		
+		
+		System.out.println("defining building width");
+		
+		for (int i = 0; i < uclm.getIe_tot(); i++) {
+			for (int j = 0; j < uclm.getJe_tot(); j++) {
+				if (uclm.getUrbanFrac(j, i)>0.) {
+					for (int id = 0; id < uclm.getNstreedir(); id++) {
+						uclm.setBuildingWidth(0, id, j, i, 
+								uclm.getBuildingFrac(0, j, i)/(uclm.getUrbanFrac(j, i)-uclm.getBuildingFrac(0, j, i))
+								*uclm.getStreetWidth(0, id, j, i));
+					}
+					uclm.setUrbanClassFrac(0, j, i, 1.);
+				}
+			}
+		}
+		
+	}
+
 
 	private static void inputClassData(CityGMLConverterConf conf,
 			UrbanCLMConfiguration uclm) throws IOException {
@@ -197,6 +424,11 @@ public class CityGMLConverter {
 					}
 				}
 			}
+			if (conf.consistentOutput) {
+				uclm.defineMissingData();
+			}
+		} else if(conf.asciiInput) {
+			asciiInput(conf, uclm);
 			if (conf.consistentOutput) {
 				uclm.defineMissingData();
 			}
