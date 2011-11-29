@@ -92,8 +92,8 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
-			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
 			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
 			lScanner.close();
 		}
@@ -116,8 +116,8 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
-			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
 			uclm.setBuildingFrac(0,lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
 			lScanner.close();
 		}
@@ -140,10 +140,10 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(3 - 1));
+			int lat = uclm.getRLatIndex(values.get(2 - 1));
 			int lon = uclm.getRLonIndex(values.get(1 - 1));
 			for (int id = 0; id < uclm.getNstreedir(); id++) {
-				uclm.setStreetWidth(0,id,lat, lon, values.get(5 - 1));
+				uclm.setStreetWidth(0,id,lat, lon, values.get(3 - 1));
 			}
 			lScanner.close();
 		}
@@ -167,8 +167,8 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(3 - 1));
-			int lon = uclm.getRLonIndex(values.get(1 - 1));
+			int lat = uclm.getRLatIndex(values.get(3 - 1)+conf.dlat/2.);
+			int lon = uclm.getRLonIndex(values.get(1 - 1)+conf.dlon/2.);
 			for (int id = 0; id < uclm.getNstreedir(); id++) {
 				uclm.setStreetFrac(0,id,lat, lon, values.get(4 + id));
 			}
@@ -194,8 +194,8 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(3 - 1));
-			int lon = uclm.getRLonIndex(values.get(1 - 1));
+			int lat = uclm.getRLatIndex(values.get(3 - 1)+conf.dlat/2.);
+			int lon = uclm.getRLonIndex(values.get(1 - 1)+conf.dlon/2.);
 			double[] bhvalues = new double[uclm.getKe_urbanMax()];
 			double sum = 0;
 			for (int i = 0; i < bhvalues.length; i++) {
@@ -253,8 +253,8 @@ public class CityGMLConverter {
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
 			}
-			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1)-conf.dlat/2.);
-			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1)-conf.dlon/2.);
+			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
+			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
 			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
 			lScanner.close();
 		}
