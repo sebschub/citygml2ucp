@@ -331,6 +331,48 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"rotated_pole");
 		addToWrite(this.fwos);
 
+//		set to missing value everywhere
+		for (int i = 0; i < getIe_tot(); i++) {
+			for (int j = 0; j < getJe_tot(); j++) {
+				for (int iurb = 0; iurb < getNuclasses(); iurb++) {
+					for (int id = 0; id < getNstreedir(); id++) {
+						Index ind = this.fgos.getIndex();
+						for (int o = 0; o < getKe_urbanMax(); o++) {
+							ind.set(iurb, id, o, j, i);
+							this.fgos.set(ind, this.fgos.missingValue);
+						}
+						
+						ind = this.fgow.getIndex();
+						for (int k = 0; k < getKe_urbanMax(); k++) {
+							for (int k2 = 0; k2 < getKe_urbanMax()-1; k2++) {
+								ind.set(iurb, id, k2, k, j, i);
+								this.fgow.set(ind, fgow.missingValue);
+							}
+						}
+						
+						ind = this.fwos.getIndex();
+						for (int k = 0; k < getKe_urbanMax()-1; k++) {
+							for (int l = 0; l < getKe_urbanMax(); l++) {
+								ind.set(iurb, id, l, k, j, i);
+								this.fwos.set(ind, fwos.missingValue);
+							}
+						}
+					
+						ind = this.fwow.getIndex();
+						for (int k = 0; k < getKe_urbanMax()-1; k++) {
+							for (int l = 0; l < getKe_urbanMax(); l++) {
+								for (int m = 0; m < getKe_urbanMax()-1; m++) {
+									ind.set(iurb, id, m, l, k, j, i);
+									this.fwow.set(ind, fwow.missingValue);
+								}
+							}
+						}
+						
+					}
+				}
+			}
+		}
+				
 	}
 
 	/**
@@ -944,6 +986,22 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return ke_urbanmax;
 	}
 
+	/**
+	 * Get the highest level with buildings present
+	 * @param iurb Urban class
+	 * @param id Street direction
+	 * @param jindex Lat index
+	 * @param iindex Lon index
+	 * @return Height index
+	 */
+	public int getLocalKe_urbanMax(int iurb, int id, int jindex, int iindex) {
+		int max = getKe_urbanMax()-1;
+		while (getBuildProb(iurb, id, max, jindex, iindex)<1.e-12) {
+			max--;
+		}
+		return max+1;
+	}
+	
 	public int getKe_urban(int uc) {
 		Index ind = ke_urban.getIndex();
 		return ke_urban.getInt(ind.set(uc));

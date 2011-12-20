@@ -66,7 +66,7 @@ public abstract class UrbanSkyViewFactor implements Runnable {
 		this.ls = uclm.getStreetLength(id, jindex) * 1000;
 		// System.out.println(ls);
 		this.height = uclm.getHeightA();
-		this.heightLength = uclm.getKe_urbanMax();
+		this.heightLength = uclm.getLocalKe_urbanMax(iurb, id, jindex, iindex);
 		this.iurb = iurb;
 		this.id = id;
 		this.iindex = iindex;
