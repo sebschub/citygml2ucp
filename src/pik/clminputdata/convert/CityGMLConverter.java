@@ -302,16 +302,16 @@ public class CityGMLConverter {
 	private static void inputClassData(CityGMLConverterConf conf,
 			UrbanCLMConfiguration uclm) throws IOException {
 		
-//		assuming 0., 5., 10., 15., 20., 25., 30., 35.,  40., 45. height levels
+//		assuming 0., 5., 10., 15., 20., 25., 30. height levels
 		
-		double frurb[] = {0.9,0.65,0.7};
-		double s[] = {25., 15., 25.};
-		double b[] = {25., 10., 50.};
-		double[][] h = new double[3][];
-		h[0] = new double[]{0., 0., 0.02, 0.05, 0.2, 0.25, 0.3, 0.1, 0.05, 0.03 };
-		h[1] = new double[]{0., 0.05, 0.25, 0.15, 0.20, 0.25, 0.1, 0.0, 0.0, 0. };
-		h[2] = new double[]{0., 0.05, 0.25, 0.15, 0.20, 0.25, 0.1, 0.0, 0.0, 0. };
-		
+		double frurb[] = {0.85,0.75,0.85,0.85};
+		double s[] = {12., 12., 6., 5.};
+		double b[] = {20., 20., 10., 15.};
+		double[][] h = new double[4][];
+		h[0] = new double[]{0.00, 0.20, 0.30, 0.30, 0.20, 0.00, 0.00};
+		h[1] = new double[]{0.00, 0.05, 0.25, 0.25, 0.25, 0.15, 0.05};
+		h[2] = new double[]{0.05, 0.90, 0.05, 0.00, 0.00, 0.00, 0.00};
+		h[3] = new double[]{0.00, 0.50, 0.50, 0.00, 0.00, 0.00, 0.00};
 		
 		Scanner scanner = new Scanner(new File(conf.impSurfFile));
 		for (int i = 0; i < conf.skipLines; i++) {
@@ -329,26 +329,34 @@ public class CityGMLConverter {
 			while (lScanner.hasNextDouble()) {
 				values.add(lScanner.nextDouble());
 			}
+			for (int i = 0; i < values.size(); i++) {
+				System.out.println(i + " " + values.get(i));
+			}
 			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
 			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
+			System.out.println("Lon index: " + lon + "  Lat index: " + lat);
 			
 			double fr[] = new double[conf.nClass];
 			for (int i = 0; i < fr.length; i++) {
-				fr[i] = values.get(conf.classIndex[i]-1)/100.;
+				System.out.println(conf.classIndex[i]);
+				fr[i] = values.get(conf.classIndex[i]-1);
 			}
 			
-			for (int i = 3; i < fr.length; i++) {
-				fr[2] += fr[i];
+			double sum = 0.;
+			double weightedSum = 0.;
+			for (int i = 0; i < fr.length; i++) {
+				sum += fr[i];
+				weightedSum += fr[i]*frurb[i];
 			}
-			
-			double sum = fr[0] + fr[1] + fr[2];
+			System.out.println("Total sum: " + sum);
+			System.out.println("Total weightedSum" + weightedSum);
 			if (sum<1.e-10) {
 				uclm.setUrbanFrac(lat, lon, 0.);
 			} else {
-				uclm.setUrbanFrac(lat, lon, fr[0]*frurb[0]+ fr[1]*frurb[1] + fr[2]*frurb[2]);
+				uclm.setUrbanFrac(lat, lon, weightedSum);
 			}
 			
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < fr.length; i++) {
 				if (sum<1.e-10) {
 					uclm.setUrbanClassFrac(i, lat, lon, 0.);
 				} else {
