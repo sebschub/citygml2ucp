@@ -304,15 +304,14 @@ public class CityGMLConverter {
 		
 //		assuming 0., 5., 10., 15., 20., 25., 30. height levels
 		
-		double frurb[] = {0.85,0.75,0.85,0.85};
-		double s[] = {12., 12., 6., 5.};
-		double b[] = {20., 20., 10., 15.};
-		double[][] h = new double[4][];
-		h[0] = new double[]{0.00, 0.20, 0.30, 0.30, 0.20, 0.00, 0.00};
-		h[1] = new double[]{0.00, 0.05, 0.25, 0.25, 0.25, 0.15, 0.05};
-		h[2] = new double[]{0.05, 0.90, 0.05, 0.00, 0.00, 0.00, 0.00};
-		h[3] = new double[]{0.00, 0.50, 0.50, 0.00, 0.00, 0.00, 0.00};
-		
+		double frurb[] = {0.8,0.6,0.6};
+		double s[] = {20., 20., 30};
+		double b[] = {15., 10., 20.};
+		double[][] h = new double[3][];
+		h[0] = new double[]{0.00, 0.03, 0.02, 0.04, 0.19, 0.41, 0.26, 0.05};
+		h[1] = new double[]{0.00, 0.17, 0.45, 0.25, 0.13, 0.00, 0.00, 0.00};
+		h[2] = new double[]{0.00, 0.03, 0.02, 0.19, 0.26, 0.30, 0.20, 0.00};
+				
 		Scanner scanner = new Scanner(new File(conf.impSurfFile));
 		for (int i = 0; i < conf.skipLines; i++) {
 			if (scanner.hasNextLine()) {
@@ -329,6 +328,7 @@ public class CityGMLConverter {
 			while (lScanner.hasNextDouble()) {
 				values.add(lScanner.nextDouble());
 			}
+			System.out.println("Found " + values.size() + " elements");
 			for (int i = 0; i < values.size(); i++) {
 				System.out.println(i + " " + values.get(i));
 			}
@@ -336,10 +336,24 @@ public class CityGMLConverter {
 			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
 			System.out.println("Lon index: " + lon + "  Lat index: " + lat);
 			
-			double fr[] = new double[conf.nClass];
-			for (int i = 0; i < fr.length; i++) {
+			//dont want classes, just the highest fraction
+			double fr[] = new double[3];
+			double frtemp[] = new double[6];
+			for (int i = 0; i < frtemp.length; i++) {
 				System.out.println(conf.classIndex[i]);
-				fr[i] = values.get(conf.classIndex[i]-1);
+				frtemp[i] = values.get(conf.classIndex[i]-1);
+			}
+			fr[0] = frtemp[0]; // continuos urban fabric
+			fr[1] = frtemp[1]; // discontiunous urban fabric
+			fr[2] = frtemp[2] + frtemp[3] + frtemp[4] + frtemp[5]; 
+			
+			double maxv = fr[0];
+			int indexmax = 0;
+			for (int i = 1; i < fr.length; i++) {
+				if (fr[i]>maxv) {
+					maxv = fr[i];
+					indexmax = i;
+				}
 			}
 			
 			double sum = 0.;
@@ -356,21 +370,21 @@ public class CityGMLConverter {
 				uclm.setUrbanFrac(lat, lon, weightedSum);
 			}
 			
-			for (int i = 0; i < fr.length; i++) {
+			//for (int i = 0; i < fr.length; i++) {
 				if (sum<1.e-10) {
-					uclm.setUrbanClassFrac(i, lat, lon, 0.);
+					uclm.setUrbanClassFrac(0, lat, lon, 0.);
 				} else {
-					uclm.setUrbanClassFrac(i, lat, lon, fr[i]/sum);
+					uclm.setUrbanClassFrac(0, lat, lon, 1);
 				}
 				for (int j = 0; j < conf.streetdir.length; j++) {
-					uclm.setStreetFrac(i, j, lat, lon, 1./conf.streetdir.length);
-					uclm.setBuildingWidth(i, j, lat, lon, b[i]);
-					uclm.setStreetWidth(i, j, lat, lon, s[i]);
-					for (int hz = 0; hz < conf.ke_urban[i]; hz++) {
-						uclm.setBuildProb(i, j, hz, lat, lon, h[i][hz]);
+					uclm.setStreetFrac(0, j, lat, lon, 1./conf.streetdir.length);
+					uclm.setBuildingWidth(0, j, lat, lon, b[indexmax]);
+					uclm.setStreetWidth(0, j, lat, lon, s[indexmax]);
+					for (int hz = 0; hz < conf.ke_urban[0]; hz++) {
+						uclm.setBuildProb(0, j, hz, lat, lon, h[indexmax][hz]);
 					}
 				}				
-			}
+			//}
 			
 			lScanner.close();
 		}
