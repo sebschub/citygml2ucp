@@ -21,8 +21,8 @@ import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
-import org.proj4.Proj4;
-import org.proj4.ProjectionData;
+import org.proj4.PJ;
+import org.proj4.PJException;
 
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.Polygon3d;
@@ -75,10 +75,11 @@ class CityGMLConverterThread extends Thread {
 	 * Urban configuration which includes the global effective urban data
 	 */
 	public final UrbanCLMConfiguration uclm;
+	
 	/**
 	 * Object for coordinate transformation
 	 */
-	public final Proj4 proj4;
+	public final PJ sourcePJ, targetPJ;
 
 	/**
 	 * Additional output information
@@ -194,11 +195,12 @@ class CityGMLConverterThread extends Thread {
 	 *            Name of the file including the city data
 	 */
 	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
-			CityGMLConverterConf conf, Proj4 proj4,
+			CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
 			CityGMLConverterStats stats, CityModel base, int id, String filename) {
 		this.uclm = uclm;
 		this.conf = conf;
-		this.proj4 = proj4;
+		this.sourcePJ = sourcePJ;
+		this.targetPJ = targetPJ;
 		this.id = id;
 		this.filename = filename;
 		this.stats = stats;
@@ -576,36 +578,28 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * Convert building coordinates to rotated pole and calculate lattice
 	 * indices.
+	 * @throws PJException 
 	 */
-	private void calcLatLonIndices() {
+	private void calcLatLonIndices() throws PJException {
 
-		// create ProjectionData object for transformation
-		ProjectionData loc;
-
-		double[][] xy = new double[bCount][2];
-		double[] z = new double[bCount];
+		// put data to transform in one array with x1, y1, z1, x2, y2, y2, ...
+		double[] xyz = new double[3*bCount];
 		for (int i = 0; i < bCount; i++) {
-			xy[i][0] = bLocation[i].x;
-			xy[i][1] = bLocation[i].y;
-			z[i] = bLocation[i].z;
+			xyz[i*3 + 0] = bLocation[i].x;
+			xyz[i*3 + 1] = bLocation[i].y;
+			xyz[i*3 + 2] = bLocation[i].y;
 		}
-		loc = new ProjectionData(xy, z);
-
+		
 		// transform the coordinates, has to be after visibility determination
 		// because old system is used there
-		proj4.transform(loc, bCount, 1);
-		// now x is lon, y is lat
+		sourcePJ.transform(targetPJ, 3, xyz, 0, bCount);
 
 		for (int i = 0; i < bCount; i++) {
 			// apply rotated pole
-			ProjectionPoint pp = uclm.rotpol.latLonToProj(loc.y[i], loc.x[i]);
-			// and write back to projD
-			loc.x[i] = pp.getX();
-			loc.y[i] = pp.getY();
-
-			irlat[i] = uclm.getRLatIndex(loc.y[i]);
-
-			irlon[i] = uclm.getRLonIndex(loc.x[i]);
+			ProjectionPoint pp = uclm.rotpol.latLonToProj(xyz[3*i + 1], xyz[3*i + 0]);
+			// find grid index
+			irlat[i] = uclm.getRLatIndex(pp.getY());
+			irlon[i] = uclm.getRLonIndex(pp.getX());
 
 		}
 	}
@@ -799,7 +793,12 @@ class CityGMLConverterThread extends Thread {
 		// filename);
 
 		// calculate irlat and irlon
-		calcLatLonIndices();
+		try {
+			calcLatLonIndices();
+		} catch (PJException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		calcStreetProperties();
 		// System.out.println("Distance stuff finished for " + filename);

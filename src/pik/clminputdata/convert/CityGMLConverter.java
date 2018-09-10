@@ -10,7 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.proj4.Proj4;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
 import org.citygml4j.model.citygml.CityGML;
@@ -18,6 +17,7 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLReader;
+import org.proj4.PJ;
 
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.GMLFilenameFilter;
@@ -456,8 +456,8 @@ public class CityGMLConverter {
 			}
 		} else {
 
-			Proj4 soldner = new Proj4(conf.proj4code,
-					"+init=epsg:4326 +latlong");
+			PJ sourcePJ = new PJ(conf.proj4code);
+			PJ targetPJ = new PJ("+init=epsg:4326 +latlong");
 
 			// set up citygml4j context
 			CityGMLContext ctx = CityGMLContext.getInstance();
@@ -499,7 +499,7 @@ public class CityGMLConverter {
 						CityModel cityModel = (CityModel)citygml;
 						
 						CityGMLConverterThread cgmlct = new CityGMLConverterThread(
-								uclm, conf, soldner, stats, cityModel, i, file
+								uclm, conf, sourcePJ, targetPJ, stats, cityModel, i, file
 								.toString());
 						// everything that is need is now in cgmlct, rest can be deleted
 						cityModel = null;

@@ -8,5 +8,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/citygml4j"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/netcdf-java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/proj-jni"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
