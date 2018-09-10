@@ -1,11 +1,11 @@
-package pik.clminputdata.tools;
+package citygml2ucp.tools;
 
 import java.awt.geom.Point2D;
 
 import org.proj4.Proj4;
 import org.proj4.ProjectionData;
 
-import pik.clminputdata.configuration.*;
+import citygml2ucp.configuration.*;
 
 import static java.lang.System.out;
 

@@ -1,4 +1,4 @@
-package pik.clminputdata.convert;
+package citygml2ucp.convert;
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -59,8 +59,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import pik.clminputdata.configuration.Soldner;
-import pik.clminputdata.configuration.UrbanCLMConfiguration;
+import citygml2ucp.configuration.Soldner;
+import citygml2ucp.configuration.UrbanCLMConfiguration;
 
 public class Splitter extends XMLFilterImpl {
 	private final JAXBContext jaxbCtx;

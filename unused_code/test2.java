@@ -1,4 +1,4 @@
-package pik.clminputdata.tools;
+package citygml2ucp.tools;
 
 import java.io.FileReader;
 import java.io.FileWriter;

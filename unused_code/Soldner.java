@@ -1,7 +1,7 @@
 /**
  * 
  */
-package pik.clminputdata.configuration;
+package citygml2ucp.configuration;
 
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.LatLonPointImpl;
