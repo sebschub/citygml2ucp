@@ -300,7 +300,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * @return Longitude of rotated north pole
 	 */
 	public double getPollon() {
-		return rotpol.getNorthPole().x;
+		return rotpol.getNorthPole().getX();
 	}
 
 	/**
@@ -309,7 +309,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * @return Latitude of rotated north pole
 	 */
 	public double getPollat() {
-		return rotpol.getNorthPole().y;
+		return rotpol.getNorthPole().getY();
 	}
 
 	/**
