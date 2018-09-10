@@ -7,9 +7,9 @@ import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.model.gml.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
  * Planar polygon in 3d space.

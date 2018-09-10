@@ -10,14 +10,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement; //import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import org.proj4.Proj4;
 import org.citygml4j.CityGMLContext;
-import org.citygml4j.factory.CityGMLFactory;
+import org.citygml4j.builder.jaxb.CityGMLBuilder;
+import org.citygml4j.model.citygml.CityGML;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.CityModel;
+import org.citygml4j.xml.io.CityGMLInputFactory;
+import org.citygml4j.xml.io.reader.CityGMLReader;
 
 import pik.clminputdata.configuration.UrbanCLMConfiguration;
 import pik.clminputdata.tools.GMLFilenameFilter;
@@ -460,12 +460,10 @@ public class CityGMLConverter {
 					"+init=epsg:4326 +latlong");
 
 			// set up citygml4j context
-			CityGMLContext ctx = new CityGMLContext();
-			CityGMLFactory citygml = ctx.createCityGMLFactory();
-
-			// create a JAXBContext, an Unmarshaller and unmarshal input file
-			JAXBContext jaxbCtx = ctx.createJAXBContext();
-
+			CityGMLContext ctx = CityGMLContext.getInstance();
+			CityGMLBuilder builder = ctx.createCityGMLBuilder();
+			CityGMLInputFactory in = builder.createCityGMLInputFactory();
+			
 			File[] flist;
 			File folder = new File(conf.inputGMLFolder);
 			if (folder.isDirectory()) {
@@ -492,32 +490,30 @@ public class CityGMLConverter {
 
 				System.out.println("Processing file " + (i + 1) + "/"
 						+ flist.length + ": " + file);
-
-				// unmarshaller has to be in loop, otherwise memory is not freed
-				// (reference in unmarshaller?)
-
-				Unmarshaller um = jaxbCtx.createUnmarshaller();
-				JAXBElement<?> featureElem = (JAXBElement<?>) um
-						.unmarshal(file);
-
-				// map the JAXBElement class to the citygml4j object model
-				CityModel cityModel = (CityModel) citygml
-						.jaxb2cityGML(featureElem);
-
-				CityGMLConverterThread cgmlct = new CityGMLConverterThread(
-						uclm, conf, soldner, stats, cityModel, i, file
+				
+				CityGMLReader reader = in.createCityGMLReader(file);
+				while (reader.hasNext()) {
+					CityGML citygml = reader.nextFeature();
+					
+					if (citygml.getCityGMLClass() == CityGMLClass.CITY_MODEL) {
+						CityModel cityModel = (CityModel)citygml;
+						
+						CityGMLConverterThread cgmlct = new CityGMLConverterThread(
+								uclm, conf, soldner, stats, cityModel, i, file
 								.toString());
+						// everything that is need is now in cgmlct, rest can be deleted
+						cityModel = null;
 
-				// everything that is need is now in cgmlct, rest can be deleted
-				cityModel = null;
-				featureElem = null;
-				um = null;
-
-				if (conf.nThreads > 1) {
-					exec.execute(cgmlct);
-				} else {
-					cgmlct.run();
+						if (conf.nThreads > 1) {
+							exec.execute(cgmlct);
+						} else {
+							cgmlct.run();
+						}
+					}
 				}
+				
+				reader.close();
+				
 			}
 
 			exec.shutdown();

@@ -1,17 +1,19 @@
 package pik.clminputdata.tools;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.vecmath.*;
 
-import org.citygml4j.impl.jaxb.gml._3_1_1.DirectPositionListImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.ExteriorImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.PolygonImpl;
-import org.citygml4j.impl.jaxb.gml._3_1_1.SurfacePropertyImpl;
-import org.citygml4j.model.gml.*;
+//import org.citygml4j.impl.jaxb.gml._3_1_1.ExteriorImpl;
+//import org.citygml4j.impl.jaxb.gml._3_1_1.LinearRingImpl;
+//import org.citygml4j.impl.jaxb.gml._3_1_1.PolygonImpl;
+//import org.citygml4j.impl.jaxb.gml._3_1_1.SurfacePropertyImpl;
+//import org.citygml4j.model.gml.*;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
  * Class for planar polygons.
@@ -469,127 +471,127 @@ public class RecSurface {
 		return getCentroid().toString();
 	}
 
-	public static void main(String[] args) {
-
-		// test2 t = new test2();
-		//				
-		// t.test=10;
-		//		
-		// List<test2> list = new LinkedList<test2>();
-		// list.add(t);
-		//		
-		// System.out.println(list.get(0).test);
-		//		
-		// t.test=15;
-		// System.out.println(list.get(0).test);
-
-		RecSurface s1;
-		LinearRing l1;
-
-		l1 = new LinearRingImpl();
-
-		DirectPositionList dpl = new DirectPositionListImpl();
-		List<Double> l = new ArrayList<Double>();
-
-		// l.add(0.);
-		// l.add(0.);
-		// l.add(0.);
-		// l.add(1.);
-		// l.add(0.);
-		// l.add(0.);
-		// l.add(1.);
-		// l.add(1.);
-		// l.add(0.);
-		// l.add(0.);
-		// l.add(1.);
-		// l.add(0.);
-		// l.add(26048.0730771502);
-		// l.add(31065.1755088699);
-		// l.add(50.189998626709);
-		// l.add(26048.0730771502);
-		// l.add(31065.1755088699);
-		// l.add(55.5244444127672);
-		// l.add(26052.787018);
-		// l.add(31053.422852);
-		// l.add(55.5244444127672);
-		// l.add(26052.787018);
-		// l.add(31053.422852);
-		// l.add(50.189998626709);
-		// l.add(26048.0730771502);
-		// l.add(31065.1755088699);
-		// l.add(50.189998626709);
-
-		// l.add(26024.7699070815);
-		// l.add(31082.2300183635);
-		// l.add(51.4799995422363);
-		// l.add(26024.7699070815);
-		// l.add(31082.2300183635);
-		// l.add(54.4529152209556);
-		// l.add(26019.795074);
-		// l.add(31075.037231);
-		// l.add(54.4529152209556);
-		// l.add(26019.795074);
-		// l.add(31075.037231);
-		// l.add(51.4799995422363);
-		// l.add(26024.7699070815);
-		// l.add(31082.2300183635);
-		// l.add(51.4799995422363);
-
-		// test for removing point
-		l.add(19988.1035003783);
-		l.add(15354.6110825843);
-		l.add(65.47);
-		l.add(19982.7416654217);
-		l.add(15357.6904089219);
-		l.add(65.47);
-		l.add(19983.2982464282);
-		l.add(15353.0810249);
-		l.add(65.14);
-		l.add(19986.0124784483);
-		l.add(15351.5222290375);
-		l.add(65.14);
-		l.add(19986.0139221508);
-		l.add(15351.5243616719);
-		l.add(65.1410377179733);
-		l.add(19988.1035003783);
-		l.add(15354.6110825843);
-		l.add(65.47);
-
-		dpl.setValue(l);
-
-		l1.setPosList(dpl);
-
-		Exterior ext = new ExteriorImpl();
-
-		ext.setRing(l1);
-
-		Polygon poly = new PolygonImpl();
-		poly.setExterior(ext);
-
-		SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
-		surfaceProperty.setSurface(poly);
-
-		s1 = new RecSurface(surfaceProperty);
-
-		System.out.println("==============");
-
-		System.out.println(s1.uv1);
-		System.out.println(s1.uv2);
-
-		System.out.println(s1.uvn);
-		System.out.println(s1.getArea());
-		System.out.println(s1.getCentroid());
-
-		System.out.println(s1.contains(new Point3d(26050.4300475751,
-				31059.299180434948, 52.857221519738104), new Point3d(
-				26043.7517713251, 31063.49275318495, 53.16715849443683)));
-
-		//
-		// public RecSurface(SurfaceProperty surfaceProperty) {
-		// if (surfaceProperty.getSurface() instanceof Polygon) {
-		// Polygon polygon = (Polygon) surfaceProperty.getSurface();
-		// if (polygon.getExterior().getRing() instanceof LinearRing) {
-		// LinearRing lRing = (LinearRing) polygon.getExterior();
-		//	
-	}
+//	public static void main(String[] args) {
+//
+//		// test2 t = new test2();
+//		//				
+//		// t.test=10;
+//		//		
+//		// List<test2> list = new LinkedList<test2>();
+//		// list.add(t);
+//		//		
+//		// System.out.println(list.get(0).test);
+//		//		
+//		// t.test=15;
+//		// System.out.println(list.get(0).test);
+//
+//		RecSurface s1;
+//		LinearRing l1;
+//
+//		l1 = new LinearRingImpl();
+//
+//		DirectPositionList dpl = new DirectPositionListImpl();
+//		List<Double> l = new ArrayList<Double>();
+//
+//		// l.add(0.);
+//		// l.add(0.);
+//		// l.add(0.);
+//		// l.add(1.);
+//		// l.add(0.);
+//		// l.add(0.);
+//		// l.add(1.);
+//		// l.add(1.);
+//		// l.add(0.);
+//		// l.add(0.);
+//		// l.add(1.);
+//		// l.add(0.);
+//		// l.add(26048.0730771502);
+//		// l.add(31065.1755088699);
+//		// l.add(50.189998626709);
+//		// l.add(26048.0730771502);
+//		// l.add(31065.1755088699);
+//		// l.add(55.5244444127672);
+//		// l.add(26052.787018);
+//		// l.add(31053.422852);
+//		// l.add(55.5244444127672);
+//		// l.add(26052.787018);
+//		// l.add(31053.422852);
+//		// l.add(50.189998626709);
+//		// l.add(26048.0730771502);
+//		// l.add(31065.1755088699);
+//		// l.add(50.189998626709);
+//
+//		// l.add(26024.7699070815);
+//		// l.add(31082.2300183635);
+//		// l.add(51.4799995422363);
+//		// l.add(26024.7699070815);
+//		// l.add(31082.2300183635);
+//		// l.add(54.4529152209556);
+//		// l.add(26019.795074);
+//		// l.add(31075.037231);
+//		// l.add(54.4529152209556);
+//		// l.add(26019.795074);
+//		// l.add(31075.037231);
+//		// l.add(51.4799995422363);
+//		// l.add(26024.7699070815);
+//		// l.add(31082.2300183635);
+//		// l.add(51.4799995422363);
+//
+//		// test for removing point
+//		l.add(19988.1035003783);
+//		l.add(15354.6110825843);
+//		l.add(65.47);
+//		l.add(19982.7416654217);
+//		l.add(15357.6904089219);
+//		l.add(65.47);
+//		l.add(19983.2982464282);
+//		l.add(15353.0810249);
+//		l.add(65.14);
+//		l.add(19986.0124784483);
+//		l.add(15351.5222290375);
+//		l.add(65.14);
+//		l.add(19986.0139221508);
+//		l.add(15351.5243616719);
+//		l.add(65.1410377179733);
+//		l.add(19988.1035003783);
+//		l.add(15354.6110825843);
+//		l.add(65.47);
+//
+//		dpl.setValue(l);
+//
+//		l1.setPosList(dpl);
+//
+//		Exterior ext = new ExteriorImpl();
+//
+//		ext.setRing(l1);
+//
+//		Polygon poly = new PolygonImpl();
+//		poly.setExterior(ext);
+//
+//		SurfaceProperty surfaceProperty = new SurfacePropertyImpl();
+//		surfaceProperty.setSurface(poly);
+//
+//		s1 = new RecSurface(surfaceProperty);
+//
+//		System.out.println("==============");
+//
+//		System.out.println(s1.uv1);
+//		System.out.println(s1.uv2);
+//
+//		System.out.println(s1.uvn);
+//		System.out.println(s1.getArea());
+//		System.out.println(s1.getCentroid());
+//
+//		System.out.println(s1.contains(new Point3d(26050.4300475751,
+//				31059.299180434948, 52.857221519738104), new Point3d(
+//				26043.7517713251, 31063.49275318495, 53.16715849443683)));
+//
+//		//
+//		// public RecSurface(SurfaceProperty surfaceProperty) {
+//		// if (surfaceProperty.getSurface() instanceof Polygon) {
+//		// Polygon polygon = (Polygon) surfaceProperty.getSurface();
+//		// if (polygon.getExterior().getRing() instanceof LinearRing) {
+//		// LinearRing lRing = (LinearRing) polygon.getExterior();
+//		//	
+//	}
 }

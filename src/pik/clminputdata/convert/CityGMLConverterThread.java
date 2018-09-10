@@ -8,18 +8,19 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.BoundarySurface;
+import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.Building;
 import org.citygml4j.model.citygml.building.GroundSurface;
 import org.citygml4j.model.citygml.building.RoofSurface;
 import org.citygml4j.model.citygml.building.WallSurface;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
-import org.citygml4j.model.citygml.core.CityObject;
 import org.citygml4j.model.citygml.core.CityObjectMember;
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.model.gml.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
+import org.citygml4j.util.bbox.BoundingBoxOptions;
 import org.proj4.Proj4;
 import org.proj4.ProjectionData;
 
@@ -217,7 +218,7 @@ class CityGMLConverterThread extends Thread {
 
 		for (CityObjectMember cityObjectMember : base.getCityObjectMember()) {
 
-			CityObject co = cityObjectMember.getCityObject();
+			AbstractCityObject co = cityObjectMember.getCityObject();
 
 			// we have a building
 			if (co.getCityGMLClass() == CityGMLClass.BUILDING) {
@@ -227,7 +228,7 @@ class CityGMLConverterThread extends Thread {
 
 				// get bounding box to get the centre of building
 				if (!building.isSetBoundedBy()) {
-					building.calcBoundedBy();
+					building.calcBoundedBy(BoundingBoxOptions.defaults());
 				}
 				List<Double> lc = building.getBoundedBy().getEnvelope()
 						.getLowerCorner().getValue();
@@ -244,10 +245,9 @@ class CityGMLConverterThread extends Thread {
 				List<WallSurface> walls = new ArrayList<WallSurface>();
 				List<RoofSurface> roofs = new ArrayList<RoofSurface>();
 				List<GroundSurface> grounds = new ArrayList<GroundSurface>();
-				List<BoundarySurfaceProperty> lbbp = building
-						.getBoundedBySurfaces();
-				for (BoundarySurfaceProperty boundarySurfaceProperty : lbbp) {
-					BoundarySurface bs = boundarySurfaceProperty.getObject();
+				
+				for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
+					AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
 					if (bs instanceof WallSurface) {
 						walls.add((WallSurface) bs);
 					} else if (bs instanceof RoofSurface) {
@@ -380,7 +380,7 @@ class CityGMLConverterThread extends Thread {
 	 *            List of surfaces
 	 * @return Array of polygons
 	 */
-	public <T extends BoundarySurface> Polygon3d[] getAllSurfaces(
+	public <T extends AbstractBoundarySurface> Polygon3d[] getAllSurfaces(
 			List<T> listSurfaces) {
 
 		int counter = 0;

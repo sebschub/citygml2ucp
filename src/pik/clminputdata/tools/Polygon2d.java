@@ -7,9 +7,9 @@ import java.util.List;
 
 import javax.vecmath.Point2d;
 
-import org.citygml4j.model.gml.LinearRing;
-import org.citygml4j.model.gml.Polygon;
-import org.citygml4j.model.gml.SurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
  * A 2d polygon based on {@link javax.vecmath.Point2d Point2d}.
