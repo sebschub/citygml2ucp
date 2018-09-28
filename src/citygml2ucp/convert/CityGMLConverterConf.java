@@ -194,7 +194,7 @@ public class CityGMLConverterConf {
 	 * Calculate skyview factors?
 	 */
 	boolean calcSVF;
-	private static final boolean calcSVFDefault = true;
+	private static final boolean calcSVFDefault = false;
 	
 	/**
 	 * Number of maximal parallel threads
