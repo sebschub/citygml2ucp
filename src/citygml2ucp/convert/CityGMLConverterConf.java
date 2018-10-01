@@ -191,12 +191,6 @@ public class CityGMLConverterConf {
 	private static final double heightReductionPDefault = 0.;
 	
 	/**
-	 * Calculate skyview factors?
-	 */
-	boolean calcSVF;
-	private static final boolean calcSVFDefault = false;
-	
-	/**
 	 * Number of maximal parallel threads
 	 */
 	int nThreads;
@@ -409,8 +403,6 @@ public class CityGMLConverterConf {
 			
 			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
 			if (heightReductionP > 0.) doHeightReduction = true;
-			
-			calcSVF = prop.getBoolean("calcSVF", calcSVFDefault);
 			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);

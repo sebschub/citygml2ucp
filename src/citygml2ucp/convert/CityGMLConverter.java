@@ -21,11 +21,6 @@ import org.proj4.PJ;
 
 import citygml2ucp.configuration.UrbanCLMConfiguration;
 import citygml2ucp.tools.GMLFilenameFilter;
-import citygml2ucp.tools.GroundOtherSkySVF;
-import citygml2ucp.tools.GroundOtherWallSVF;
-import citygml2ucp.tools.Integrator;
-import citygml2ucp.tools.WallOtherSkySVF;
-import citygml2ucp.tools.WallOtherWallSVF;
 
 /**
  * Main programme.
@@ -541,65 +536,6 @@ public class CityGMLConverter {
 		long lasted = new Date().getTime() - startTime;
 		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
 				lasted / 1000. / 60.);
-
-		if (conf.calcSVF) {
-
-			System.out.println("Starting calculation of Skyview factors.");
-			startTime = new Date().getTime();
-
-			uclm.initalizeSVFFields();
-
-			// Integrator itg = new Integrator();
-
-			ThreadPoolExecutor exec = new ThreadPoolExecutor(conf.nThreads, conf.nThreads,
-					Long.MAX_VALUE, TimeUnit.MILLISECONDS,
-					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
-					new ThreadPoolExecutor.CallerRunsPolicy());
-
-			for (int iurb = 0; iurb < uclm.getNuclasses(); iurb++) {
-				for (int id = 0; id < uclm.getNstreedir(); id++) {
-					for (int j = 0; j < uclm.getJe_tot(); j++) {
-						for (int i = 0; i < uclm.getIe_tot(); i++) {
-							if (uclm.getUrbanFrac(j, i) > 1.e-12) {
-								GroundOtherWallSVF gow = new GroundOtherWallSVF(
-										iurb, id, j, i, uclm, new Integrator());
-								GroundOtherSkySVF gs = new GroundOtherSkySVF(
-										iurb, id, j, i, uclm, new Integrator());
-								WallOtherWallSVF wws = new WallOtherWallSVF(
-										iurb, id, j, i, uclm, new Integrator());
-								WallOtherSkySVF wss = new WallOtherSkySVF(iurb,
-										id, j, i, uclm, new Integrator());
-								System.out
-										.println("SVF Calculation for iurb = "
-												+ iurb + ", id = " + id
-												+ ", j = " + j + ", i = " + i);
-								if (conf.nThreads > 1) {
-									exec.execute(gow);
-									exec.execute(gs);
-									exec.execute(wws);
-									exec.execute(wss);
-								} else {
-									gow.run();
-									gs.run();
-									wws.run();
-									wss.run();
-								}
-							}
-						}
-					}
-				}
-			}
-
-			exec.shutdown();
-			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-			if (conf.consistentOutput) {
-				uclm.defineMissingDataSVF();
-			}
-			lasted = new Date().getTime() - startTime;
-			System.out.printf(
-					"Urban skyview factor calculation took %.3f minutes.%n",
-					lasted / 1000. / 60.);
-		}
 
 		uclm.toNetCDFfile(conf.outputFile);
 
