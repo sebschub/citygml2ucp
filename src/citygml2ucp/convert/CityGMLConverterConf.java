@@ -81,26 +81,26 @@ public class CityGMLConverterConf {
 	/**
 	 * Number of urban classes (ONLY 1 SUPPORTED AT THE MOMENT)
 	 */
-	int nuclasses;
-	private static final int nuclassesDefault = 1;
+	int n_uclass;
+	private static final int n_uclassDefault = 1;
 
 	/**
 	 * Angles of street direction
 	 */
-	double[] streetdir;
-	private static final double streetdirDefault[] = { 0., 90. };
+	double[] angle_udir;
+	private static final double angle_udirDefault[] = { 0., 90. };
 
 	/**
 	 * Number of urban height levels for every urban class
 	 */
-	int[] ke_urban;
-	private static final int ke_urbanDefault[] = { 10 };
+	int[] ke_uhl;
+	private static final int ke_uhlDefault[] = { 10 };
 
 	/**
 	 * Urban height levels
 	 */
-	double[] height;
-	private static final double heightDefault[] = { 0., 5., 10., 15., 20., 25.,
+	double[] hhl_uhl;
+	private static final double hhl_uhlDefault[] = { 0., 5., 10., 15., 20., 25.,
 			30., 35., 40., 45. };
 
 	/**
@@ -357,11 +357,11 @@ public class CityGMLConverterConf {
 			je_tot = prop.getInt("je_tot", je_totDefault);
 			// ke_tot = prop.getInt("ke_tot", ke_totDefault);
 
-			nuclasses = prop.getInt("nuclasses", nuclassesDefault);
+			n_uclass = prop.getInt("n_uclass", n_uclassDefault);
 
-			streetdir = prop.getDoubleArray("streetdir", streetdirDefault);
-			ke_urban = prop.getIntArray("ke_urban", ke_urbanDefault);
-			height = prop.getDoubleArray("height", heightDefault);
+			angle_udir = prop.getDoubleArray("angle_udir", angle_udirDefault);
+			ke_uhl = prop.getIntArray("ke_uhl", ke_uhlDefault);
+			hhl_uhl = prop.getDoubleArray("height", hhl_uhlDefault);
 
 			fakeParameter = prop.getBoolean("fakeParameter", fakeParameterDefault);
 			
@@ -374,7 +374,7 @@ public class CityGMLConverterConf {
 				buildingWidth = prop.getDouble("buildingWidth", buildingWidthDefault);
 				streetWidth = prop.getDouble("streetWidth", streetWidthDefault);
 				buildingProp = prop.getDoubleArray("buildingProp", buildingPropDefault);
-				if (buildingProp.length!=height.length) {
+				if (buildingProp.length!=hhl_uhl.length) {
 					throw new Exception("Wrong height number of height levels");
 				}
 			}

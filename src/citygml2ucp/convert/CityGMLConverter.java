@@ -376,11 +376,11 @@ public class CityGMLConverter {
 				} else {
 					uclm.setUrbanClassFrac(0, lat, lon, 1);
 				}
-				for (int j = 0; j < conf.streetdir.length; j++) {
-					uclm.setStreetFrac(0, j, lat, lon, 1./conf.streetdir.length);
+				for (int j = 0; j < conf.angle_udir.length; j++) {
+					uclm.setStreetFrac(0, j, lat, lon, 1./conf.angle_udir.length);
 					uclm.setBuildingWidth(0, j, lat, lon, b[indexmax]);
 					uclm.setStreetWidth(0, j, lat, lon, s[indexmax]);
-					for (int hz = 0; hz < conf.ke_urban[0]; hz++) {
+					for (int hz = 0; hz < conf.ke_uhl[0]; hz++) {
 						uclm.setBuildProb(0, j, hz, lat, lon, h[indexmax][hz]);
 					}
 				}				
@@ -417,8 +417,8 @@ public class CityGMLConverter {
 		// create new urban configuration
 		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(conf.pollat,
 				conf.pollon, conf.dlat, conf.dlon, conf.startlat_tot,
-				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.nuclasses,
-				conf.streetdir, conf.ke_urban, conf.height, conf.useClasses,
+				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.n_uclass,
+				conf.angle_udir, conf.ke_uhl, conf.hhl_uhl, conf.useClasses,
 				conf.confItems, conf.confValues);
 
 		if (conf.useClasses) {
@@ -431,14 +431,14 @@ public class CityGMLConverter {
 			for (int lon = 0; lon < conf.ie_tot; lon++) {
 				for (int lat = 0; lat < conf.je_tot; lat++) {
 					if (uclm.getUrbanFrac(lat, lon)>0.) {
-						for (int uc = 0; uc < conf.nuclasses; uc++) {
-							for (int dir = 0; dir < conf.streetdir.length; dir++) {
-								uclm.setStreetFrac(uc, dir, lat, lon, 1./conf.streetdir.length);
+						for (int uc = 0; uc < conf.n_uclass; uc++) {
+							for (int dir = 0; dir < conf.angle_udir.length; dir++) {
+								uclm.setStreetFrac(uc, dir, lat, lon, 1./conf.angle_udir.length);
 								uclm.setBuildingWidth(uc, dir, lat, lon, conf.buildingWidth);
 								uclm.setStreetWidth(uc, dir, lat, lon, conf.streetWidth);
 								uclm.setBuildingFrac(uc, lat, lon, 1./(1.+conf.streetWidth/conf.buildingWidth));
-								uclm.setUrbanClassFrac(uc, lat, lon, 1./conf.nuclasses);
-								for (int hz = 0; hz < conf.ke_urban[uc]; hz++) {
+								uclm.setUrbanClassFrac(uc, lat, lon, 1./conf.n_uclass);
+								for (int hz = 0; hz < conf.ke_uhl[uc]; hz++) {
 									uclm.setBuildProb(uc, dir, hz, lat, lon, conf.buildingProp[hz]);
 								}
 							}

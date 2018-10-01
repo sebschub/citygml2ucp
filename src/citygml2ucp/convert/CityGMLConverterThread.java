@@ -295,7 +295,7 @@ class CityGMLConverterThread extends Thread {
 		irlat = new int[bCount];
 		irlon = new int[bCount];
 
-		// only one urban class in ke_urban, CHANGE THIS IS IF NECESSARY!
+		// only one urban class in ke_uhl, CHANGE THIS IS IF NECESSARY!
 		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
 				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
 
