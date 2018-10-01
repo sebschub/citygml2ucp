@@ -355,7 +355,7 @@ public class CityGMLConverterConf {
 
 			angle_udir = prop.getDoubleArray("angle_udir", angle_udirDefault);
 			ke_uhl = prop.getIntArray("ke_uhl", ke_uhlDefault);
-			hhl_uhl = prop.getDoubleArray("height", hhl_uhlDefault);
+			hhl_uhl = prop.getDoubleArray("hhl_uhl", hhl_uhlDefault);
 
 			fakeParameter = prop.getBoolean("fakeParameter", fakeParameterDefault);
 			
