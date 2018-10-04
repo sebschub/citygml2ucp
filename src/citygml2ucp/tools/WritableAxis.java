@@ -4,13 +4,16 @@
 package citygml2ucp.tools;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
+import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 
 /**
@@ -66,7 +69,7 @@ public class WritableAxis extends WritableDimension {
 	private double dv = 0.;
 
 	private boolean reduceLength = false;
-
+	
 	/**
 	 * Constructor for non-periodic axis with the name of the axis equal to the
 	 * name of the dimension.
@@ -367,49 +370,40 @@ public class WritableAxis extends WritableDimension {
 		return valuestemp;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.Coordinate1D#addVariablesToNetCDFfile(
-	 * ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-
-		List<Dimension> l = super.addVariablesToNetCDFfile(ncfile);
-
-		Variable var = ncfile.addVariable(axisname, DataType.FLOAT, l);
-		if (!axistype.isEmpty()) {
-			ncfile.addVariableAttribute(var.getShortName(), "axis", axistype);
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
+		if (Objects.isNull(dimensionsAndVariables)) {
+			Dimension dim = ncfile.addDimension(null, this.shortName, this.getLength());
+			List<Dimension> ncdims = Arrays.asList(dim);
+			
+			Variable var = ncfile.addVariable(null, this.axisname, DataType.FLOAT, ncdims);
+			if (!axistype.isEmpty()) {
+				ncfile.addVariableAttribute(var, new Attribute("axis", axistype));
+			}
+			ncfile.addVariableAttribute(var, new Attribute("standard_name",
+					standard_name));
+			ncfile.addVariableAttribute(var, new Attribute("long_name", long_name));
+			if (!units.isEmpty()) {
+				ncfile.addVariableAttribute(var, new Attribute("units", units));
+			}
+			dimensionsAndVariables = new DimensionsAndVariables(ncdims, Arrays.asList(var));
+			this.dimensionsAndVariablesAddedToNetcdf.put(ncfile, dimensionsAndVariables);
 		}
-		ncfile.addVariableAttribute(var.getShortName(), "standard_name",
-				standard_name);
-		ncfile.addVariableAttribute(var.getShortName(), "long_name", long_name);
-		if (!units.isEmpty()) {
-			ncfile.addVariableAttribute(var.getShortName(), "units", units);
-		}
-		return l;
+		return dimensionsAndVariables;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.Coordinate1D#writeVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
-			throws IOException, InvalidRangeException {
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile) throws IOException, InvalidRangeException {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
 		if (reduceLength) {
 			double[] val = new double[this.getLength()];
 			for (int i = 0; i < val.length; i++) {
 				val[i] = values[i];
 			}
-			ncfile.write(axisname, Array.factory(val));
+			ncfile.write(dimensionsAndVariables.variable.get(0), Array.factory(val));
 		} else {
-			ncfile.write(axisname, Array.factory(values));
+			ncfile.write(dimensionsAndVariables.variable.get(0), Array.factory(values));
 		}
 	}
 

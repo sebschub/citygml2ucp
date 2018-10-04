@@ -1,15 +1,19 @@
 package citygml2ucp.tools;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 
 /**
@@ -49,7 +53,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	/**
 	 * Dimensions of the field
 	 */
-	protected final List<Dimension> dimlist;
+	protected final List<WritableDimension> dimlist;
 	
 	/**
 	 * Output data type 
@@ -61,6 +65,8 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	private int[] originPart;
 	private int[] shapePart;
 	
+	protected final Map<NetcdfFileWriter,DimensionsAndVariables> dimensionsAndVariablesAddedToNetcdf;
+	
 	/**
 	 * Get the length of a list of dimensions.
 	 * 
@@ -68,7 +74,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 	 *            List of dimensions
 	 * @return Array of lengths
 	 */
-	private static int[] getDimensions(List<Dimension> diml) {
+	private static int[] getDimensions(List<WritableDimension> diml) {
 		int[] dimint = new int[diml.size()];
 		for (int i = 0; i < dimint.length; i++) {
 			dimint[i] = diml.get(i).getLength();
@@ -76,7 +82,7 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		return dimint;
 	}
 
-	public WritableField(String name, List<Dimension> dimlist,
+	public WritableField(String name, List<WritableDimension> dimlist,
 			String standard_name, String long_name, String units,
 			String grid_mapping, DataType outputType) {
 		super(getDimensions(dimlist));
@@ -85,9 +91,11 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		this.long_name = long_name;
 		this.units = units;
 		this.grid_mapping = grid_mapping;
-		this.dimlist = new LinkedList<Dimension>();
+		this.dimlist = new ArrayList<>();
 		this.dimlist.addAll(dimlist);
 		this.outputType = outputType;
+		
+		this.dimensionsAndVariablesAddedToNetcdf = new HashMap<>();
 	}
 
 	public void resetDim() {
@@ -121,44 +129,38 @@ public class WritableField extends ArrayDouble implements NetCDFWritable {
 		return this.getSizeBytes();
 	}
 	
-	/*
-	 * (non-Javadoc) Here it is defined to write that field as float.
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#addVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		Variable var = ncfile.addVariable(name, this.outputType, this.dimlist);
-		ncfile.addVariableAttribute(var, new Attribute("standard_name",
-				standard_name));
-		ncfile.addVariableAttribute(var, new Attribute("long_name", long_name));
-		ncfile.addVariableAttribute(var, new Attribute("_FillValue", missingValue));
-		if (!units.isEmpty()) {
-			ncfile.addVariableAttribute(var, new Attribute("units", units));
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
+		if (Objects.isNull(dimensionsAndVariables)) {
+			List<Dimension> ncdims = new ArrayList<>();
+			this.dimlist.forEach( (dim) -> ncdims.addAll(dim.addToNetCDFfile(ncfile).dimension) );
+			
+			Variable var = ncfile.addVariable(null, this.name, this.outputType, ncdims);
+			ncfile.addVariableAttribute(var, new Attribute("standard_name",
+					standard_name));
+			ncfile.addVariableAttribute(var, new Attribute("long_name", long_name));
+			ncfile.addVariableAttribute(var, new Attribute("_FillValue", missingValue));
+			if (!units.isEmpty()) {
+				ncfile.addVariableAttribute(var, new Attribute("units", units));
+			}
+			if (!grid_mapping.isEmpty()) {
+				ncfile.addVariableAttribute(var, new Attribute("grid_mapping",
+						grid_mapping));
+			}
+			dimensionsAndVariables = new DimensionsAndVariables(ncdims, Arrays.asList(var));
+			this.dimensionsAndVariablesAddedToNetcdf.put(ncfile, dimensionsAndVariables);
 		}
-		if (!grid_mapping.isEmpty()) {
-			ncfile.addVariableAttribute(var, new Attribute("grid_mapping",
-					grid_mapping));
-		}
-		return null;
+		return dimensionsAndVariables;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#writeVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
-			throws IOException, InvalidRangeException {
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile) throws IOException, InvalidRangeException {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
 		if (doOutputPart) {
-			ncfile.write(name, this.sectionNoReduce(originPart, shapePart, null));
+			ncfile.write(dimensionsAndVariables.variable.get(0), this.sectionNoReduce(originPart, shapePart, null));
 		} else {
-			ncfile.write(name, this);
+			ncfile.write(dimensionsAndVariables.variable.get(0), this);
 		}
 	}
 }

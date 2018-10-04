@@ -12,14 +12,8 @@ import citygml2ucp.tools.WritableField;
 import citygml2ucp.tools.WritableFieldDouble;
 import citygml2ucp.tools.WritableFieldInt;
 import ucar.ma2.Index;
-import ucar.nc2.Dimension;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionPoint;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.tan;
-import static java.lang.Math.abs;
-import static java.lang.Math.toRadians;
 
 /**
  * Data for a run of CCLM with urban model.
@@ -119,7 +113,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		this.n_uclass = new WritableDimension("uclass", n_uclass);
 		addToWrite(this.n_uclass);
 
-		List<Dimension> ldim2 = new LinkedList<Dimension>();
+		List<WritableDimension> ldim2 = new LinkedList<>();
 		ldim2.add(this.n_uclass);
 
 		if (!(ke_uhl.length == n_uclass)) {
@@ -182,7 +176,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				ang_udir, 180.);
 		addToWrite(this.ang_udir);
 
-		List<Dimension> ldim = new LinkedList<Dimension>();
+		List<WritableDimension> ldim = new LinkedList<>();
 		ldim.add(this.meridionalAxis);
 		ldim.add(this.zonalAxis);
 		// ldim is now latdim, londim

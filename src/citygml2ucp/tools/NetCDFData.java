@@ -5,12 +5,10 @@ package citygml2ucp.tools;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import ucar.ma2.InvalidRangeException;
-import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
 
 /**
  * Class for managing several fields and dimensions ought to be written to a
@@ -30,7 +28,7 @@ public class NetCDFData implements NetCDFWritable {
 	/**
 	 * List of items to write to NetCDF file
 	 */
-	protected List<NetCDFWritable> toWrite = new ArrayList<NetCDFWritable>();
+	protected List<NetCDFWritable> toWrite = new ArrayList<>();
 
 	/**
 	 * add additional NetCDFWritable to output list 
@@ -53,51 +51,35 @@ public class NetCDFData implements NetCDFWritable {
 	 */
 	public void toNetCDFfile(String filename) throws IOException,
 			InvalidRangeException {
-		NetcdfFileWriteable ncfile = NetcdfFileWriteable.createNew(filename,
-				false);
+		NetcdfFileWriter ncfile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, filename);
 		// check whether data is larger than 2GiB (with some safety margin)
 		if (dataSize > 1900000000L) {
 			ncfile.setLargeFile(true);
 		} else {
 			ncfile.setLargeFile(false);
 		}
-		addVariablesToNetCDFfile(ncfile);
+		addToNetCDFfile(ncfile);
 		ncfile.create();
-		writeVariablesToNetCDFfile(ncfile);
+		writeToNetCDFfile(ncfile);
 		ncfile.close();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#addVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		List<Dimension> list = new LinkedList<Dimension>();
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		DimensionsAndVariables dimensionsAndVariables = new DimensionsAndVariables();
 		for (NetCDFWritable item : toWrite) {
-			List<Dimension> lt = item.addVariablesToNetCDFfile(ncfile);
-			if (lt != null) {
-				list.addAll(0, lt);
-			}
+			DimensionsAndVariables lt = item.addToNetCDFfile(ncfile);
+			dimensionsAndVariables.dimension.addAll(lt.dimension);
+			dimensionsAndVariables.variable.addAll(lt.variable);
 		}
-		return list;
+		return dimensionsAndVariables;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#writeVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile)
 			throws IOException, InvalidRangeException {
 		for (NetCDFWritable item : toWrite) {
-			item.writeVariablesToNetCDFfile(ncfile);
+			item.writeToNetCDFfile(ncfile);
 		}
 	}
 

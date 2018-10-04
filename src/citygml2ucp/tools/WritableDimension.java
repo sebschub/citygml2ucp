@@ -4,12 +4,14 @@
 package citygml2ucp.tools;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
 
 /**
  * A dimension which can be used for a field in a NetCDF file.
@@ -19,6 +21,8 @@ import ucar.nc2.NetcdfFileWriteable;
  */
 public class WritableDimension extends Dimension implements NetCDFWritable {
 
+	protected final Map<NetcdfFileWriter,DimensionsAndVariables> dimensionsAndVariablesAddedToNetcdf;
+	
 	/**
 	 * Define a dimension by name and length.
 	 * 
@@ -29,32 +33,7 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 	 */
 	public WritableDimension(String name, int length) {
 		super(name, length);
-	}
-
-	/**
-	 * Define a new dimension from a given one.
-	 * 
-	 * @param name
-	 *            Name must be unique within group
-	 * @param from
-	 *            Old dimension
-	 */
-	public WritableDimension(String name, Dimension from) {
-		super(name, from);
-	}
-
-	/**
-	 * A new dimension with option to share it.
-	 * 
-	 * @param name
-	 *            Name must be unique within group
-	 * @param length
-	 *            Length, or UNLIMITED.length or UNKNOWN.length
-	 * @param isShared
-	 *            Whether its shared or local to Variable
-	 */
-	public WritableDimension(String name, int length, boolean isShared) {
-		super(name, length, isShared);
+		this.dimensionsAndVariablesAddedToNetcdf = new HashMap<>();
 	}
 
 	/**
@@ -74,34 +53,25 @@ public class WritableDimension extends Dimension implements NetCDFWritable {
 	public WritableDimension(String name, int length, boolean isShared,
 			boolean isUnlimited, boolean isVariableLength) {
 		super(name, length, isShared, isUnlimited, isVariableLength);
+		this.dimensionsAndVariablesAddedToNetcdf = new HashMap<>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#addVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
+	
+	
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		List<Dimension> l = new LinkedList<Dimension>();
-		l.add(ncfile.addDimension(null, this));
-		return l;
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
+		if (Objects.isNull(dimensionsAndVariables)) {
+			Dimension dim = ncfile.addDimension(null, this.shortName, this.getLength());
+			dimensionsAndVariables = new DimensionsAndVariables(Arrays.asList(dim), null);
+			this.dimensionsAndVariablesAddedToNetcdf.put(ncfile, dimensionsAndVariables);
+		}
+		return dimensionsAndVariables;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#writeVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
-			throws IOException, InvalidRangeException {
-		// dimensions just have to be added to the file and then are written
-		// automatically to the file
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile) throws IOException, InvalidRangeException {
+		// nothing to do for dimension
 	}
 
 }

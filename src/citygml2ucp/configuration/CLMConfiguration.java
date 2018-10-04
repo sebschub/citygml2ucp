@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import citygml2ucp.tools.DimensionsAndVariables;
 import citygml2ucp.tools.NetCDFData;
 import citygml2ucp.tools.WritableAxis;
+import citygml2ucp.tools.WritableDimension;
 import citygml2ucp.tools.WritableField;
 import citygml2ucp.tools.WritableFieldDouble;
 import citygml2ucp.tools.WritableRotatedPole;
@@ -139,7 +141,7 @@ public class CLMConfiguration extends NetCDFData {
 		// verticalDimension = new WritableDimension("level", ke_tot);
 		// addToWrite(verticalDimension); //add in subclass if needed
 
-		List<Dimension> dimlist = new ArrayList<Dimension>();
+		List<WritableDimension> dimlist = new ArrayList<>();
 		dimlist.add(meridionalAxis);
 
 		area = new WritableFieldDouble("area", dimlist, "area_element",
@@ -195,19 +197,19 @@ public class CLMConfiguration extends NetCDFData {
 	 * @param ncfile
 	 *            NetCDF file
 	 */
-	protected void addGlobalAttributesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		ncfile.addGlobalAttribute("institution", "PIK");
-		ncfile.addGlobalAttribute("Conventions", "CF-1.4");
-		ncfile.addGlobalAttribute("conventionsURL",
-				"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4");
+	protected void addGlobalAttributesToNetCDFfile(NetcdfFileWriter ncfile) {
+		ncfile.addGroupAttribute(null, new Attribute("institution", "PIK"));
+		ncfile.addGroupAttribute(null, new Attribute("Conventions", "CF-1.4"));
+		ncfile.addGroupAttribute(null, new Attribute("conventionsURL",
+				"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4"));
 
 		DateFormatter df = new DateFormatter();
-		ncfile.addGlobalAttribute("creation_date", df
-				.toDateTimeString(new Date()));
+		ncfile.addGroupAttribute(null, new Attribute("creation_date", df
+				.toDateTimeString(new Date())));
 
 		if (confItems!=null) {
 			for (int i = 0; i < confItems.size(); i++) {
-				ncfile.addGlobalAttribute(confItems.get(i), confValues.get(i));
+				ncfile.addGroupAttribute(null, new Attribute(confItems.get(i), confValues.get(i)));
 			}
 		}
 		
@@ -221,9 +223,9 @@ public class CLMConfiguration extends NetCDFData {
 	 * .nc2.NetcdfFileWriteable)
 	 */
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
 		addGlobalAttributesToNetCDFfile(ncfile);
-		return super.addVariablesToNetCDFfile(ncfile);
+		return super.addToNetCDFfile(ncfile);
 	}
 
 	/**

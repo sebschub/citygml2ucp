@@ -4,14 +4,18 @@
 package citygml2ucp.tools;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import ucar.ma2.ArrayChar;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 import ucar.unidata.geoloc.projection.RotatedPole;
 import ucar.unidata.util.Parameter;
@@ -25,6 +29,8 @@ import ucar.unidata.util.Parameter;
 public class WritableRotatedPole extends RotatedPole implements NetCDFWritable {
 
 	private static final long serialVersionUID = -4545528607347807035L;
+	
+	protected final Map<NetcdfFileWriter,DimensionsAndVariables> dimensionsAndVariablesAddedToNetcdf;
 
 	/**
 	 * Use super constructor to create new pole.
@@ -36,45 +42,38 @@ public class WritableRotatedPole extends RotatedPole implements NetCDFWritable {
 	 */
 	public WritableRotatedPole(double pollat, double pollon) {
 		super(pollat, pollon);
+		this.dimensionsAndVariablesAddedToNetcdf = new HashMap<>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#addVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		Variable var = ncfile.addVariable("rotated_pole", DataType.CHAR,
-				new Dimension[0]);
-		for (int i = 0; i < atts.size(); i++) {
-			Parameter par = atts.get(i);
-			if (par.isString()) {
-				ncfile.addVariableAttribute(var, new Attribute(par.getName(),
-						par.getStringValue()));
-			} else {
-				ncfile.addVariableAttribute(var, new Attribute(par.getName(),
-						(float) par.getNumericValue()));
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		DimensionsAndVariables dimensionsAndVariables = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile);
+		if (Objects.isNull(dimensionsAndVariables)) {
+			Variable var = ncfile.addVariable(null, "rotated_pole", DataType.CHAR,
+					new ArrayList<Dimension>());
+			for (int i = 0; i < atts.size(); i++) {
+				Parameter par = atts.get(i);
+				if (par.isString()) {
+					ncfile.addVariableAttribute(var, new Attribute(par.getName(),
+							par.getStringValue()));
+				} else {
+					ncfile.addVariableAttribute(var, new Attribute(par.getName(),
+							(float) par.getNumericValue()));
+				}
 			}
+			dimensionsAndVariables = new DimensionsAndVariables(null, Arrays.asList(var));
+			this.dimensionsAndVariablesAddedToNetcdf.put(ncfile, dimensionsAndVariables);
 		}
-		return null;
+		return dimensionsAndVariables;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFWritable#writeVariablesToNetCDFfile
-	 * (ucar.nc2.NetcdfFileWriteable)
-	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile)
 			throws IOException, InvalidRangeException {
+		Variable var = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile).variable.get(0);
 		// character is written anyway so set it to ""
 		ArrayChar ac = new ArrayChar.D0();
 		// ac.setChar(0, ' ');
-		ncfile.write("rotated_pole", ac);
+		ncfile.write(var, ac);
 	}
 }

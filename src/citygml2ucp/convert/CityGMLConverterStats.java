@@ -11,14 +11,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import citygml2ucp.tools.DimensionsAndVariables;
 import citygml2ucp.tools.NetCDFData;
 import citygml2ucp.tools.WritableDimension;
 import citygml2ucp.tools.WritableField;
 import citygml2ucp.tools.WritableFieldFloat;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
-import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.Attribute;
+import ucar.nc2.NetcdfFileWriter;
 
 /**
  * Additional information and statistics for a CityGMLConverter run.
@@ -117,6 +118,7 @@ public class CityGMLConverterStats extends NetCDFData {
 		toWrite.add(unlimetedDimension);
 	}
 
+	
 	/**
 	 * Add non planar information.
 	 * 
@@ -218,10 +220,10 @@ public class CityGMLConverterStats extends NetCDFData {
 	}
 
 	@Override
-	public List<Dimension> addVariablesToNetCDFfile(NetcdfFileWriteable ncfile) {
-		ncfile.addGlobalAttribute("institution", "PIK");
+	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
+		ncfile.addGroupAttribute(null, new Attribute("institution", "PIK"));
 
-		List<Dimension> dimlist = new ArrayList<Dimension>();
+		List<WritableDimension> dimlist = new ArrayList<>();
 		dimlist.add(unlimetedDimension);
 		unlimetedDimension.setLength(buildingHeights.size());
 		buildingHeightsNetCDF = new WritableFieldFloat("bheights", dimlist,
@@ -232,7 +234,7 @@ public class CityGMLConverterStats extends NetCDFData {
 				"");
 		toWrite.add(buildingGroundsNetCDF);
 
-		return super.addVariablesToNetCDFfile(ncfile);
+		return super.addToNetCDFfile(ncfile);
 	}
 
 	/*
@@ -243,10 +245,10 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * .NetcdfFileWriteable)
 	 */
 	@Override
-	public void writeVariablesToNetCDFfile(NetcdfFileWriteable ncfile)
+	public void writeToNetCDFfile(NetcdfFileWriter ncfile)
 			throws IOException, InvalidRangeException {
 		fillNetCDFVariables();
-		super.writeVariablesToNetCDFfile(ncfile);
+		super.writeToNetCDFfile(ncfile);
 	}
 
 }
