@@ -47,13 +47,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner.close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -76,13 +77,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -100,13 +102,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -124,13 +127,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -151,13 +155,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -178,13 +183,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -237,13 +243,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Impervious Surface has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNext()) {
 				values.add(Double.parseDouble(lScanner.next()));
@@ -312,13 +319,14 @@ public class CityGMLConverter {
 			if (scanner.hasNextLine()) {
 				scanner.nextLine();
 			} else {
+				scanner. close();
 				throw new IOException(
 						"Class data file has less lines then skipped at beginning.");
 			}
 		}
 		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine())
-					.useDelimiter(conf.sepString);
+			Scanner lScanner = new Scanner(scanner.nextLine());
+			lScanner.useDelimiter(conf.sepString);
 			List<Double> values = new LinkedList<Double>();
 			while (lScanner.hasNextDouble()) {
 				values.add(lScanner.nextDouble());
