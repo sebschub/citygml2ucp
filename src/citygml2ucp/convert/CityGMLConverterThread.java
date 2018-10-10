@@ -3,6 +3,7 @@ package citygml2ucp.convert;
 import static citygml2ucp.tools.Polygon2d.xyProjectedPolygon2d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,11 +57,6 @@ class CityGMLConverterThread extends Thread {
 	 */
 	private int iuc = 0;
 
-	/**
-	 * ID of the CityGML file
-	 */
-	public final int id;
-	
 	/**
 	 * Urban configuration which includes the global effective urban data
 	 */
@@ -156,12 +152,11 @@ class CityGMLConverterThread extends Thread {
 	 */
 	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
 			CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
-			CityGMLConverterStats stats, int id) {
+			CityGMLConverterStats stats) {
 		this.uclm = uclm;
 		this.conf = conf;
 		this.sourcePJ = sourcePJ;
 		this.targetPJ = targetPJ;
-		this.id = id;
 		this.stats = stats;
 
 		this.buildings = new ArrayList<SimpleBuilding>();
@@ -255,8 +250,11 @@ class CityGMLConverterThread extends Thread {
 						uclm.getRLatIndex(rotatedCoordinates.getY()), uclm.getRLonIndex(rotatedCoordinates.getX()));
 				
 			}
+			
 		}
 
+		this.buildings.addAll(Arrays.asList(localBuildings));
+		
 		// only one urban class in ke_uhl, CHANGE THIS IS IF NECESSARY!
 		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
 				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
@@ -632,13 +630,13 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 
-		// save where not planar
-		stats.addNonPlanar(id, NonPlanarList);
-		// save when ground surface but no distance taken into account
-		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
-		stats.addNoGround(id, noGround);
-		stats.addNoRoof(id, noRoof);
-		stats.addNoWall(id, noWall);
+//		// save where not planar
+//		stats.addNonPlanar(id, NonPlanarList);
+//		// save when ground surface but no distance taken into account
+//		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
+//		stats.addNoGround(id, noGround);
+//		stats.addNoRoof(id, noRoof);
+//		stats.addNoWall(id, noWall);
 		for (SimpleBuilding building : buildings) {
 			stats.buildingHeights.add(building.height);
 			stats.buildingGrounds.add(building.area);
