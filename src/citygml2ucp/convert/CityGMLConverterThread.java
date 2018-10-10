@@ -60,11 +60,7 @@ class CityGMLConverterThread extends Thread {
 	 * ID of the CityGML file
 	 */
 	public final int id;
-	/**
-	 * File name of the CityGML file
-	 */
-	public final String filename;
-
+	
 	/**
 	 * Urban configuration which includes the global effective urban data
 	 */
@@ -89,7 +85,7 @@ class CityGMLConverterThread extends Thread {
 	private Lock lock = new ReentrantLock();
 
 	
-	private final SimpleBuilding[] buildings;
+	private final List<SimpleBuilding> buildings;
 	
 	
 	// for output
@@ -160,23 +156,24 @@ class CityGMLConverterThread extends Thread {
 	 */
 	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
 			CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
-			CityGMLConverterStats stats, CityModel base, int id, String filename) throws PJException {
+			CityGMLConverterStats stats, int id) {
 		this.uclm = uclm;
 		this.conf = conf;
 		this.sourcePJ = sourcePJ;
 		this.targetPJ = targetPJ;
 		this.id = id;
-		this.filename = filename;
 		this.stats = stats;
 
+		this.buildings = new ArrayList<SimpleBuilding>();
+	}
+	
+	public void addBuildings(CityModel base) throws PJException {
 		// following items need to be written to when reading city data
 		int numberBuildings = 0;
 		for (CityObjectMember cityObjectMember : base.getCityObjectMember()) {
 			if (cityObjectMember.getCityObject().getCityGMLClass() == CityGMLClass.BUILDING) numberBuildings++;
 		}
-		
-		this.buildings = new SimpleBuilding[numberBuildings];
-
+		SimpleBuilding[] localBuildings = new SimpleBuilding[numberBuildings];
 		int bID = -1;
 		
 		for (CityObjectMember cityObjectMember : base.getCityObjectMember()) {
@@ -254,7 +251,7 @@ class CityGMLConverterThread extends Thread {
 					buildingWalls = new Polygon3d[0];
 				}
 				
-				buildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls, 
+				localBuildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls, 
 						uclm.getRLatIndex(rotatedCoordinates.getY()), uclm.getRLonIndex(rotatedCoordinates.getX()));
 				
 			}
@@ -432,16 +429,16 @@ class CityGMLConverterThread extends Thread {
 
 	private void calcVisibility() {
 
-		for (int iBuildingSending = 0; iBuildingSending < buildings.length; iBuildingSending++) {
-			SimpleBuilding buildingSending = buildings[iBuildingSending];
+		for (int iBuildingSending = 0; iBuildingSending < buildings.size(); iBuildingSending++) {
+			SimpleBuilding buildingSending = buildings.get(iBuildingSending);
 			
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.length; iWallSending++) {
 				Polygon3d wallSending = buildingSending.walls[iWallSending];
 
 				List<Polygon3dDistance> visibleWalls = new ArrayList<>();
 				
-				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings.length; iBuildingReceiving++) {
-					SimpleBuilding buildingReceiving = buildings[iBuildingReceiving];
+				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings.size(); iBuildingReceiving++) {
+					SimpleBuilding buildingReceiving = buildings.get(iBuildingReceiving);
 
 					// if buildings are too far away, skip:
 					double distanceSendiungReceiving = buildingSending.location.distance(buildingReceiving.location);
@@ -459,8 +456,8 @@ class CityGMLConverterThread extends Thread {
 						boolean vis = true;
 
 						// which to check
-						for (int iBuildingChecking = 0; iBuildingChecking < buildings.length; iBuildingChecking++) {
-							SimpleBuilding buildingChecking = buildings[iBuildingChecking];
+						for (int iBuildingChecking = 0; iBuildingChecking < buildings.size(); iBuildingChecking++) {
+							SimpleBuilding buildingChecking = buildings.get(iBuildingChecking);
 							
 							// in principle, building to check should be on
 							// the

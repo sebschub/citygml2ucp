@@ -190,6 +190,9 @@ public class CityGMLConverterConf {
 	double heightReductionP;
 	private static final double heightReductionPDefault = 0.;
 	
+	boolean separateFiles;
+	private static boolean separateFilesDefault = false;
+	
 	/**
 	 * Number of maximal parallel threads
 	 */
@@ -400,6 +403,7 @@ public class CityGMLConverterConf {
 
 			effDist = prop.getBoolean("effDist", effDistDefault);
 
+			separateFiles = prop.getBoolean("separateFiles", separateFilesDefault);
 			
 			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
 			if (heightReductionP > 0.) doHeightReduction = true;

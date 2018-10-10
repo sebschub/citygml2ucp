@@ -502,8 +502,8 @@ public class CityGMLConverter {
 						CityModel cityModel = (CityModel)citygml;
 						
 						CityGMLConverterThread cgmlct = new CityGMLConverterThread(
-								uclm, conf, sourcePJ, targetPJ, stats, cityModel, i, file
-								.toString());
+								uclm, conf, sourcePJ, targetPJ, stats, i);
+						cgmlct.addBuildings(cityModel);
 						// everything that is need is now in cgmlct, rest can be deleted
 						cityModel = null;
 
