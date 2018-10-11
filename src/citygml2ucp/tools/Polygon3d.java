@@ -8,6 +8,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
@@ -77,8 +78,12 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 *            Describes the polygon
 	 */
 	public Polygon3d(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) surfaceProperty.getSurface();
+		if (surfaceProperty.getSurface() instanceof OrientableSurface) {
+			OrientableSurface orientableSurface = (OrientableSurface) surfaceProperty.getSurface();
+			SurfaceProperty osbs = orientableSurface.getBaseSurface();
+		//if (surfaceProperty.getSurface() instanceof Polygon) {
+			if (osbs.getSurface() instanceof Polygon) {
+			Polygon polygon = (Polygon) osbs.getSurface();
 			if (polygon.getExterior().getRing() instanceof LinearRing) {
 				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
 				if (lRing.isSetPosList()) {
@@ -201,6 +206,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 			throw new IllegalArgumentException(
 					"Surface is no Polygon, handle this case!");
 		}
+	}
 	}
 
 	/**

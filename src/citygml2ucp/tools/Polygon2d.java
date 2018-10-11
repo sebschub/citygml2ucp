@@ -8,6 +8,7 @@ import java.util.List;
 import javax.vecmath.Point2d;
 
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
@@ -25,8 +26,15 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 	private double[] xcoord, ycoord;
 
 	public static Polygon2d xyProjectedPolygon2d(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) surfaceProperty.getSurface();
+		if (surfaceProperty.getSurface() instanceof OrientableSurface) {
+			OrientableSurface orientableSurface = (OrientableSurface) surfaceProperty.getSurface();
+			SurfaceProperty osbs = orientableSurface.getBaseSurface();
+		//if (surfaceProperty.getSurface() instanceof Polygon) {
+			if (osbs.getSurface() instanceof Polygon) {
+			Polygon polygon = (Polygon) osbs.getSurface();
+
+		//if (surfaceProperty.getSurface() instanceof Polygon) {
+			//Polygon polygon = (Polygon) surfaceProperty.getSurface();
 			if (polygon.getExterior().getRing() instanceof LinearRing) {
 				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
 				if (lRing.isSetPosList()) {
@@ -52,8 +60,34 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 		}
 		throw new IllegalArgumentException(
 				"Surface is no Polygon, handle this case!");
+	} else if (surfaceProperty.getSurface() instanceof Polygon) {
+		Polygon polygon = (Polygon) surfaceProperty.getSurface();
+		if (polygon.getExterior().getRing() instanceof LinearRing) {
+			LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
+			if (lRing.isSetPosList()) {
+				List<Double> coord = lRing.getPosList().getValue();
+				
+				int pos = 0;
+				
+				double[] xcoord = new double[coord.size()/3];
+				double[] ycoord = new double[coord.size()/3];
+				
+				for (int i = 0; i < coord.size() / 3; i++) {
+					xcoord[i] = coord.get(pos);
+					ycoord[i] = coord.get(pos+1);
+					pos += 3;
+				}
+				return new Polygon2d(xcoord, ycoord); 
+			}
+			throw new IllegalArgumentException(
+					"Linear ring is no PosList, handle this case!");
+		}
+		throw new IllegalArgumentException(
+				"Polygon is no linear ring, handle this case!");
 	}
-
+		throw new IllegalArgumentException(
+				"Polygon is no linear ring, handle this case!");
+	}
 	/**
 	 * Constructor.
 	 * 

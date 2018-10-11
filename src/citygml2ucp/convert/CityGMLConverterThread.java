@@ -16,6 +16,8 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.Building;
+import org.citygml4j.model.citygml.building.BuildingPart;
+import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.building.GroundSurface;
 import org.citygml4j.model.citygml.building.RoofSurface;
 import org.citygml4j.model.citygml.building.WallSurface;
@@ -24,6 +26,7 @@ import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
+import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
@@ -206,14 +209,28 @@ class CityGMLConverterThread extends Thread {
 				List<RoofSurface> roofs = new ArrayList<RoofSurface>();
 				List<GroundSurface> grounds = new ArrayList<GroundSurface>();
 				
-				for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
-					AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
-					if (bs instanceof WallSurface) {
-						walls.add((WallSurface) bs);
-					} else if (bs instanceof RoofSurface) {
-						roofs.add((RoofSurface) bs);
-					} else if (bs instanceof GroundSurface) {
-						grounds.add((GroundSurface) bs);
+//				for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
+//					AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+//					if (bs instanceof WallSurface) {
+//						walls.add((WallSurface) bs);
+//					} else if (bs instanceof RoofSurface) {
+//						roofs.add((RoofSurface) bs);
+//					} else if (bs instanceof GroundSurface) {
+//						grounds.add((GroundSurface) bs);
+//					}
+//				}
+				
+				for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
+					BuildingPart bp = buildingPartProperty.getBuildingPart();
+					for (BoundarySurfaceProperty boundarySurfaceProperty : bp.getBoundedBySurface()) {
+						AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+						if (bs instanceof WallSurface) {
+							walls.add((WallSurface) bs);
+						} else if (bs instanceof RoofSurface) {
+							roofs.add((RoofSurface) bs);
+						} else if (bs instanceof GroundSurface) {
+							grounds.add((GroundSurface) bs);
+						}
 					}
 				}
 
@@ -396,8 +413,15 @@ class CityGMLConverterThread extends Thread {
 	 * @return Array with { minimum, maximum } height
 	 */
 	public static double[] getMinMaxHeight(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) surfaceProperty.getSurface();
+		if (surfaceProperty.getSurface() instanceof OrientableSurface) {
+			OrientableSurface orientableSurface = (OrientableSurface) surfaceProperty.getSurface();
+			SurfaceProperty osbs = orientableSurface.getBaseSurface();
+		//if (surfaceProperty.getSurface() instanceof Polygon) {
+			if (osbs.getSurface() instanceof Polygon) {
+			Polygon polygon = (Polygon) osbs.getSurface();
+
+//		if (surfaceProperty.getSurface() instanceof Polygon) {
+	//		Polygon polygon = (Polygon) surfaceProperty.getSurface();
 			if (polygon.getExterior().getRing() instanceof LinearRing) {
 				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
 				if (lRing.isSetPosList()) {
@@ -426,6 +450,10 @@ class CityGMLConverterThread extends Thread {
 		throw new IllegalArgumentException(
 				"Surface is no Polygon, handle this case!");
 	}
+		throw new IllegalArgumentException(
+				"Surface is no Polygon, handle this case!");
+	}
+
 
 	private void calcVisibility() {
 
