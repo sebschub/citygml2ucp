@@ -7,9 +7,6 @@ import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
@@ -78,137 +75,114 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 *            Describes the polygon
 	 */
 	public Polygon3d(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof OrientableSurface) {
-			OrientableSurface orientableSurface = (OrientableSurface) surfaceProperty.getSurface();
-			SurfaceProperty osbs = orientableSurface.getBaseSurface();
-		//if (surfaceProperty.getSurface() instanceof Polygon) {
-			if (osbs.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) osbs.getSurface();
-			if (polygon.getExterior().getRing() instanceof LinearRing) {
-				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
-				if (lRing.isSetPosList()) {
-					List<Double> coord = lRing.getPosList().getValue();
+		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
 
-					points = new LinkedList<Point3d>();
-					// System.out.println(coord.size()/3);
-					for (int i = 0; i < coord.size(); i += 3) {
-						points.add(new Point3d(coord.get(i), coord.get(i + 1),
-								coord.get(i + 2)));
-					}
-
-					/*
-					 * // for testing points2 = new LinkedList<Point3d>(points);
-					 */
-
-					// remove points which are very near to each other. Since
-					// the points ought to be planar, these vector between one
-					// correct and one "faulty" point is not in the plane
-
-					// the last one is always the first one, don't delete it
-					{
-						int i = 0;
-						int j = 0;
-
-						while (i < points.size() - 1) {
-							while (j < points.size() - 1) {
-								if (i == j) {
-									j++;
-									continue;
-								}
-								double dist = (new Vector3d(points.get(i),
-										points.get(j))).length();
-								// System.out.println("i: " + i + "  j: " + j);
-								// System.out.println(dist);
-								if (dist < equalDistance) {
-									points.remove(j);
-								} else {
-									j++;
-								}
-							}
-							i++;
-							j = 0;
-						}
-					}
-
-					uvn = new Vector3d();
-
-					// find most rectangular vector
-					double min = Double.MAX_VALUE;
-					int imax = 0, jmax = 0;
-					Vector3d a, b;
-					for (int j = 0; j < points.size() - 1; j++) {
-						a = new Vector3d(points.get(j), points.get(j + 1));
-						for (int i = j + 1; i < points.size(); i++) {
-							if (i + 1 == points.size()) {
-								b = new Vector3d(points.get(i), points.get(0));
-							} else {
-								b = new Vector3d(points.get(i), points
-										.get(i + 1));
-							}
-
-							Vector3d temp = new Vector3d(a);
-							temp.cross(a, b);
-
-							uvn.add(temp);
-
-							double dp = Math.abs(a.dot(b)) / a.length()
-									/ b.length();
-							if (dp < min) {
-								min = dp;
-								imax = i;
-								jmax = j;
-							}
-						}
-					}
-
-					uvn.normalize();
-
-					a = new Vector3d(points.get(jmax), points.get(jmax + 1));
-					if (imax + 1 == points.size()) {
-						b = new Vector3d(points.get(imax), points.get(0));
-					} else {
-						b = new Vector3d(points.get(imax), points.get(imax + 1));
-					}
-
-					a.normalize();
-					uv1 = new Vector3d(a);
-
-					// get perpendenicular second vector;
-
-					a.scale(-a.dot(b));
-					a.add(b);
-					uv2 = new Vector3d(a);
-					uv2.normalize();
-
-					pos = points.get(0);
-
-					// calculate 2d points relative to base vectors
-					double[] xcoord = new double[points.size()];
-					double[] ycoord = new double[points.size()];
-					for (int i = 0; i < points.size(); i++) {
-						Point3d pvs = new Point3d(points.get(i));
-						pvs.sub(pos);
-						xcoord[i] = uv1.dot(pvs);
-						ycoord[i] = uv2.dot(pvs);
-					}
-
-					polygon2d = new Polygon2d(xcoord, ycoord);
-
-				} else {
-					throw new IllegalArgumentException(
-							"Linear ring is no PosList, handle this case!");
-				}
-			} else {
-				throw new IllegalArgumentException(
-						"Polygon is no linear ring, handle this case!");
-			}
-		} else {
-			throw new IllegalArgumentException(
-					"Surface is no Polygon, handle this case!");
+		points = new LinkedList<Point3d>();
+		// System.out.println(coord.size()/3);
+		for (int i = 0; i < coord.size(); i += 3) {
+			points.add(new Point3d(coord.get(i), coord.get(i + 1),
+					coord.get(i + 2)));
 		}
-	}
-	}
 
+		/*
+		 * // for testing points2 = new LinkedList<Point3d>(points);
+		 */
+
+		// remove points which are very near to each other. Since
+		// the points ought to be planar, these vector between one
+		// correct and one "faulty" point is not in the plane
+
+		// the last one is always the first one, don't delete it
+		{
+			int i = 0;
+			int j = 0;
+
+			while (i < points.size() - 1) {
+				while (j < points.size() - 1) {
+					if (i == j) {
+						j++;
+						continue;
+					}
+					double dist = (new Vector3d(points.get(i),
+							points.get(j))).length();
+					// System.out.println("i: " + i + "  j: " + j);
+					// System.out.println(dist);
+					if (dist < equalDistance) {
+						points.remove(j);
+					} else {
+						j++;
+					}
+				}
+				i++;
+				j = 0;
+			}
+		}
+
+		uvn = new Vector3d();
+
+		// find most rectangular vector
+		double min = Double.MAX_VALUE;
+		int imax = 0, jmax = 0;
+		Vector3d a, b;
+		for (int j = 0; j < points.size() - 1; j++) {
+			a = new Vector3d(points.get(j), points.get(j + 1));
+			for (int i = j + 1; i < points.size(); i++) {
+				if (i + 1 == points.size()) {
+					b = new Vector3d(points.get(i), points.get(0));
+				} else {
+					b = new Vector3d(points.get(i), points
+							.get(i + 1));
+				}
+
+				Vector3d temp = new Vector3d(a);
+				temp.cross(a, b);
+
+				uvn.add(temp);
+
+				double dp = Math.abs(a.dot(b)) / a.length()
+						/ b.length();
+				if (dp < min) {
+					min = dp;
+					imax = i;
+					jmax = j;
+				}
+			}
+		}
+
+		uvn.normalize();
+
+		a = new Vector3d(points.get(jmax), points.get(jmax + 1));
+		if (imax + 1 == points.size()) {
+			b = new Vector3d(points.get(imax), points.get(0));
+		} else {
+			b = new Vector3d(points.get(imax), points.get(imax + 1));
+		}
+
+		a.normalize();
+		uv1 = new Vector3d(a);
+
+		// get perpendenicular second vector;
+
+		a.scale(-a.dot(b));
+		a.add(b);
+		uv2 = new Vector3d(a);
+		uv2.normalize();
+
+		pos = points.get(0);
+
+		// calculate 2d points relative to base vectors
+		double[] xcoord = new double[points.size()];
+		double[] ycoord = new double[points.size()];
+		for (int i = 0; i < points.size(); i++) {
+			Point3d pvs = new Point3d(points.get(i));
+			pvs.sub(pos);
+			xcoord[i] = uv1.dot(pvs);
+			ycoord[i] = uv2.dot(pvs);
+		}
+
+		polygon2d = new Polygon2d(xcoord, ycoord);
+	}
+	
 	/**
 	 * Calculate the angle of normal vector projected on horizontal plane.
 	 * 
