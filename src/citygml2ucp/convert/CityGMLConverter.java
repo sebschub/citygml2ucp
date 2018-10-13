@@ -481,17 +481,26 @@ public class CityGMLConverter {
 
 			readImpSurfaceFile(conf, uclm);
 
-			ThreadPoolExecutor exec = new ThreadPoolExecutor(conf.nThreads,
-					conf.nThreads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
-					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
-					new ThreadPoolExecutor.CallerRunsPolicy());
-
+			CityGMLConverterThread cgmlct = null;
+			ThreadPoolExecutor exec = null;
+			String message;
+			if (conf.separateFiles) {
+				exec = new ThreadPoolExecutor(conf.nThreads,
+						conf.nThreads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
+						new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
+						new ThreadPoolExecutor.CallerRunsPolicy());
+				message = "Processing file ";
+			} else {
+				cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats);
+				message = "Reading file ";
+			}
+			
 			// here loop over citygmlfiles
 			for (int i = 0; i < flist.length; i++) {
 
 				File file = flist[i];
 
-				System.out.println("Processing file " + (i + 1) + "/"
+				System.out.println(message + (i + 1) + "/"
 						+ flist.length + ": " + file);
 				
 				CityGMLReader reader = in.createCityGMLReader(file);
@@ -501,16 +510,20 @@ public class CityGMLConverter {
 					if (citygml.getCityGMLClass() == CityGMLClass.CITY_MODEL) {
 						CityModel cityModel = (CityModel)citygml;
 						
-						CityGMLConverterThread cgmlct = new CityGMLConverterThread(
-								uclm, conf, sourcePJ, targetPJ, stats, cityModel, i, file
-								.toString());
+						if (conf.separateFiles) {
+							cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats);
+						}
+						
+						cgmlct.addBuildings(cityModel);
 						// everything that is need is now in cgmlct, rest can be deleted
 						cityModel = null;
 
-						if (conf.nThreads > 1) {
-							exec.execute(cgmlct);
-						} else {
-							cgmlct.run();
+						if (conf.separateFiles) {
+							if (conf.nThreads > 1) {
+								exec.execute(cgmlct);
+							} else {
+								cgmlct.run();
+							}
 						}
 					}
 				}
@@ -519,8 +532,12 @@ public class CityGMLConverter {
 				
 			}
 
-			exec.shutdown();
-			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			if (conf.separateFiles) {
+				exec.shutdown();
+				exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			} else {
+				cgmlct.run();
+			}
 
 			System.out.println("Largest Building: " + uclm.maxHeight + " m");
 			System.out.println("Smallest Building: " + uclm.minHeight + " m");

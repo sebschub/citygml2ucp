@@ -3,6 +3,7 @@ package citygml2ucp.convert;
 import static citygml2ucp.tools.Polygon2d.xyProjectedPolygon2d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,20 +16,22 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.Building;
+import org.citygml4j.model.citygml.building.BuildingPart;
+import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.building.GroundSurface;
 import org.citygml4j.model.citygml.building.RoofSurface;
 import org.citygml4j.model.citygml.building.WallSurface;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.Polygon;
+import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 import org.proj4.PJ;
 import org.proj4.PJException;
 
 import citygml2ucp.configuration.UrbanCLMConfiguration;
+import citygml2ucp.tools.CityGMLTools;
 import citygml2ucp.tools.Polygon3d;
 import citygml2ucp.tools.Polygon3dDistance;
 import citygml2ucp.tools.SimpleBuilding;
@@ -46,8 +49,7 @@ import ucar.unidata.geoloc.ProjectionPoint;
 class CityGMLConverterThread extends Thread {
 
 	/**
-	 * Factor for height of a building: 0 at lower bottom of roof, 1 at top of
-	 * roof
+	 * Factor for height of a building: 0 at lower bottom of roof, 1 at top of roof
 	 */
 	private final static double roofHeightFactor = 0.5;
 
@@ -57,19 +59,10 @@ class CityGMLConverterThread extends Thread {
 	private int iuc = 0;
 
 	/**
-	 * ID of the CityGML file
-	 */
-	public final int id;
-	/**
-	 * File name of the CityGML file
-	 */
-	public final String filename;
-
-	/**
 	 * Urban configuration which includes the global effective urban data
 	 */
 	public final UrbanCLMConfiguration uclm;
-	
+
 	/**
 	 * Object for coordinate transformation
 	 */
@@ -88,23 +81,20 @@ class CityGMLConverterThread extends Thread {
 	 */
 	private Lock lock = new ReentrantLock();
 
-	
-	private final SimpleBuilding[] buildings;
-	
-	
+	private final List<SimpleBuilding> buildings;
+
 	// for output
 	/**
 	 * Sum of area of buildings in the cell.
 	 * 
-	 * Arguments: urban class, lat, lon; used for calculation of building
-	 * fraction
+	 * Arguments: urban class, lat, lon; used for calculation of building fraction
 	 */
 	private double[][][] buildingAreaSum;
 	/**
 	 * Sum of area of walls in the cell.
 	 * 
-	 * Arguments: urban class, street direction, height of building, lat, lon;
-	 * used for calculation of height distribution
+	 * Arguments: urban class, street direction, height of building, lat, lon; used
+	 * for calculation of height distribution
 	 */
 	private double[][][][][] wallAreaSum;
 	/**
@@ -142,43 +132,36 @@ class CityGMLConverterThread extends Thread {
 	 * 
 	 * All necessary CityModel data is saved here, the rest can be freed.
 	 * 
-	 * @param uclm
-	 *            Global urban data
-	 * @param conf
-	 *            Configuration of the run
-	 * @param proj4
-	 *            Coordinate converter
-	 * @param stats
-	 *            Additional output
-	 * @param base
-	 *            City data
-	 * @param id
-	 *            ID of the city data
-	 * @param filename
-	 *            Name of the file including the city data
-	 * @throws PJException 
+	 * @param uclm     Global urban data
+	 * @param conf     Configuration of the run
+	 * @param proj4    Coordinate converter
+	 * @param stats    Additional output
+	 * @param base     City data
+	 * @param id       ID of the city data
+	 * @param filename Name of the file including the city data
+	 * @throws PJException
 	 */
-	public CityGMLConverterThread(UrbanCLMConfiguration uclm,
-			CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
-			CityGMLConverterStats stats, CityModel base, int id, String filename) throws PJException {
+	public CityGMLConverterThread(UrbanCLMConfiguration uclm, CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
+			CityGMLConverterStats stats) {
 		this.uclm = uclm;
 		this.conf = conf;
 		this.sourcePJ = sourcePJ;
 		this.targetPJ = targetPJ;
-		this.id = id;
-		this.filename = filename;
 		this.stats = stats;
 
+		this.buildings = new ArrayList<SimpleBuilding>();
+	}
+
+	public void addBuildings(CityModel base) throws PJException {
 		// following items need to be written to when reading city data
 		int numberBuildings = 0;
 		for (CityObjectMember cityObjectMember : base.getCityObjectMember()) {
-			if (cityObjectMember.getCityObject().getCityGMLClass() == CityGMLClass.BUILDING) numberBuildings++;
+			if (cityObjectMember.getCityObject().getCityGMLClass() == CityGMLClass.BUILDING)
+				numberBuildings++;
 		}
-		
-		this.buildings = new SimpleBuilding[numberBuildings];
-
+		SimpleBuilding[] localBuildings = new SimpleBuilding[numberBuildings];
 		int bID = -1;
-		
+
 		for (CityObjectMember cityObjectMember : base.getCityObjectMember()) {
 
 			AbstractCityObject co = cityObjectMember.getCityObject();
@@ -187,17 +170,18 @@ class CityGMLConverterThread extends Thread {
 			if (co.getCityGMLClass() == CityGMLClass.BUILDING) {
 
 				bID++;
-				
+
 				Building building = (Building) co;
 
 				// get bounding box to get the centre of building
+				BoundingShape boundingShape;
 				if (!building.isSetBoundedBy()) {
-					building.calcBoundedBy(BoundingBoxOptions.defaults());
+					boundingShape = building.calcBoundedBy(BoundingBoxOptions.defaults());
+				} else {
+					boundingShape = building.getBoundedBy();
 				}
-				List<Double> lc = building.getBoundedBy().getEnvelope()
-						.getLowerCorner().getValue();
-				List<Double> uc = building.getBoundedBy().getEnvelope()
-						.getUpperCorner().getValue();
+				List<Double> lc = boundingShape.getEnvelope().getLowerCorner().getValue();
+				List<Double> uc = boundingShape.getEnvelope().getUpperCorner().getValue();
 				double xpos = 0.5 * (lc.get(0) + uc.get(0));
 				double ypos = 0.5 * (lc.get(1) + uc.get(1));
 
@@ -211,20 +195,45 @@ class CityGMLConverterThread extends Thread {
 				List<WallSurface> walls = new ArrayList<WallSurface>();
 				List<RoofSurface> roofs = new ArrayList<RoofSurface>();
 				List<GroundSurface> grounds = new ArrayList<GroundSurface>();
-				
-				for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
-					AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
-					if (bs instanceof WallSurface) {
-						walls.add((WallSurface) bs);
-					} else if (bs instanceof RoofSurface) {
-						roofs.add((RoofSurface) bs);
-					} else if (bs instanceof GroundSurface) {
-						grounds.add((GroundSurface) bs);
+
+				if (building.getBoundedBySurface().size() > 0) {
+					// found boundary surfaces, they should cover building the buidling just fine,
+					// so building parts should not be required. Still, I haven't checked this case,
+					// so throw error here if there are building part.
+					if (building.getConsistsOfBuildingPart().size() > 0) {
+						throw new IllegalArgumentException(
+								"Building has boundary surfaces but also building parts, check building manually and modify code!");
 					}
+					for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
+						AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+						if (bs instanceof WallSurface) {
+							walls.add((WallSurface) bs);
+						} else if (bs instanceof RoofSurface) {
+							roofs.add((RoofSurface) bs);
+						} else if (bs instanceof GroundSurface) {
+							grounds.add((GroundSurface) bs);
+						}
+					}
+				} else if (building.getConsistsOfBuildingPart().size() > 0) {
+					for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
+						BuildingPart bp = buildingPartProperty.getBuildingPart();
+						for (BoundarySurfaceProperty boundarySurfaceProperty : bp.getBoundedBySurface()) {
+							AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+							if (bs instanceof WallSurface) {
+								walls.add((WallSurface) bs);
+							} else if (bs instanceof RoofSurface) {
+								roofs.add((RoofSurface) bs);
+							} else if (bs instanceof GroundSurface) {
+								grounds.add((GroundSurface) bs);
+							}
+						}
+					}
+				} else {
+					System.out.println("Building " + building.getId() + " has no boundary surfaces nor building parts.");
 				}
 
 				Polygon3d[] buildingRoofs;
-				double height;				
+				double height;
 				if (roofs.size() > 0) {
 					// calculate weighted mean of heights of roofs and use it as
 					// height information
@@ -253,47 +262,43 @@ class CityGMLConverterThread extends Thread {
 					// ignore this building for visibility for now
 					buildingWalls = new Polygon3d[0];
 				}
-				
-				buildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls, 
+
+				localBuildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls,
 						uclm.getRLatIndex(rotatedCoordinates.getY()), uclm.getRLonIndex(rotatedCoordinates.getX()));
-				
+
 			}
+
 		}
 
+		this.buildings.addAll(Arrays.asList(localBuildings));
+
 		// only one urban class in ke_uhl, CHANGE THIS IS IF NECESSARY!
-		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getKe_urban(0)][uclm.getJe_tot()][uclm.getIe_tot()];
-
-		buildingDistanceWeighted = new double[uclm.getNuclasses()][uclm
-				.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
-
-		nStreetSurfaces = new int[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getJe_tot()][uclm.getIe_tot()];
-
-		streetSurfaceSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm
-				.getJe_tot()][uclm.getIe_tot()];
-		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm
+		wallAreaSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm.getKe_urban(0)][uclm.getJe_tot()][uclm
 				.getIe_tot()];
+
+		buildingDistanceWeighted = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm.getJe_tot()][uclm
+				.getIe_tot()];
+
+		nStreetSurfaces = new int[uclm.getNuclasses()][uclm.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
+
+		streetSurfaceSum = new double[uclm.getNuclasses()][uclm.getNstreedir()][uclm.getJe_tot()][uclm.getIe_tot()];
+		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm.getIe_tot()];
 	}
 
 	/**
 	 * Calculate the height of a building.
 	 * 
-	 * @param roofs
-	 *            Roof surfaces of the building
-	 * @param groundHeight
-	 *            Ground height of the building (defines the height 0)
+	 * @param roofs        Roof surfaces of the building
+	 * @param groundHeight Ground height of the building (defines the height 0)
 	 * @return Height of the building
 	 */
-	public static double calcBuildingHeight(List<RoofSurface> roofs,
-			double groundHeight) {
+	public static double calcBuildingHeight(List<RoofSurface> roofs, double groundHeight) {
 		double sumRoofArea = 0.;
 		double roofHeight = 0.;
 
 		for (RoofSurface roof : roofs) {
 			double roofArea;
-			List<SurfaceProperty> surface = roof.getLod2MultiSurface()
-					.getMultiSurface().getSurfaceMember();
+			List<SurfaceProperty> surface = roof.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surface.size(); i++) {
 				SurfaceProperty surfaceProperty = surface.get(i);
 
@@ -306,9 +311,7 @@ class CityGMLConverterThread extends Thread {
 				// a+f(b-a) with a=minmax[0]-groundHeight,
 				// b=minmax[1]-groundHeight (ground height cancels in
 				// brakets)
-				roofHeight += roofArea
-						* (minmax[0] - groundHeight + roofHeightFactor
-								* (minmax[1] - minmax[0]));
+				roofHeight += roofArea * (minmax[0] - groundHeight + roofHeightFactor * (minmax[1] - minmax[0]));
 			}
 		}
 
@@ -321,15 +324,13 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * Calculate the ground size of a building.
 	 * 
-	 * @param grounds
-	 *            Ground surfaces of the building
+	 * @param grounds Ground surfaces of the building
 	 * @return Ground area of the building
 	 */
 	public static double calcGroundSize(List<GroundSurface> grounds) {
 		double area = 0.;
 		for (GroundSurface ground : grounds) {
-			List<SurfaceProperty> surface = ground.getLod2MultiSurface()
-					.getMultiSurface().getSurfaceMember();
+			List<SurfaceProperty> surface = ground.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			for (SurfaceProperty surfaceProperty : surface) {
 				// area in km2
 				area += xyProjectedPolygon2d(surfaceProperty).getArea() / 1000000.;
@@ -341,21 +342,17 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * Extract all polygons from a list of surfaces.
 	 * 
-	 * @param <T>
-	 *            either RoofSurface, WallSurface or GroundSurface
-	 * @param listSurfaces
-	 *            List of surfaces
+	 * @param              <T> either RoofSurface, WallSurface or GroundSurface
+	 * @param listSurfaces List of surfaces
 	 * @return Array of polygons
 	 */
-	public <T extends AbstractBoundarySurface> Polygon3d[] getAllSurfaces(
-			List<T> listSurfaces) {
+	public <T extends AbstractBoundarySurface> Polygon3d[] getAllSurfaces(List<T> listSurfaces) {
 
 		int counter = 0;
 
 		// just get the number of surfaces
 		for (T surface : listSurfaces) {
-			List<SurfaceProperty> surf = surface.getLod2MultiSurface()
-					.getMultiSurface().getSurfaceMember();
+			List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			counter += surf.size();
 		}
 
@@ -366,8 +363,7 @@ class CityGMLConverterThread extends Thread {
 		counter = 0;
 
 		for (T surface : listSurfaces) {
-			List<SurfaceProperty> surf = surface.getLod2MultiSurface()
-					.getMultiSurface().getSurfaceMember();
+			List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surf.size(); i++) {
 				surfaces[counter++] = new Polygon3d(surf.get(i));
 			}
@@ -378,10 +374,8 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * Check polygons independently for planarity.
 	 * 
-	 * @param surfaces
-	 *            Array of Polygons
-	 * @param coID
-	 *            ID of the building which includes the polygon
+	 * @param surfaces Array of Polygons
+	 * @param coID     ID of the building which includes the polygon
 	 */
 	private void checkCoplanarity(Polygon3d[] surfaces, String coID) {
 		for (int i = 0; i < surfaces.length; i++) {
@@ -394,54 +388,40 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * Get the minimum and maximum height of surface
 	 * 
-	 * @param surfaceProperty
-	 *            Surfaces
+	 * @param surfaceProperty Surfaces
 	 * @return Array with { minimum, maximum } height
 	 */
 	public static double[] getMinMaxHeight(SurfaceProperty surfaceProperty) {
-		if (surfaceProperty.getSurface() instanceof Polygon) {
-			Polygon polygon = (Polygon) surfaceProperty.getSurface();
-			if (polygon.getExterior().getRing() instanceof LinearRing) {
-				LinearRing lRing = (LinearRing) polygon.getExterior().getRing();
-				if (lRing.isSetPosList()) {
-					List<Double> coord = lRing.getPosList().getValue();
+		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
 
-					double min = Double.MAX_VALUE;
-					double max = Double.MIN_VALUE;
+		double min = Double.MAX_VALUE;
+		double max = Double.MIN_VALUE;
 
-					// height information in every 3rd element
-					for (int i = 2; i < coord.size(); i += 3) {
-						if (coord.get(i) > max) {
-							max = coord.get(i);
-						}
-						if (coord.get(i) < min) {
-							min = coord.get(i);
-						}
-					}
-					return new double[] { min, max };
-				}
-				throw new IllegalArgumentException(
-						"Linear ring is no PosList, handle this case!");
+		// height information in every 3rd element
+		for (int i = 2; i < coord.size(); i += 3) {
+			if (coord.get(i) > max) {
+				max = coord.get(i);
 			}
-			throw new IllegalArgumentException(
-					"Polygon is no linear ring, handle this case!");
+			if (coord.get(i) < min) {
+				min = coord.get(i);
+			}
 		}
-		throw new IllegalArgumentException(
-				"Surface is no Polygon, handle this case!");
+		return new double[] { min, max };
 	}
 
 	private void calcVisibility() {
 
-		for (int iBuildingSending = 0; iBuildingSending < buildings.length; iBuildingSending++) {
-			SimpleBuilding buildingSending = buildings[iBuildingSending];
-			
+		for (int iBuildingSending = 0; iBuildingSending < buildings.size(); iBuildingSending++) {
+			SimpleBuilding buildingSending = buildings.get(iBuildingSending);
+
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.length; iWallSending++) {
 				Polygon3d wallSending = buildingSending.walls[iWallSending];
 
 				List<Polygon3dDistance> visibleWalls = new ArrayList<>();
-				
-				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings.length; iBuildingReceiving++) {
-					SimpleBuilding buildingReceiving = buildings[iBuildingReceiving];
+
+				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings
+						.size(); iBuildingReceiving++) {
+					SimpleBuilding buildingReceiving = buildings.get(iBuildingReceiving);
 
 					// if buildings are too far away, skip:
 					double distanceSendiungReceiving = buildingSending.location.distance(buildingReceiving.location);
@@ -453,15 +433,15 @@ class CityGMLConverterThread extends Thread {
 					for (int iWallReceiving = 0; iWallReceiving < buildingReceiving.walls.length; iWallReceiving++) {
 						Polygon3d wallReceiving = buildingReceiving.walls[iWallReceiving];
 
-						if (iBuildingSending == iBuildingReceiving && iWallSending >= iWallReceiving) continue;
-						
+						if (iBuildingSending == iBuildingReceiving && iWallSending >= iWallReceiving)
+							continue;
 
 						boolean vis = true;
 
 						// which to check
-						for (int iBuildingChecking = 0; iBuildingChecking < buildings.length; iBuildingChecking++) {
-							SimpleBuilding buildingChecking = buildings[iBuildingChecking];
-							
+						for (int iBuildingChecking = 0; iBuildingChecking < buildings.size(); iBuildingChecking++) {
+							SimpleBuilding buildingChecking = buildings.get(iBuildingChecking);
+
 							// in principle, building to check should be on
 							// the
 							// connection between the starting and end
@@ -476,10 +456,8 @@ class CityGMLConverterThread extends Thread {
 							}
 
 							// check wall surfaces
-							for (Polygon3d wallChecking : buildingChecking.walls) {			
-								if (wallChecking.isHitBy(
-										wallSending.getCentroid(),
-										wallReceiving.getCentroid())) {
+							for (Polygon3d wallChecking : buildingChecking.walls) {
+								if (wallChecking.isHitBy(wallSending.getCentroid(), wallReceiving.getCentroid())) {
 									vis = false;
 									break;
 								}
@@ -489,10 +467,8 @@ class CityGMLConverterThread extends Thread {
 							}
 
 							// check roof surfaces
-							for (Polygon3d roofChecking : buildingChecking.roofs) {			
-								if (roofChecking.isHitBy(
-										wallSending.getCentroid(),
-										wallReceiving.getCentroid())) {
+							for (Polygon3d roofChecking : buildingChecking.roofs) {
+								if (roofChecking.isHitBy(wallSending.getCentroid(), wallReceiving.getCentroid())) {
 									vis = false;
 									break;
 								}
@@ -507,28 +483,27 @@ class CityGMLConverterThread extends Thread {
 					}
 				}
 
-				if (!visibleWalls.isEmpty()) buildingSending.visibleWalls.add(visibleWalls);
-				
+				if (!visibleWalls.isEmpty())
+					buildingSending.visibleWalls.add(visibleWalls);
+
 			}
 		}
 
 	}
-	
-	
+
 	private ProjectionPoint calcLatLonIndices(Point3d location) throws PJException {
 
 		// put data to transform in one array with x1, y1, z1, x2, y2, y2, ...
 		double[] xyz = new double[3];
 		location.get(xyz);
-		
+
 		// transform the coordinates, has to be after visibility determination
 		// because old system is used there
 		sourcePJ.transform(targetPJ, 3, xyz, 0, 1);
 
 		// apply rotated pole
-		return(uclm.rotpol.latLonToProj(xyz[1], xyz[0]));
+		return (uclm.rotpol.latLonToProj(xyz[1], xyz[0]));
 	}
-	
 
 	/**
 	 * Calculate urban parameters after visibility is know.
@@ -541,7 +516,7 @@ class CityGMLConverterThread extends Thread {
 				if (visibleList.size() == 0 || visibleList.get(0).sending.isHorizontal()) {
 					continue;
 				}
-				
+
 				Collections.sort(visibleList);
 
 				// mean until area of sending surface is reached
@@ -550,8 +525,7 @@ class CityGMLConverterThread extends Thread {
 				double distance = 0;
 				int ind = 0;
 
-				while (ind < visibleList.size() - 1
-						&& visibleList.get(ind).distance < conf.mindist) {
+				while (ind < visibleList.size() - 1 && visibleList.get(ind).distance < conf.mindist) {
 					ind++;
 				}
 
@@ -569,34 +543,34 @@ class CityGMLConverterThread extends Thread {
 
 					ind += 1;
 				} while (sumArea < maxArea && ind < visibleList.size());
-				if (sumArea < 1.e-5) continue;
+				if (sumArea < 1.e-5)
+					continue;
 				distance /= sumArea;
 
 				int indexAngle = 0;
-				indexAngle = uclm.getStreetdirIndex(visibleList.get(0).sending
-						.getAngle());
+				indexAngle = uclm.getStreetdirIndex(visibleList.get(0).sending.getAngle());
 
 				// Weight distance with surface size
 				buildingDistanceWeighted[iuc][indexAngle][building.irlat][building.irlon] += distance
 						* visibleList.get(0).sending.getArea();
 
-				streetSurfaceSum[iuc][indexAngle][building.irlat][building.irlon] += visibleList.get(0).sending.getArea();
-				wallAreaSum[iuc][indexAngle][uclm.getHeightIndex(building.height)][building.irlat][building.irlon] += visibleList.get(0).sending
+				streetSurfaceSum[iuc][indexAngle][building.irlat][building.irlon] += visibleList.get(0).sending
 						.getArea();
+				wallAreaSum[iuc][indexAngle][uclm
+						.getHeightIndex(building.height)][building.irlat][building.irlon] += visibleList.get(0).sending
+								.getArea();
 
 				nStreetSurfaces[iuc][indexAngle][building.irlat][building.irlon]++;
 
 			}
 		}
 	}
-	
-	
-	
+
 	/**
 	 * Save results to global data.
 	 * 
-	 * This is the only routine which uses locks for saving the data to the
-	 * global classes.
+	 * This is the only routine which uses locks for saving the data to the global
+	 * classes.
 	 */
 	private void saveToGlobal() {
 		lock.lock();
@@ -621,13 +595,10 @@ class CityGMLConverterThread extends Thread {
 						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
 							// increase street width and its counter to norm
 							// later
-							uclm.incStreetWidth(c, dir, j, i,
-									buildingDistanceWeighted[c][dir][j][i]);
-							uclm.incStreetSurfaceSum(c, dir, j, i,
-									streetSurfaceSum[c][dir][j][i]);
+							uclm.incStreetWidth(c, dir, j, i, buildingDistanceWeighted[c][dir][j][i]);
+							uclm.incStreetSurfaceSum(c, dir, j, i, streetSurfaceSum[c][dir][j][i]);
 							for (int height = 0; height < uclm.getKe_urban(c); height++) {
-								uclm.incBuildProb(c, dir, height, j, i,
-										wallAreaSum[c][dir][height][j][i]);
+								uclm.incBuildProb(c, dir, height, j, i, wallAreaSum[c][dir][height][j][i]);
 							}
 						}
 					}
@@ -635,13 +606,13 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 
-		// save where not planar
-		stats.addNonPlanar(id, NonPlanarList);
-		// save when ground surface but no distance taken into account
-		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
-		stats.addNoGround(id, noGround);
-		stats.addNoRoof(id, noRoof);
-		stats.addNoWall(id, noWall);
+//		// save where not planar
+//		stats.addNonPlanar(id, NonPlanarList);
+//		// save when ground surface but no distance taken into account
+//		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
+//		stats.addNoGround(id, noGround);
+//		stats.addNoRoof(id, noRoof);
+//		stats.addNoWall(id, noWall);
 		for (SimpleBuilding building : buildings) {
 			stats.buildingHeights.add(building.height);
 			stats.buildingGrounds.add(building.area);
@@ -663,8 +634,7 @@ class CityGMLConverterThread extends Thread {
 							sumNStreetSurfaces += nStreetSurfaces[c][dir][j][i];
 						}
 						if (sumNStreetSurfaces == 0) {
-							surfWithoutDistances.add(Double
-									.toString(buildingAreaSum[c][j][i]));
+							surfWithoutDistances.add(Double.toString(buildingAreaSum[c][j][i]));
 						}
 					}
 				}
@@ -688,7 +658,7 @@ class CityGMLConverterThread extends Thread {
 		for (SimpleBuilding building : buildings) {
 			buildingAreaSum[iuc][building.irlat][building.irlon] += building.area;
 		}
-			
+
 		runChecks();
 		saveToGlobal();
 
