@@ -483,24 +483,23 @@ public class CityGMLConverter {
 
 			CityGMLConverterThread cgmlct = null;
 			ThreadPoolExecutor exec = null;
-			String message;
 			if (conf.separateFiles) {
 				exec = new ThreadPoolExecutor(conf.nThreads,
 						conf.nThreads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
 						new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
 						new ThreadPoolExecutor.CallerRunsPolicy());
-				message = "Processing file ";
+				System.out.println("Processing files");
 			} else {
 				cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats);
-				message = "Reading file ";
+				System.out.println("Reading files");
 			}
-			
+			int flistLengthLength = (int)(Math.log10(flist.length)+1);
 			// here loop over citygmlfiles
 			for (int i = 0; i < flist.length; i++) {
 
 				File file = flist[i];
 
-				System.out.println(message + (i + 1) + "/"
+				System.out.println(" File " + String.format("%" + flistLengthLength + "d",i + 1) + "/"
 						+ flist.length + ": " + file);
 				
 				CityGMLReader reader = in.createCityGMLReader(file);

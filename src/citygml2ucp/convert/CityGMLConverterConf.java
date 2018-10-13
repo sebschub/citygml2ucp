@@ -461,15 +461,11 @@ public class CityGMLConverterConf {
 	 */
 	public void outputConf() {
 
-		System.out.println("CONFIGURATION OF THE RUN");
-		System.out.println();
+		System.out.println("Configuration of the run");
 
 		for (int i = 0; i < confItems.size(); i++) {
-			System.out.println(confItems.get(i)+": " + confValues.get(i));
+			System.out.println(" " + confItems.get(i)+": " + confValues.get(i));
 		}
-
-		System.out.println();
-		System.out.println();
 
 	}
 

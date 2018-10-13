@@ -229,7 +229,8 @@ class CityGMLConverterThread extends Thread {
 						}
 					}
 				} else {
-					System.out.println("Building " + building.getId() + " has no boundary surfaces nor building parts.");
+					System.out
+							.println("Building " + building.getId() + " has no boundary surfaces nor building parts.");
 				}
 
 				Polygon3d[] buildingRoofs;
@@ -410,8 +411,13 @@ class CityGMLConverterThread extends Thread {
 	}
 
 	private void calcVisibility() {
-
+		if (!conf.separateFiles)
+			System.out.println("Visibility calculation");
+		int buildingSizeLength = (int) (Math.log10(buildings.size()) + 1);
 		for (int iBuildingSending = 0; iBuildingSending < buildings.size(); iBuildingSending++) {
+			if (!conf.separateFiles)
+				System.out.println(" Building " + String.format("%" + buildingSizeLength + "d", iBuildingSending + 1)
+						+ "/" + buildings.size());
 			SimpleBuilding buildingSending = buildings.get(iBuildingSending);
 
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.length; iWallSending++) {
@@ -509,7 +515,8 @@ class CityGMLConverterThread extends Thread {
 	 * Calculate urban parameters after visibility is know.
 	 */
 	private void calcStreetProperties() {
-
+		if (!conf.separateFiles)
+			System.out.println("Averaging of surface properties to grid cells");
 		for (SimpleBuilding building : buildings) {
 			for (List<Polygon3dDistance> visibleList : building.visibleWalls) {
 
