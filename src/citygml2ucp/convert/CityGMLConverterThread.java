@@ -21,7 +21,6 @@ import org.citygml4j.model.citygml.building.WallSurface;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
-import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.LinearRing;
 import org.citygml4j.model.gml.geometry.primitives.Polygon;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
@@ -192,14 +191,13 @@ class CityGMLConverterThread extends Thread {
 				Building building = (Building) co;
 
 				// get bounding box to get the centre of building
-				BoundingShape boundingShape;
 				if (!building.isSetBoundedBy()) {
-					boundingShape = building.calcBoundedBy(BoundingBoxOptions.defaults());
-				} else {
-					boundingShape = building.getBoundedBy();
+					building.calcBoundedBy(BoundingBoxOptions.defaults());
 				}
-				List<Double> lc = boundingShape.getEnvelope().getLowerCorner().getValue();
-				List<Double> uc = boundingShape.getEnvelope().getUpperCorner().getValue();
+				List<Double> lc = building.getBoundedBy().getEnvelope()
+						.getLowerCorner().getValue();
+				List<Double> uc = building.getBoundedBy().getEnvelope()
+						.getUpperCorner().getValue();
 				double xpos = 0.5 * (lc.get(0) + uc.get(0));
 				double ypos = 0.5 * (lc.get(1) + uc.get(1));
 
