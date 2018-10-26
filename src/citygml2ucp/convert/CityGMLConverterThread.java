@@ -33,7 +33,8 @@ import org.proj4.PJException;
 import citygml2ucp.configuration.UrbanCLMConfiguration;
 import citygml2ucp.tools.CityGMLTools;
 import citygml2ucp.tools.Polygon3d;
-import citygml2ucp.tools.Polygon3dDistance;
+import citygml2ucp.tools.Polygon3dVisibility;
+import citygml2ucp.tools.Polygon3dWithVisibilities;
 import citygml2ucp.tools.SimpleBuilding;
 import ucar.unidata.geoloc.ProjectionPoint;
 
@@ -254,14 +255,14 @@ class CityGMLConverterThread extends Thread {
 					noGround.add(co.getId());
 				}
 
-				Polygon3d[] buildingWalls;
+				Polygon3dWithVisibilities[] buildingWalls;
 				if (walls.size() > 0) {
 					buildingWalls = getAllSurfaces(walls);
 					checkCoplanarity(buildingWalls, co.getId());
 				} else {
 					noWall.add(co.getId());
 					// ignore this building for visibility for now
-					buildingWalls = new Polygon3d[0];
+					buildingWalls = new Polygon3dWithVisibilities[0];
 				}
 
 				localBuildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls,
@@ -347,7 +348,7 @@ class CityGMLConverterThread extends Thread {
 	 * @param listSurfaces List of surfaces
 	 * @return Array of polygons
 	 */
-	public <T extends AbstractBoundarySurface> Polygon3d[] getAllSurfaces(List<T> listSurfaces) {
+	public <T extends AbstractBoundarySurface> Polygon3dWithVisibilities[] getAllSurfaces(List<T> listSurfaces) {
 
 		int counter = 0;
 
@@ -358,7 +359,7 @@ class CityGMLConverterThread extends Thread {
 		}
 
 		// new array to include all these surfaces
-		Polygon3d[] surfaces = new Polygon3d[counter];
+		Polygon3dWithVisibilities[] surfaces = new Polygon3dWithVisibilities[counter];
 
 		// reset counter again
 		counter = 0;
@@ -366,7 +367,7 @@ class CityGMLConverterThread extends Thread {
 		for (T surface : listSurfaces) {
 			List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surf.size(); i++) {
-				surfaces[counter++] = new Polygon3d(surf.get(i));
+				surfaces[counter++] = new Polygon3dWithVisibilities(surf.get(i));
 			}
 		}
 		return surfaces;
@@ -421,9 +422,7 @@ class CityGMLConverterThread extends Thread {
 			SimpleBuilding buildingSending = buildings.get(iBuildingSending);
 
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.length; iWallSending++) {
-				Polygon3d wallSending = buildingSending.walls[iWallSending];
-
-				List<Polygon3dDistance> visibleWalls = new ArrayList<>();
+				Polygon3dWithVisibilities wallSending = buildingSending.walls[iWallSending];
 
 				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings
 						.size(); iBuildingReceiving++) {
@@ -437,7 +436,7 @@ class CityGMLConverterThread extends Thread {
 
 					// distance is ok, so check every other surface
 					for (int iWallReceiving = 0; iWallReceiving < buildingReceiving.walls.length; iWallReceiving++) {
-						Polygon3d wallReceiving = buildingReceiving.walls[iWallReceiving];
+						Polygon3dWithVisibilities wallReceiving = buildingReceiving.walls[iWallReceiving];
 
 						if (iBuildingSending == iBuildingReceiving && iWallSending >= iWallReceiving)
 							continue;
@@ -462,7 +461,7 @@ class CityGMLConverterThread extends Thread {
 							}
 
 							// check wall surfaces
-							for (Polygon3d wallChecking : buildingChecking.walls) {
+							for (Polygon3dWithVisibilities wallChecking : buildingChecking.walls) {
 								if (wallChecking.isHitBy(wallSending.getCentroid(), wallReceiving.getCentroid())) {
 									vis = false;
 									break;
@@ -483,15 +482,12 @@ class CityGMLConverterThread extends Thread {
 								break;
 							}
 						}
-
-						visibleWalls.add(new Polygon3dDistance(wallSending, wallReceiving, conf.effDist));
+						
+						wallSending.visibilities.add(  new Polygon3dVisibility(wallSending, wallReceiving, conf.effDist));
+						wallReceiving.visibilities.add(new Polygon3dVisibility(wallReceiving, wallSending, conf.effDist));
 
 					}
 				}
-
-				if (!visibleWalls.isEmpty())
-					buildingSending.visibleWalls.add(visibleWalls);
-
 			}
 		}
 
@@ -518,54 +514,52 @@ class CityGMLConverterThread extends Thread {
 		if (!conf.separateFiles)
 			System.out.println("Averaging of surface properties to grid cells");
 		for (SimpleBuilding building : buildings) {
-			for (List<Polygon3dDistance> visibleList : building.visibleWalls) {
+			for (Polygon3dWithVisibilities sendingWall : building.walls) {
 
-				if (visibleList.size() == 0 || visibleList.get(0).sending.isHorizontal()) {
+				if (sendingWall.visibilities.size() == 0 || sendingWall.isHorizontal()) {
 					continue;
 				}
 
-				Collections.sort(visibleList);
+				Collections.sort(sendingWall.visibilities);
 
 				// mean until area of sending surface is reached
-				double maxArea = visibleList.get(0).sending.getArea();
+				double maxArea = sendingWall.getArea();
 				double sumArea = 0;
 				double distance = 0;
 				int ind = 0;
 
-				while (ind < visibleList.size() - 1 && visibleList.get(ind).distance < conf.mindist) {
+				while (ind < sendingWall.visibilities.size() - 1 && sendingWall.visibilities.get(ind).distance < conf.mindist) {
 					ind++;
 				}
 
 				do {
-					if (Double.isNaN(visibleList.get(ind).distance)) {
+					if (Double.isNaN(sendingWall.visibilities.get(ind).distance)) {
 						System.out.println("distance is nan");
 					}
 
-					double weight = visibleList.get(ind).receiving.getArea();
+					double weight = sendingWall.visibilities.get(ind).receiving.getArea();
 					if (conf.effDist) {
-						weight *= Math.abs(visibleList.get(ind).getCosAngle());
+						weight *= Math.abs(sendingWall.visibilities.get(ind).getCosAngle());
 					}
-					distance += visibleList.get(ind).distance * weight;
+					distance += sendingWall.visibilities.get(ind).distance * weight;
 					sumArea += weight;
 
 					ind += 1;
-				} while (sumArea < maxArea && ind < visibleList.size());
+				} while (sumArea < maxArea && ind < sendingWall.visibilities.size());
 				if (sumArea < 1.e-5)
 					continue;
 				distance /= sumArea;
 
 				int indexAngle = 0;
-				indexAngle = uclm.getStreetdirIndex(visibleList.get(0).sending.getAngle());
+				indexAngle = uclm.getStreetdirIndex(sendingWall.getAngle());
 
 				// Weight distance with surface size
 				buildingDistanceWeighted[iuc][indexAngle][building.irlat][building.irlon] += distance
-						* visibleList.get(0).sending.getArea();
+						* sendingWall.getArea();
 
-				streetSurfaceSum[iuc][indexAngle][building.irlat][building.irlon] += visibleList.get(0).sending
-						.getArea();
+				streetSurfaceSum[iuc][indexAngle][building.irlat][building.irlon] += sendingWall.getArea();
 				wallAreaSum[iuc][indexAngle][uclm
-						.getHeightIndex(building.height)][building.irlat][building.irlon] += visibleList.get(0).sending
-								.getArea();
+						.getHeightIndex(building.height)][building.irlat][building.irlon] += sendingWall.getArea();
 
 				nStreetSurfaces[iuc][indexAngle][building.irlat][building.irlon]++;
 

@@ -6,13 +6,13 @@ import javax.vecmath.Vector3d;
 import static java.lang.Math.abs;
 
 /**
- * Class for the distance between two polygons, which can be compared and,
- * therefore, sorted.
+ * Class for the visibility and distance between two polygons, which can be
+ * compared and, therefore, sorted.
  * 
  * @author Sebastian Schubert
  * 
  */
-public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
+public class Polygon3dVisibility implements Comparable<Polygon3dVisibility> {
 
 	/**
 	 * The sending surface
@@ -49,7 +49,7 @@ public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 	 * @param eff
 	 *            use effective distance?
 	 */
-	public Polygon3dDistance(Polygon3d sending, Polygon3d receiving, boolean eff) {
+	public Polygon3dVisibility(Polygon3d sending, Polygon3d receiving, boolean eff) {
 		this.sending = sending;
 		this.receiving = receiving;
 
@@ -64,7 +64,7 @@ public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 	}
 
 	@Override
-	public int compareTo(Polygon3dDistance arg0) {
+	public int compareTo(Polygon3dVisibility arg0) {
 		if (arg0 == null) {
 			throw new NullPointerException();
 		}
@@ -104,11 +104,11 @@ public class Polygon3dDistance implements Comparable<Polygon3dDistance> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Polygon3dDistance)) {
+		if (!(obj instanceof Polygon3dVisibility)) {
 			return false;
 		}
 
-		if (((Polygon3dDistance) obj).distance == this.distance) {
+		if (((Polygon3dVisibility) obj).distance == this.distance) {
 			return true;
 		}
 
