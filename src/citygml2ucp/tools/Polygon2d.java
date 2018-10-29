@@ -53,6 +53,9 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 		}
 		this.xcoord = x;
 		this.ycoord = y;
+		
+		this.signedArea = this.calcSignedArea();
+		this.centroid = this.calcCentroid();
 	}
 
 	/*

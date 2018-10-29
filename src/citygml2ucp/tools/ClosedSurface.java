@@ -9,47 +9,27 @@ package citygml2ucp.tools;
 public abstract class ClosedSurface<T> {
 
 	/**
-	 * Centroid already calculated?
-	 */
-	private boolean isSetCentroid = false;
-	/**
 	 * Centroid of the polygon
 	 */
-	private T centroid;
+	protected T centroid;
 
 	/**
 	 * Area of the polygon
 	 */
-	private double signedArea;
-	/**
-	 * Area already calculated?
-	 */
-	private boolean isSetArea = false;
+	protected double signedArea;
 
 	public double getArea() {
-		if (!this.isSetArea) {
-			this.signedArea = calcSignedArea();
-			this.isSetArea = true;
-		}
 		return Math.abs(this.signedArea);
 	}
 
 	public double getSignedArea() {
-		if (!this.isSetArea) {
-			this.signedArea = calcSignedArea();
-			this.isSetArea = true;
-		}
 		return this.signedArea;
 	}
 	
 	protected abstract double calcSignedArea();
 
 	public T getCentroid() {
-		if (!this.isSetCentroid) {
-			this.centroid = calcCentroid();
-			this.isSetCentroid = true;
-		}
-		return centroid;
+		return this.centroid;
 	}
 
 	protected abstract T calcCentroid();

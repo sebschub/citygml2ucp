@@ -62,10 +62,6 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 */
 	private double angle;
 	/**
-	 * Angle already calculated?
-	 */
-	private boolean isSetAngle = false;
-	/**
 	 * Polygon is horizontal so {@code angle} is not defined?
 	 */
 	private boolean isHorizontal = false;
@@ -185,6 +181,19 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		}
 
 		polygon2d = new Polygon2d(xcoord, ycoord);
+		
+		this.signedArea = this.calcSignedArea();
+		this.centroid = this.calcCentroid();
+		this.angle = this.calculateAngle();
+	}
+	
+	/**
+	 * Get the angle of normal vector projected on horizontal plane.
+	 * 
+	 * @return angle in degrees
+	 */
+	public double getAngle() {
+		return this.angle;
 	}
 	
 	/**
@@ -192,10 +201,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 * 
 	 * @return angle in degrees
 	 */
-	public double getAngle() {
-		if (isSetAngle) {
-			return angle;
-		}
+	private double calculateAngle() {
 		if (Math.abs(uvn.x) < 1.e-12) {
 			if (Math.abs(uvn.y) < 1.e-12) {
 				angle = -1000.;
@@ -206,7 +212,6 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		} else {
 			angle = Math.toDegrees(Math.atan(uvn.y / uvn.x));
 		}
-		isSetAngle = true;
 		return angle;
 	}
 
@@ -221,7 +226,6 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 * @return true for horizontal
 	 */
 	public boolean isHorizontal() {
-		getAngle();
 		return this.isHorizontal;
 	}
 
