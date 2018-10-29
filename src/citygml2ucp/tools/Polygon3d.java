@@ -20,6 +20,8 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
  * 
  */
 public class Polygon3d extends ClosedSurface<Point3d> {
+	
+	public final String id;
 
 	/**
 	 * points with this distance are supposed to be equal and one is remove
@@ -74,7 +76,9 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 * @param surfaceProperty
 	 *            Describes the polygon
 	 */
-	public Polygon3d(SurfaceProperty surfaceProperty) {
+	public Polygon3d(String id, SurfaceProperty surfaceProperty) {
+		this.id = id;
+		
 		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
 
 		points = new LinkedList<Point3d>();
@@ -206,6 +210,11 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		return angle;
 	}
 
+	
+	public List<Point3d> getPoints(){
+		return this.points;		
+	}
+	
 	/**
 	 * Is the polygon horizontal?
 	 * 

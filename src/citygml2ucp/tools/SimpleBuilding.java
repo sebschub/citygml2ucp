@@ -4,6 +4,8 @@ import javax.vecmath.Point3d;
 
 public class SimpleBuilding {
 
+	public final String name, id;
+	
 	public final Point3d location;
 
 	public final double height;
@@ -16,8 +18,10 @@ public class SimpleBuilding {
 
 	public final int irlat, irlon;
 
-	public SimpleBuilding(Point3d location, double height, double area, Polygon3d[] roofs,
+	public SimpleBuilding(String name, String id, Point3d location, double height, double area, Polygon3d[] roofs,
 			Polygon3dWithVisibilities[] walls, int irlat, int irlon) {
+		this.name = name;
+		this.id = id;
 		this.location = location;
 		this.height = height;
 		this.area = area;

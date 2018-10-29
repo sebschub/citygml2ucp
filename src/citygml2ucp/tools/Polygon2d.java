@@ -6,7 +6,6 @@ package citygml2ucp.tools;
 import java.util.List;
 
 import javax.vecmath.Point2d;
-
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
@@ -71,6 +70,14 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 		return 0.5 * area;
 	}
 
+	public double[] getxcoord(){
+		return this.xcoord;
+	}
+	
+	public double[] getycoord(){
+		return this.ycoord;
+	}
+	
 	/*
 	 * (non-Javadoc) http://en.wikipedia.org/wiki/Polygon#Area_and_centroid
 	 * 

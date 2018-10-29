@@ -2,6 +2,7 @@ package citygml2ucp.convert;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List; //import java.util.ArrayList;
@@ -405,6 +406,10 @@ public class CityGMLConverter {
 	 */
 	public static void main(String[] args) throws Exception {
 
+		DecimalFormat df = new DecimalFormat();
+		df.setMinimumFractionDigits(2);
+		df.setMaximumFractionDigits(2);
+		
 		long startTime = new Date().getTime();
 
 		CityGMLConverterConf conf;
@@ -490,7 +495,7 @@ public class CityGMLConverter {
 						new ThreadPoolExecutor.CallerRunsPolicy());
 				System.out.println("Processing files");
 			} else {
-				cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats);
+				cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats, df);
 				System.out.println("Reading files");
 			}
 			int flistLengthLength = (int)(Math.log10(flist.length)+1);
@@ -510,7 +515,7 @@ public class CityGMLConverter {
 						CityModel cityModel = (CityModel)citygml;
 						
 						if (conf.separateFiles) {
-							cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats);
+							cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats, df);
 						}
 						
 						cgmlct.addBuildings(cityModel);
@@ -538,8 +543,8 @@ public class CityGMLConverter {
 				cgmlct.run();
 			}
 
-			System.out.println("Largest Building: " + uclm.maxHeight + " m");
-			System.out.println("Smallest Building: " + uclm.minHeight + " m");
+			System.out.println("Largest Building: " + df.format(uclm.maxHeight) + " m");
+			System.out.println("Smallest Building: " + df.format(uclm.minHeight) + " m");
 
 			uclm.fakeUrbanClassFrac();
 			uclm.normBuildingFrac();

@@ -2,6 +2,7 @@ package citygml2ucp.convert;
 
 import static citygml2ucp.tools.Polygon2d.xyProjectedPolygon2d;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import org.citygml4j.model.citygml.building.WallSurface;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
+import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
@@ -49,6 +51,8 @@ import ucar.unidata.geoloc.ProjectionPoint;
  */
 class CityGMLConverterThread extends Thread {
 
+	private final DecimalFormat df;
+	
 	/**
 	 * Factor for height of a building: 0 at lower bottom of roof, 1 at top of roof
 	 */
@@ -143,7 +147,7 @@ class CityGMLConverterThread extends Thread {
 	 * @throws PJException
 	 */
 	public CityGMLConverterThread(UrbanCLMConfiguration uclm, CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
-			CityGMLConverterStats stats) {
+			CityGMLConverterStats stats, DecimalFormat df) {
 		this.uclm = uclm;
 		this.conf = conf;
 		this.sourcePJ = sourcePJ;
@@ -151,6 +155,8 @@ class CityGMLConverterThread extends Thread {
 		this.stats = stats;
 
 		this.buildings = new ArrayList<SimpleBuilding>();
+		
+		this.df = df;
 	}
 
 	public void addBuildings(CityModel base) throws PJException {
@@ -265,7 +271,20 @@ class CityGMLConverterThread extends Thread {
 					buildingWalls = new Polygon3dWithVisibilities[0];
 				}
 
-				localBuildings[bID] = new SimpleBuilding(location, height, area, buildingRoofs, buildingWalls,
+				String name = "";
+				for (Code nameElement : building.getName()) {
+					name = name.concat(nameElement.getValue());
+				}
+				String id = building.getId();
+				if (conf.debugOutput) {
+					if (name == "") {
+						System.out.println("  Found building with ID " + id);
+					} else {
+						System.out.println("  Found building with ID " + id + " and name " + name);
+					}
+				}
+
+				localBuildings[bID] = new SimpleBuilding(name, id, location, height, area, buildingRoofs, buildingWalls,
 						uclm.getRLatIndex(rotatedCoordinates.getY()), uclm.getRLonIndex(rotatedCoordinates.getX()));
 
 			}
@@ -367,7 +386,7 @@ class CityGMLConverterThread extends Thread {
 		for (T surface : listSurfaces) {
 			List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 			for (int i = 0; i < surf.size(); i++) {
-				surfaces[counter++] = new Polygon3dWithVisibilities(surf.get(i));
+				surfaces[counter++] = new Polygon3dWithVisibilities(surface.getId(), surf.get(i));
 			}
 		}
 		return surfaces;
@@ -482,9 +501,10 @@ class CityGMLConverterThread extends Thread {
 								break;
 							}
 						}
-						
-						wallSending.visibilities.add(  new Polygon3dVisibility(wallSending, wallReceiving, conf.effDist));
-						wallReceiving.visibilities.add(new Polygon3dVisibility(wallReceiving, wallSending, conf.effDist));
+
+						wallSending.visibilities.add(new Polygon3dVisibility(wallSending, wallReceiving, conf.effDist));
+						wallReceiving.visibilities
+								.add(new Polygon3dVisibility(wallReceiving, wallSending, conf.effDist));
 
 					}
 				}
@@ -514,10 +534,21 @@ class CityGMLConverterThread extends Thread {
 		if (!conf.separateFiles)
 			System.out.println("Averaging of surface properties to grid cells");
 		for (SimpleBuilding building : buildings) {
+			if (conf.debugOutput) {
+				if (building.name == "") {
+					System.out.println(" Building with ID " + building.id);
+				} else {
+					System.out.println(" Building with ID " + building.id + " and name " + building.name);
+				}
+			}
 			for (Polygon3dWithVisibilities sendingWall : building.walls) {
 
 				if (sendingWall.visibilities.size() == 0 || sendingWall.isHorizontal()) {
 					continue;
+				}
+
+				if (conf.debugOutput) {
+					System.out.println("  Wall with area " + df.format(sendingWall.getArea()) + " and ID " + sendingWall.id);
 				}
 
 				Collections.sort(sendingWall.visibilities);
@@ -528,13 +559,21 @@ class CityGMLConverterThread extends Thread {
 				double distance = 0;
 				int ind = 0;
 
-				while (ind < sendingWall.visibilities.size() - 1 && sendingWall.visibilities.get(ind).distance < conf.mindist) {
+				while (ind < sendingWall.visibilities.size() - 1
+						&& sendingWall.visibilities.get(ind).distance < conf.mindist) {
 					ind++;
 				}
 
 				do {
 					if (Double.isNaN(sendingWall.visibilities.get(ind).distance)) {
 						System.out.println("distance is nan");
+					}
+
+					if (conf.debugOutput) {
+						System.out.println("   Considering target with area "
+								+ df.format(sendingWall.visibilities.get(ind).receiving.getArea()) + ", distance "
+								+ df.format(sendingWall.visibilities.get(ind).distance) + ", and ID "
+								+ sendingWall.visibilities.get(ind).receiving.id);
 					}
 
 					double weight = sendingWall.visibilities.get(ind).receiving.getArea();

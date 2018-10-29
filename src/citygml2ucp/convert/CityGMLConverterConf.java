@@ -301,6 +301,12 @@ public class CityGMLConverterConf {
 	 */
 	boolean consistentOutput;
 	private static boolean consistentOutputDefault = true;
+	
+	/**
+	 * Debug output
+	 */
+	boolean debugOutput;
+	private static boolean debugOutputDefault = false;
 
 	List<String> confItems = new LinkedList<String>();
 	List<String> confValues = new LinkedList<String>();
@@ -446,6 +452,10 @@ public class CityGMLConverterConf {
 
 			consistentOutput = prop.getBoolean("consistentOutput",
 					consistentOutputDefault);
+
+			debugOutput = prop.getBoolean("debugOutput",
+					debugOutputDefault);
+
 
 		} else {
 			if (explicitlyGivenFile) {

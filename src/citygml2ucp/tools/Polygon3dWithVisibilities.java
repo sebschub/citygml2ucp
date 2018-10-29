@@ -20,8 +20,8 @@ public class Polygon3dWithVisibilities extends Polygon3d {
 	/**
 	 * @param surfaceProperty
 	 */
-	public Polygon3dWithVisibilities(SurfaceProperty surfaceProperty) {
-		super(surfaceProperty);
+	public Polygon3dWithVisibilities(String id, SurfaceProperty surfaceProperty) {
+		super(id, surfaceProperty);
 		this.visibilities = new ArrayList<>();
 	}
 	
