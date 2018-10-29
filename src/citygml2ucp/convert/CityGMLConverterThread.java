@@ -440,10 +440,11 @@ class CityGMLConverterThread extends Thread {
 						+ "/" + buildings.size());
 			SimpleBuilding buildingSending = buildings.get(iBuildingSending);
 
-			for (int iWallSending = 0; iWallSending < buildingSending.walls.length; iWallSending++) {
+			for (int iWallSending = 0; iWallSending < buildingSending.walls.length - 1; iWallSending++) {
 				Polygon3dWithVisibilities wallSending = buildingSending.walls[iWallSending];
 
-				for (int iBuildingReceiving = iBuildingSending; iBuildingReceiving < buildings
+				// check other buildings, skip current
+				for (int iBuildingReceiving = iBuildingSending + 1; iBuildingReceiving < buildings
 						.size(); iBuildingReceiving++) {
 					SimpleBuilding buildingReceiving = buildings.get(iBuildingReceiving);
 
@@ -457,8 +458,8 @@ class CityGMLConverterThread extends Thread {
 					for (int iWallReceiving = 0; iWallReceiving < buildingReceiving.walls.length; iWallReceiving++) {
 						Polygon3dWithVisibilities wallReceiving = buildingReceiving.walls[iWallReceiving];
 
-						if (iBuildingSending == iBuildingReceiving && iWallSending >= iWallReceiving)
-							continue;
+//						if (iBuildingSending == iBuildingReceiving && iWallSending >= iWallReceiving)
+//							continue;
 
 						boolean vis = true;
 
