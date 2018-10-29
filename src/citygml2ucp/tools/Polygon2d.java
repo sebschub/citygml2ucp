@@ -63,12 +63,12 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 	 * @see citygml2ucp.tools.ClosedSurface#calcArea()
 	 */
 	@Override
-	protected double calcArea() {
+	protected double calcSignedArea() {
 		double area = 0;
 		for (int i = 0; i < xcoord.length - 1; i++) {
 			area += (xcoord[i] * ycoord[i + 1]) - (xcoord[i + 1] * ycoord[i]);
 		}
-		return 0.5 * Math.abs(area);
+		return 0.5 * area;
 	}
 
 	/*
@@ -80,7 +80,7 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 	protected Point2d calcCentroid() {
 		double x = 0, y = 0;
 		double iarea;
-		iarea = 1. / (6. * getArea());
+		iarea = 1. / (6. * getSignedArea());
 
 		for (int i = 0; i < xcoord.length - 1; i++) {
 			x += (xcoord[i] + xcoord[i + 1])

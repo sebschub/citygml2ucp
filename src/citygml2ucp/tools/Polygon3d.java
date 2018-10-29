@@ -242,8 +242,8 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	}
 
 	@Override
-	protected double calcArea() {
-		return polygon2d.getArea();
+	protected double calcSignedArea() {
+		return polygon2d.getSignedArea();
 	}
 
 	@Override

@@ -20,24 +20,34 @@ public abstract class ClosedSurface<T> {
 	/**
 	 * Area of the polygon
 	 */
-	private double area;
+	private double signedArea;
 	/**
 	 * Area already calculated?
 	 */
 	private boolean isSetArea = false;
 
 	public double getArea() {
-		if (!isSetArea) {
-			area = calcArea();
+		if (!this.isSetArea) {
+			this.signedArea = calcSignedArea();
+			this.isSetArea = true;
 		}
-		return area;
+		return Math.abs(this.signedArea);
 	}
 
-	protected abstract double calcArea();
+	public double getSignedArea() {
+		if (!this.isSetArea) {
+			this.signedArea = calcSignedArea();
+			this.isSetArea = true;
+		}
+		return this.signedArea;
+	}
+	
+	protected abstract double calcSignedArea();
 
 	public T getCentroid() {
-		if (!isSetCentroid) {
-			centroid = calcCentroid();
+		if (!this.isSetCentroid) {
+			this.centroid = calcCentroid();
+			this.isSetCentroid = true;
 		}
 		return centroid;
 	}
