@@ -248,21 +248,23 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 	@Override
 	protected Point3d calcCentroid() {
-		Point2d centroid2d = polygon2d.getCentroid();
+		return get3dFrom2d(polygon2d.getCentroid());
+	}
 
-		// convert to 3d
+	protected Point3d get3dFrom2d(Point2d point) {
 		Vector3d a = new Vector3d(uv1);
 		Vector3d b = new Vector3d(uv2);
 
-		a.scale(centroid2d.x);
-		b.scale(centroid2d.y);
+		a.scale(point.x);
+		b.scale(point.y);
 
 		a.add(b);
 		a.add(pos);
 
 		return new Point3d(a);
 	}
-
+	
+	
 	/**
 	 * Does the line between two points hit the polygon?
 	 * 
