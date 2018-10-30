@@ -8,8 +8,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import citygml2ucp.tools.DimensionsAndVariables;
 import citygml2ucp.tools.NetCDFData;
@@ -30,53 +32,29 @@ import ucar.nc2.NetcdfFileWriter;
 public class CityGMLConverterStats extends NetCDFData {
 
 	/**
-	 * List for all non planar polygons
+	 * Map for all non planar polygons
 	 */
-	private List<LinkedList<String>> notPlanarList = new LinkedList<LinkedList<String>>();
-	/**
-	 * IDs of the entries in {@code notPlanarList}
-	 */
-	private List<Integer> notPlanarListID = new LinkedList<Integer>();
+	private Map<String,List<String>> nonPlanar = new HashMap<>();
 
 	/**
-	 * List for cell with no wall surfaces taken into account but building
-	 * fraction > 0
+	 * Map for surfaces without distances taken into account
 	 */
-	private List<LinkedList<String>> noSurfButBuildFracList = new LinkedList<LinkedList<String>>();
-	/**
-	 * IDs of the entries in {@code noSurfButBuildFracList}
-	 */
-	private List<Integer> noSurfButBuildFracListID = new LinkedList<Integer>();
+	private Map<String,List<String>> surfaceWithoutDistance = new HashMap<>();
 
 	/**
 	 * List for buildings with no defined wall
 	 */
-	private List<LinkedList<String>> noWallList = new LinkedList<LinkedList<String>>();
-	/**
-	 * IDs of the entries in {@code noWallList}
-	 */
-	private List<Integer> noWallListID = new LinkedList<Integer>();
+	private List<String> noWallList = new LinkedList<>();
+
 	/**
 	 * List for buildings with no defined roof
 	 */
-	private List<LinkedList<String>> noRoofList = new LinkedList<LinkedList<String>>();
-	/**
-	 * IDs of the entries in {@code noRoofList}
-	 */
-	private List<Integer> noRoofListID = new LinkedList<Integer>();
+	private List<String> noRoofList = new LinkedList<>();
+	
 	/**
 	 * List for buildings with no defined ground
 	 */
-	private List<LinkedList<String>> noGroundList = new LinkedList<LinkedList<String>>();
-	/**
-	 * IDs of the entries in {@code noGroundList}
-	 */
-	private List<Integer> noGroundListID = new LinkedList<Integer>();
-
-	/**
-	 * All files that are analysed
-	 */
-	private final File[] flist;
+	private List<String> noGroundList = new LinkedList<>();
 
 	/**
 	 * Configuration of the run
@@ -111,7 +89,6 @@ public class CityGMLConverterStats extends NetCDFData {
 	 */
 	public CityGMLConverterStats(File[] flist, CityGMLConverterConf conf) {
 		this.conf = conf;
-		this.flist = flist;
 
 		unlimetedDimension = new WritableDimension("counter", 0, true, true,
 				false);
@@ -122,14 +99,11 @@ public class CityGMLConverterStats extends NetCDFData {
 	/**
 	 * Add non planar information.
 	 * 
-	 * @param id
-	 *            Number of file for which to add information
-	 * @param list
-	 *            List of buildings with non-planar surfaces
+	 * @param nonPlanar
+	 *            Map of building id and list of non-planar surface ids
 	 */
-	public void addNonPlanar(int id, LinkedList<String> list) {
-		notPlanarListID.add(id);
-		notPlanarList.add(list);
+	public void addNonPlanar(Map<String,List<String>> nonPlanar) {
+		this.nonPlanar.putAll(nonPlanar);
 	}
 
 	/**
@@ -140,75 +114,82 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param list
 	 *            List of ground sizes ignored
 	 */
-	public void addNoSurfButBuildFrac(int id, LinkedList<String> list) {
-		noSurfButBuildFracListID.add(id);
-		noSurfButBuildFracList.add(list);
+	public void addNoSurfButBuildFrac(Map<String,List<String>> surfaceWithoutDistance) {
+		this.surfaceWithoutDistance.putAll(surfaceWithoutDistance);
 	}
 	
 	/**
 	 * Add no wall information.
 	 * 
-	 * @param id
-	 *            Number of file for which to add information
-	 * @param list
-	 *            List of buildings with no defined wall
+	 * @param noWall
+	 *            List of building IDs with no defined wall
 	 */
-	public void addNoWall(int id, LinkedList<String> list) {
-		noWallListID.add(id);
-		noWallList.add(list);
+	public void addNoWall(List<String> noWall) {
+		noWallList.addAll(noWall);
 	}
 	
 	/**
 	 * Add no roof information.
 	 * 
-	 * @param id
-	 *            Number of file for which to add information
-	 * @param list
-	 *            List of buildings with no defined roof
+	 * @param noRoof
+	 *            List of building IDs with no defined roof
 	 */
-	public void addNoRoof(int id, LinkedList<String> list) {
-		noRoofListID.add(id);
-		noRoofList.add(list);
+	public void addNoRoof(List<String> noRoof) {
+		noRoofList.addAll(noRoof);
 	}
 	
 	/**
 	 * Add no ground information.
 	 * 
-	 * @param id
-	 *            Number of file for which to add information
-	 * @param list
-	 *            List of buildings with no defined ground
+	 * @param noground
+	 *            List of building IDs with no defined ground
 	 */
-	public void addNoGround(int id, LinkedList<String> list) {
-		noGroundListID.add(id);
-		noGroundList.add(list);
+	public void addNoGround(List<String> noGround) {
+		noGroundList.addAll(noGround);
 	}
 
-	private void writeLog(List<LinkedList<String>> list, List<Integer> id,
-			File log) throws IOException {
+	private void writeStringList(Writer fw, String header, List<String> list) throws IOException {
+		fw.append(header);
+		fw.append(System.getProperty("line.separator"));
+		for (String element : list) {
+			fw.append(" " + element);
+			fw.append(System.getProperty("line.separator"));
+		}
+	}
+
+	private void writeStringMap(Writer fw, String header, Map<String,List<String>> map) throws IOException {
+		fw.append(header);
+		fw.append(System.getProperty("line.separator"));
+		
+		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+			fw.append(" Building " + entry.getKey());
+			fw.append(System.getProperty("line.separator"));
+
+			for (String elementOfElement : entry.getValue()) {
+				fw.append("  Surface " + elementOfElement);
+				fw.append(System.getProperty("line.separator"));
+			}
+		}
+	}
+
+	
+	public void writeLogs() throws IOException {
+		File log = new File(conf.logFile);
+		
 		if (log.exists()) {
 			log.delete();
 		}
-
+		
 		Writer fw = new FileWriter(log);
+		
+		writeStringList(fw, "Building without roofs", noRoofList);
+		writeStringList(fw, "Building without walls", noWallList);
+		writeStringList(fw, "Building without grounds", noGroundList);
+	
+		writeStringMap(fw, "Non-Planar surface", nonPlanar);
+		writeStringMap(fw, "Surface without distance", surfaceWithoutDistance);
 
-		for (int i = 0; i < list.size(); i++) {
-			if (list.get(i) != null && list.get(i).size() != 0) {
-				fw.append(flist[id.get(i)].toString());
-				fw.append(System.getProperty("line.separator"));
-				for (int j = 0; j < list.get(i).size(); j++) {
-					fw.append(list.get(i).get(j));
-					fw.append(System.getProperty("line.separator"));
-				}
-			}
-		}
 		fw.close();
-	}
-
-	public void writeLogs() throws IOException {
-		writeLog(notPlanarList, notPlanarListID, new File(conf.logNonPlanar));
-		writeLog(noSurfButBuildFracList, noSurfButBuildFracListID, new File(
-				conf.logNoSurfButBuildFrac));
 	}
 
 	private void fillNetCDFVariables() {

@@ -218,37 +218,6 @@ public class CityGMLConverterConf {
 	private static String outputFolderDefault = "/home/schubert/";
 
 	/**
-	 * Log for non planar surfaces (relative to outputFolder)
-	 */
-	String logNonPlanar;
-	private static String logNonPlanarDefault = "NonPlanar.log";
-
-	/**
-	 * Log for no distance but surface fraction in a grid cell (relative to
-	 * outputFolder)
-	 */
-	String logNoSurfButBuildFrac;
-	private static String logNoSurfButBuildFracDefault = "NoSurfButBuildingFrac.log";
-
-	/**
-	 * Log for No defined roofs (relative to outputFolder)
-	 */
-	String logNoRoof;
-	private static String logNoRoofDefault = "NoRoof.log";
-
-	/**
-	 * Log for No defined walls (relative to outputFolder)
-	 */
-	String logNoWall;
-	private static String logNoWallDefault = "NoWall.log";
-
-	/**
-	 * Log for No defined grounds (relative to outputFolder)
-	 */
-	String logNoGround;
-	private static String logNoGroundDefault = "NoGround.log";
-
-	/**
 	 * Name of the main output file (relative to outputFolder)
 	 */
 	String outputFile;
@@ -266,6 +235,9 @@ public class CityGMLConverterConf {
 	String impSurfFile;
 	private static String impSurfFileDefault = "/home/schubert/Documents/workspace/datasets/vg";
 
+	String logFile;
+	private static String logFileDefault = "run.log";
+	
 	/**
 	 * Row of latitude in impSurfFile
 	 */
@@ -421,18 +393,8 @@ public class CityGMLConverterConf {
 					inputGMLFolderDefault);
 			outputFolder = prop.getString("outputFolder", outputFolderDefault);
 
-			logNonPlanar = prop.getString("logNonPlanar", logNonPlanarDefault);
-			logNonPlanar = outputFolder + logNonPlanar;
-			logNoSurfButBuildFrac = prop.getString("logNoSurfButBuildFrac",
-					logNoSurfButBuildFracDefault);
-			logNoSurfButBuildFrac = outputFolder + logNoSurfButBuildFrac;
-
-			logNoGround = prop.getString("logNoGround", logNoGroundDefault);
-			logNoGround = outputFolder + logNoGround;
-			logNoRoof = prop.getString("logNoRoof", logNoRoofDefault);
-			logNoRoof = outputFolder + logNoRoof;
-			logNoWall = prop.getString("logNoWall", logNoWallDefault);
-			logNoWall = outputFolder + logNoWall;
+			logFile = prop.getString("logFile", logFileDefault);
+			logFile = outputFolder + logFile;
 
 			outputFile = prop.getString("outputFile", outputFileDefault);
 			outputFile = outputFolder + outputFile;

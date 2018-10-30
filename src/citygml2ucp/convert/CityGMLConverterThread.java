@@ -6,8 +6,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -126,11 +128,11 @@ class CityGMLConverterThread extends Thread {
 	/**
 	 * List of non-planar surfaces
 	 */
-	private LinkedList<String> NonPlanarList = new LinkedList<String>();
-	private LinkedList<String> surfWithoutDistances = new LinkedList<String>();
-	private LinkedList<String> noRoof = new LinkedList<String>();
-	private LinkedList<String> noWall = new LinkedList<String>();
-	private LinkedList<String> noGround = new LinkedList<String>();
+	private Map<String,List<String>> nonPlanar = new HashMap<>();
+	private Map<String,List<String>> surfaceWithoutDistance = new HashMap<>();
+	private List<String> noRoof = new LinkedList<>();
+	private List<String> noWall = new LinkedList<>();
+	private List<String> noGround = new LinkedList<>();
 
 	/**
 	 * Constructor.
@@ -180,6 +182,20 @@ class CityGMLConverterThread extends Thread {
 
 				Building building = (Building) co;
 
+				String buildingName = "";
+				for (Code nameElement : building.getName()) {
+					buildingName = buildingName.concat(nameElement.getValue());
+				}
+				String buildingId = building.getId();
+				if (conf.debugOutput) {
+					if (buildingName == "") {
+						System.out.println("  Found building with ID " + buildingId);
+					} else {
+						System.out.println("  Found building with ID " + buildingId + " and name " + buildingName);
+					}
+				}
+				
+				
 				// get bounding box to get the centre of building
 				BoundingShape boundingShape;
 				if (!building.isSetBoundedBy()) {
@@ -199,10 +215,10 @@ class CityGMLConverterThread extends Thread {
 
 				// analyse semantic elements of building: get walls, roofs and
 				// ground surfaces
-				List<WallSurface> walls = new ArrayList<WallSurface>();
-				List<RoofSurface> roofs = new ArrayList<RoofSurface>();
-				List<GroundSurface> grounds = new ArrayList<GroundSurface>();
-
+				List<WallSurface> walls = new ArrayList<>();
+				List<RoofSurface> roofs = new ArrayList<>();
+				List<GroundSurface> grounds = new ArrayList<>();
+				
 				if (building.getBoundedBySurface().size() > 0) {
 					// found boundary surfaces, they should cover building the buidling just fine,
 					// so building parts should not be required. Still, I haven't checked this case,
@@ -248,7 +264,7 @@ class CityGMLConverterThread extends Thread {
 					buildingRoofs = getAllSurfaces(roofs);
 					height = calcBuildingHeight(roofs, lc.get(2));
 				} else {
-					noRoof.add(co.getId());
+					noRoof.add(buildingId);
 					// maximum height = height of bounding of bounding box
 					height = uc.get(2) - lc.get(2);
 					buildingRoofs = new Polygon3d[0];
@@ -258,33 +274,27 @@ class CityGMLConverterThread extends Thread {
 				if (grounds.size() > 0) {
 					area = calcGroundSize(grounds);
 				} else {
-					noGround.add(co.getId());
+					noGround.add(buildingId);
 				}
 
 				Polygon3dWithVisibilities[] buildingWalls;
 				if (walls.size() > 0) {
 					buildingWalls = getAllSurfaces(walls);
-					checkCoplanarity(buildingWalls, co.getId());
+					// check coplanarity
+					List<String> nonPlanarLocal = new LinkedList<>();
+					for (Polygon3dWithVisibilities wall : buildingWalls) {
+						if (!wall.checkCoplanarity()) {
+							nonPlanarLocal.add(wall.id);
+						}
+					}
+					if (nonPlanarLocal.size() > 0) nonPlanar.put(buildingId, nonPlanarLocal); 
 				} else {
-					noWall.add(co.getId());
+					noWall.add(buildingId);
 					// ignore this building for visibility for now
 					buildingWalls = new Polygon3dWithVisibilities[0];
 				}
 
-				String name = "";
-				for (Code nameElement : building.getName()) {
-					name = name.concat(nameElement.getValue());
-				}
-				String id = building.getId();
-				if (conf.debugOutput) {
-					if (name == "") {
-						System.out.println("  Found building with ID " + id);
-					} else {
-						System.out.println("  Found building with ID " + id + " and name " + name);
-					}
-				}
-
-				localBuildings[bID] = new SimpleBuilding(name, id, location, height, area, buildingRoofs, buildingWalls,
+				localBuildings[bID] = new SimpleBuilding(buildingName, buildingId, location, height, area, buildingRoofs, buildingWalls,
 						uclm.getRLatIndex(rotatedCoordinates.getY()), uclm.getRLonIndex(rotatedCoordinates.getX()));
 
 			}
@@ -390,20 +400,6 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 		return surfaces;
-	}
-
-	/**
-	 * Check polygons independently for planarity.
-	 * 
-	 * @param surfaces Array of Polygons
-	 * @param coID     ID of the building which includes the polygon
-	 */
-	private void checkCoplanarity(Polygon3d[] surfaces, String coID) {
-		for (int i = 0; i < surfaces.length; i++) {
-			if (!surfaces[i].checkCoplanarity()) {
-				NonPlanarList.add(coID);
-			}
-		}
 	}
 
 	/**
@@ -542,9 +538,15 @@ class CityGMLConverterThread extends Thread {
 					System.out.println(" Building with ID " + building.id + " and name " + building.name);
 				}
 			}
+			
+			List <String> surfaceWithoutDistanceLocal = new LinkedList<>();
 			for (Polygon3dWithVisibilities sendingWall : building.walls) {
 
-				if (sendingWall.visibilities.size() == 0 || sendingWall.isHorizontal()) {
+				if (sendingWall.isHorizontal()) continue;
+				
+				if (sendingWall.visibilities.size() == 0) {
+					// add information for later
+					surfaceWithoutDistanceLocal.add(sendingWall.id);
 					continue;
 				}
 
@@ -604,6 +606,9 @@ class CityGMLConverterThread extends Thread {
 				nStreetSurfaces[iuc][indexAngle][building.irlat][building.irlon]++;
 
 			}
+			
+			// save the surfaces without distance for later
+			if (surfaceWithoutDistanceLocal.size() > 0) surfaceWithoutDistance.put(building.id, surfaceWithoutDistanceLocal);
 		}
 	}
 
@@ -647,13 +652,13 @@ class CityGMLConverterThread extends Thread {
 			}
 		}
 
-//		// save where not planar
-//		stats.addNonPlanar(id, NonPlanarList);
-//		// save when ground surface but no distance taken into account
-//		stats.addNoSurfButBuildFrac(id, surfWithoutDistances);
-//		stats.addNoGround(id, noGround);
-//		stats.addNoRoof(id, noRoof);
-//		stats.addNoWall(id, noWall);
+		// save where not planar
+		stats.addNonPlanar(nonPlanar);
+		// save when ground surface but no distance taken into account
+		stats.addNoSurfButBuildFrac(surfaceWithoutDistance);
+		stats.addNoGround(noGround);
+		stats.addNoRoof(noRoof);
+		stats.addNoWall(noWall);
 		for (SimpleBuilding building : buildings) {
 			stats.buildingHeights.add(building.height);
 			stats.buildingGrounds.add(building.area);
@@ -661,27 +666,27 @@ class CityGMLConverterThread extends Thread {
 		lock.unlock();
 	}
 
-	/**
-	 * Check for sane results.
-	 */
-	private void runChecks() {
-		for (int c = 0; c < uclm.getNuclasses(); c++) {
-			for (int j = 0; j < uclm.getJe_tot(); j++) {
-				for (int i = 0; i < uclm.getIe_tot(); i++) {
-					// if urban there
-					if (buildingAreaSum[c][j][i] > 1.e-13) {
-						int sumNStreetSurfaces = 0;
-						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
-							sumNStreetSurfaces += nStreetSurfaces[c][dir][j][i];
-						}
-						if (sumNStreetSurfaces == 0) {
-							surfWithoutDistances.add(Double.toString(buildingAreaSum[c][j][i]));
-						}
-					}
-				}
-			}
-		}
-	}
+//	/**
+//	 * Check for sane results.
+//	 */
+//	private void runChecks() {
+//		for (int c = 0; c < uclm.getNuclasses(); c++) {
+//			for (int j = 0; j < uclm.getJe_tot(); j++) {
+//				for (int i = 0; i < uclm.getIe_tot(); i++) {
+//					// if urban there
+//					if (buildingAreaSum[c][j][i] > 1.e-13) {
+//						int sumNStreetSurfaces = 0;
+//						for (int dir = 0; dir < uclm.getNstreedir(); dir++) {
+//							sumNStreetSurfaces += nStreetSurfaces[c][dir][j][i];
+//						}
+//						if (sumNStreetSurfaces == 0) {
+//							surfaceWithoutDistance.add(Double.toString(buildingAreaSum[c][j][i]));
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	/*
 	 * (non-Javadoc) Start the analysis.
@@ -700,7 +705,7 @@ class CityGMLConverterThread extends Thread {
 			buildingAreaSum[iuc][building.irlat][building.irlon] += building.area;
 		}
 
-		runChecks();
+		//runChecks();
 		saveToGlobal();
 
 	}
