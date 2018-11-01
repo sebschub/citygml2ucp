@@ -7,6 +7,9 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>CityGML to Urban Canopy Parameter converter</name>
   <description>This program create urban canopy parameters for usage with urban parametrization schemes in mesoscale climate models.</description>
+  <properties>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
