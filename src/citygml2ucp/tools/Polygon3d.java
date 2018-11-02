@@ -37,7 +37,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	/**
 	 * Vector normal to polygon
 	 */
-	Vector3d normalUnitVector;
+	Vector3dEnh normalUnitVector;
 
 	/**
 	 * base vector of plane of polygon
@@ -47,7 +47,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	/**
 	 * point in plane
 	 */
-	Point3d supportPoint;
+	Vector3d supportVector;
 	
 	/**
 	 * 3d points of polygon
@@ -105,7 +105,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 						j++;
 						continue;
 					}
-					double dist = (new Vector3d(points.get(i),
+					double dist = (new Vector3dEnh(points.get(i),
 							points.get(j))).length();
 					// System.out.println("i: " + i + "  j: " + j);
 					// System.out.println(dist);
@@ -120,19 +120,19 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 			}
 		}
 
-		normalUnitVector = new Vector3d();
+		normalUnitVector = new Vector3dEnh();
 
 		// find most rectangular vector
 		double min = Double.MAX_VALUE;
 		int imax = 0, jmax = 0;
 		Vector3d a, b;
 		for (int j = 0; j < points.size() - 1; j++) {
-			a = new Vector3d(points.get(j), points.get(j + 1));
+			a = new Vector3dEnh(points.get(j), points.get(j + 1));
 			for (int i = j + 1; i < points.size(); i++) {
 				if (i + 1 == points.size()) {
-					b = new Vector3d(points.get(i), points.get(0));
+					b = new Vector3dEnh(points.get(i), points.get(0));
 				} else {
-					b = new Vector3d(points.get(i), points
+					b = new Vector3dEnh(points.get(i), points
 							.get(i + 1));
 				}
 
@@ -153,11 +153,11 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 		normalUnitVector.normalize();
 
-		a = new Vector3d(points.get(jmax), points.get(jmax + 1));
+		a = new Vector3dEnh(points.get(jmax), points.get(jmax + 1));
 		if (imax + 1 == points.size()) {
-			b = new Vector3d(points.get(imax), points.get(0));
+			b = new Vector3dEnh(points.get(imax), points.get(0));
 		} else {
-			b = new Vector3d(points.get(imax), points.get(imax + 1));
+			b = new Vector3dEnh(points.get(imax), points.get(imax + 1));
 		}
 
 		a.normalize();
@@ -170,14 +170,14 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		directionUnitVector2 = new Vector3d(a);
 		directionUnitVector2.normalize();
 
-		supportPoint = points.get(0);
+		supportVector = new Vector3d(points.get(0));
 
 		// calculate 2d points relative to base vectors
 		double[] xcoord = new double[points.size()];
 		double[] ycoord = new double[points.size()];
 		for (int i = 0; i < points.size(); i++) {
-			Point3d pvs = new Point3d(points.get(i));
-			pvs.sub(supportPoint);
+			Vector3d pvs = new Vector3d(points.get(i));
+			pvs.sub(supportVector);
 			xcoord[i] = directionUnitVector1.dot(pvs);
 			ycoord[i] = directionUnitVector2.dot(pvs);
 		}
@@ -240,7 +240,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 				if (i == j) {
 					continue;
 				}
-				a = new Vector3d(points.get(i), points.get(j));
+				a = new Vector3dEnh(points.get(i), points.get(j));
 
 				double dot = Math.acos(a.dot(normalUnitVector) / a.length()) - Math.PI / 2.;
 
@@ -274,7 +274,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		b.scale(point.y);
 
 		a.add(b);
-		a.add(supportPoint);
+		a.add(supportVector);
 
 		return new Point3d(a);
 	}
@@ -291,7 +291,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 */
 	public boolean isHitBy(Point3d p1, Point3d p2) {
 		// vector of direction
-		Vector3d directionVectorp1p2 = new Vector3d(p1, p2);
+		Vector3d directionVectorp1p2 = new Vector3dEnh(p1, p2);
 
 		double dpdvnuv = normalUnitVector.dot(directionVectorp1p2);
 
@@ -315,10 +315,10 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		 * 
 		 */
 
-		Point3d planePoint = new Point3d(p1);
+		Vector3d planePoint = new Vector3d(p1);
 		Point3d temp = new Point3d(directionVectorp1p2);
 
-		double scaleFactor = (normalUnitVector.dot(supportPoint) - normalUnitVector.dot(p1)) / dpdvnuv;
+		double scaleFactor = (normalUnitVector.dot(supportVector) - normalUnitVector.dot(p1)) / dpdvnuv;
 
 		// possible point not on polygon?
 		if (scaleFactor < 0 || scaleFactor > 1) {
@@ -329,7 +329,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		planePoint.add(temp);
 
 		// Corresponding point in 2d plane		
-		planePoint.sub(supportPoint);
+		planePoint.sub(supportVector);
 		double x = directionUnitVector1.dot(planePoint);
 		double y = directionUnitVector2.dot(planePoint);
 
