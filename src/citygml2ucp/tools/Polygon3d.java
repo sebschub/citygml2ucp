@@ -37,16 +37,18 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	/**
 	 * Vector normal to polygon
 	 */
-	Vector3d uvn;
+	Vector3d normalUnitVector;
 
 	/**
 	 * base vector of plane of polygon
 	 */
-	Vector3d uv1, uv2;
+	Vector3d directionUnitVector1, directionUnitVector2;
+	
 	/**
 	 * point in plane
 	 */
-	Point3d pos;
+	Point3d supportPoint;
+	
 	/**
 	 * 3d points of polygon
 	 */
@@ -118,7 +120,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 			}
 		}
 
-		uvn = new Vector3d();
+		normalUnitVector = new Vector3d();
 
 		// find most rectangular vector
 		double min = Double.MAX_VALUE;
@@ -137,7 +139,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 				Vector3d temp = new Vector3d(a);
 				temp.cross(a, b);
 
-				uvn.add(temp);
+				normalUnitVector.add(temp);
 
 				double dp = Math.abs(a.dot(b)) / a.length()
 						/ b.length();
@@ -149,7 +151,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 			}
 		}
 
-		uvn.normalize();
+		normalUnitVector.normalize();
 
 		a = new Vector3d(points.get(jmax), points.get(jmax + 1));
 		if (imax + 1 == points.size()) {
@@ -159,25 +161,25 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		}
 
 		a.normalize();
-		uv1 = new Vector3d(a);
+		directionUnitVector1 = new Vector3d(a);
 
-		// get perpendenicular second vector;
+		// get perpendicular second vector;
 
 		a.scale(-a.dot(b));
 		a.add(b);
-		uv2 = new Vector3d(a);
-		uv2.normalize();
+		directionUnitVector2 = new Vector3d(a);
+		directionUnitVector2.normalize();
 
-		pos = points.get(0);
+		supportPoint = points.get(0);
 
 		// calculate 2d points relative to base vectors
 		double[] xcoord = new double[points.size()];
 		double[] ycoord = new double[points.size()];
 		for (int i = 0; i < points.size(); i++) {
 			Point3d pvs = new Point3d(points.get(i));
-			pvs.sub(pos);
-			xcoord[i] = uv1.dot(pvs);
-			ycoord[i] = uv2.dot(pvs);
+			pvs.sub(supportPoint);
+			xcoord[i] = directionUnitVector1.dot(pvs);
+			ycoord[i] = directionUnitVector2.dot(pvs);
 		}
 
 		polygon2d = new Polygon2d(xcoord, ycoord);
@@ -202,15 +204,15 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 * @return angle in degrees
 	 */
 	private double calculateAngle() {
-		if (Math.abs(uvn.x) < 1.e-12) {
-			if (Math.abs(uvn.y) < 1.e-12) {
+		if (Math.abs(normalUnitVector.x) < 1.e-12) {
+			if (Math.abs(normalUnitVector.y) < 1.e-12) {
 				angle = -1000.;
 				isHorizontal = true;
 			} else {
 				angle = 90.;
 			}
 		} else {
-			angle = Math.toDegrees(Math.atan(uvn.y / uvn.x));
+			angle = Math.toDegrees(Math.atan(normalUnitVector.y / normalUnitVector.x));
 		}
 		return angle;
 	}
@@ -240,7 +242,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 				}
 				a = new Vector3d(points.get(i), points.get(j));
 
-				double dot = Math.acos(a.dot(uvn) / a.length()) - Math.PI / 2.;
+				double dot = Math.acos(a.dot(normalUnitVector) / a.length()) - Math.PI / 2.;
 
 				if (dot > max) {
 					max = dot;
@@ -265,14 +267,14 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	}
 
 	protected Point3d get3dFrom2d(Point2d point) {
-		Vector3d a = new Vector3d(uv1);
-		Vector3d b = new Vector3d(uv2);
+		Vector3d a = new Vector3d(directionUnitVector1);
+		Vector3d b = new Vector3d(directionUnitVector2);
 
 		a.scale(point.x);
 		b.scale(point.y);
 
 		a.add(b);
-		a.add(pos);
+		a.add(supportPoint);
 
 		return new Point3d(a);
 	}
@@ -289,37 +291,49 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	 */
 	public boolean isHitBy(Point3d p1, Point3d p2) {
 		// vector of direction
-		Vector3d rv = new Vector3d(p1, p2);
+		Vector3d directionVectorp1p2 = new Vector3d(p1, p2);
 
-		double dprv = uvn.dot(rv);
-		// System.out.println(dprv);
+		double dpdvnuv = normalUnitVector.dot(directionVectorp1p2);
 
-		if (Math.abs(dprv) < 1e-10) {
+		// plane parallel to directionVectorp1p2 ?
+		if (Math.abs(dpdvnuv)/directionVectorp1p2.length() < 1e-10) {
 			return false;
 		}
 
-		// calc point which is on the plane
+		/* Calculate potential point on the plane of this polygon
+		 * 
+		 * For a point on the plane of this polygon
+		 *     planePoint = supportPoint + a*directionUnitVector1 + b*directionUnitVector2
+		 * Point between p1 and p2 
+		 *     planePoint = p1 + scaleFactor * directionVectorp1p2
+		 * with 0 <= scaleFactor <= 1
+		 *     
+		 * directionUnitVectorX and normalUnitVector are perpendicular, so
+		 *     normalUnitVector*supportPoint = normalUnitVector*p1 + scaleFactor * normalUnitVector*directionVectorp1p2
+		 * thus,
+		 *     scaleFactor = (normalUnitVector*supportPoint - normalUnitVector*p1) /  normalUnitVector*directionVectorp1p2
+		 * 
+		 */
 
 		Point3d planePoint = new Point3d(p1);
-		Point3d temp = new Point3d(rv);
+		Point3d temp = new Point3d(directionVectorp1p2);
 
-		double scaleFactor = (uvn.dot(pos) - uvn.dot(p1)) / dprv;
+		double scaleFactor = (normalUnitVector.dot(supportPoint) - normalUnitVector.dot(p1)) / dpdvnuv;
 
+		// possible point not on polygon?
 		if (scaleFactor < 0 || scaleFactor > 1) {
 			return false;
 		}
 
 		temp.scale(scaleFactor);
-
 		planePoint.add(temp);
 
-		planePoint.sub(pos);
+		// Corresponding point in 2d plane		
+		planePoint.sub(supportPoint);
+		double x = directionUnitVector1.dot(planePoint);
+		double y = directionUnitVector2.dot(planePoint);
 
-		// Corresponding point2d in plane
-
-		double x = uv1.dot(planePoint);
-		double y = uv2.dot(planePoint);
-
+		// check if possible point is in 2d polygon
 		return polygon2d.contains(x, y);
 	}
 

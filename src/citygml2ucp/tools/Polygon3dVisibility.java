@@ -86,12 +86,12 @@ public class Polygon3dVisibility implements Comparable<Polygon3dVisibility> {
 
 		connect.sub(receiving.getCentroid(), sending.getCentroid());
 		double l1 = connect.length();
-		double l2 = sending.uvn.length();
+		double l2 = sending.normalUnitVector.length();
 
 		if (l1 < 1.e-12 || l2 < 1.e-12) {
 			cosAngle = 0.;
 		} else {
-			cosAngle = connect.dot(sending.uvn) / l1 / l2;
+			cosAngle = connect.dot(sending.normalUnitVector) / l1 / l2;
 		}
 		isSetCosAngle = true;
 		return cosAngle;
