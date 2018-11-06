@@ -100,12 +100,8 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	public double minHeight = Double.MAX_VALUE;
 
-	private boolean justClasses;
-
 	private void initalizeUrbanFields(int n_uclass, double[] ang_udir,
-			int[] ke_uhl, double[] height, boolean justClasses) {
-
-		this.justClasses = justClasses;
+			int[] ke_uhl, double[] height) {
 
 		if (n_uclass < 1) {
 			throw new IllegalArgumentException("n_uclass must be positive");
@@ -200,8 +196,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"building_fraction",
 				"fraction of building surface", "1",
 				"rotated_pole");
-		if (!justClasses)
-			addToWrite(this.fr_build);
+		addToWrite(this.fr_build);
 
 		ldim.add(1, this.ang_udir);
 		// ldim is now nucdim, angle_udir, latdim, londim
@@ -240,29 +235,27 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		super();
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
 				new int[] { 10 }, new double[] { 0., 3., 7., 10., 13., 19.,
-						25., 30., 38., 45. }, false);
+						25., 30., 38., 45. });
 	}
 
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height, boolean justClasses)
+			double[] height)
 			throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot);
-		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height,
-				justClasses);
+		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
 	}
 
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height, boolean justClasses, List<String> confItems,
+			double[] height, List<String> confItems,
 			List<String> confValues) throws IllegalArgumentException {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot, confItems, confValues);
-		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height,
-				justClasses);
+		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
 	}
 
 	
@@ -726,14 +719,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 							setUndef = false;
 						}
 					}
-					if (justClasses) {
-						setUndef = (getUrbanFrac(lat, lon) < 1.e-12)
-								|| setUndef;
-					} else {
-						setUndef = (getBuildingFrac(uc, lat, lon) < 1.e-12)
-								|| (getUrbanFrac(lat, lon) < 1.e-12)
-								|| setUndef;
-					}
+					setUndef = (getBuildingFrac(uc, lat, lon) < 1.e-12)
+							|| (getUrbanFrac(lat, lon) < 1.e-12)
+							|| setUndef;
 					if (setUndef) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
 							setBuildingWidth(uc, sd, lat, lon,

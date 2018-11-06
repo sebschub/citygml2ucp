@@ -104,51 +104,6 @@ public class CityGMLConverterConf {
 			30., 35., 40., 45. };
 
 	/**
-	 * Use entered parameters
-	 */
-	boolean fakeParameter;
-	private static final boolean fakeParameterDefault = false;
-	
-	double buildingWidth;
-	private static final double buildingWidthDefault = 10;
-	
-	double streetWidth;
-	private static final double streetWidthDefault = 20;
-	
-	double[] buildingProp;
-	private static final double buildingPropDefault[] = { 0., 0.05, 0.25, 0.10, 0.20, 0.20, 0.10, 0.05, 0.05, 0.};
-
-	boolean asciiInput;
-	private static final boolean asciiInputDefault = false;
-	
-	String urbFile;
-	private static final String urbFileDefault = "urb";
-	
-	String strFile;
-	private static final String strFileDefault = "str";
-	
-	String bldFile;
-	private static final String bldFileDefault = "bld";
-	
-	String stwFile;
-	private static final String stwFileDefault = "stw";
-
-	String stdFile;
-	private static final String stdFileDefault = "std";
-	
-	String blhFile;
-	private static final String blhFileDefault = "blh";
-	
-	boolean useClasses;
-	private static final boolean useClassesDefault = false;
-	
-	int nClass;
-	private static final int nClassDefault = 6;
-	
-	int[] classIndex;
-	private static final int classIndexDefault[] = {6,7,8,9,10,11};
-	
-	/**
 	 * Input coordinate system for proj4 transformation
 	 */
 	String proj4code = "+init=epsg:3068";
@@ -338,38 +293,6 @@ public class CityGMLConverterConf {
 			ke_uhl = prop.getIntArray("ke_uhl", ke_uhlDefault);
 			hhl_uhl = prop.getDoubleArray("hhl_uhl", hhl_uhlDefault);
 
-			fakeParameter = prop.getBoolean("fakeParameter", fakeParameterDefault);
-			
-			useClasses = prop.getBoolean("useClasses", useClassesDefault);
-			if (fakeParameter&&useClasses) {
-				throw new Exception("useClasses and fakeParameter cannot be true at the same time");
-			}
-			
-			if (fakeParameter) {
-				buildingWidth = prop.getDouble("buildingWidth", buildingWidthDefault);
-				streetWidth = prop.getDouble("streetWidth", streetWidthDefault);
-				buildingProp = prop.getDoubleArray("buildingProp", buildingPropDefault);
-				if (buildingProp.length!=hhl_uhl.length) {
-					throw new Exception("Wrong height number of height levels");
-				}
-			}
-			
-			if (useClasses) {
-				nClass = prop.getInt("nClass", nClassDefault);
-				classIndex = prop.getIntArray("classIndex", classIndexDefault );
-			}
-			
-			asciiInput = prop.getBoolean("asciiInput", asciiInputDefault);
-			if (asciiInput) {
-				urbFile = prop.getString("urbFile", urbFileDefault);
-				strFile = prop.getString("strFile", strFileDefault);
-				bldFile = prop.getString("bldFile", bldFileDefault);
-				
-				stwFile = prop.getString("stwFile", stwFileDefault);
-				stdFile = prop.getString("stdFile", stdFileDefault);
-				blhFile = prop.getString("blhFile", blhFileDefault);
-			}
-						
 			proj4code = prop.getString("proj4code", proj4codeDefault);
 
 			maxbuild_radius = prop.getDouble("maxbuild_radius",
