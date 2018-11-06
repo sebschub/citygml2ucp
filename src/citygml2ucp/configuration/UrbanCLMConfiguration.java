@@ -248,17 +248,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
 	}
 
-	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
-			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height, List<String> confItems,
-			List<String> confValues) throws IllegalArgumentException {
-		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
-				je_tot, confItems, confValues);
-		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);
-	}
-
-	
 	public int getNuclasses() {
 		return n_uclass.getLength();
 	}

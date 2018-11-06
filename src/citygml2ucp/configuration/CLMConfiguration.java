@@ -1,10 +1,8 @@
 package citygml2ucp.configuration;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import citygml2ucp.tools.DimensionsAndVariables;
 import citygml2ucp.tools.NetCDFData;
 import citygml2ucp.tools.WritableAxis;
 import citygml2ucp.tools.WritableDimension;
@@ -12,8 +10,6 @@ import citygml2ucp.tools.WritableField;
 import citygml2ucp.tools.WritableFieldDouble;
 import citygml2ucp.tools.WritableRotatedPole;
 import ucar.ma2.Index;
-import ucar.nc2.*;
-import ucar.nc2.units.DateFormatter;
 import ucar.unidata.geoloc.LatLonPoint;
 
 /**
@@ -58,8 +54,6 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	protected final WritableField lat, lon;
 
-	private List<String> confItems, confValues;
-	
 	/**
 	 * Initialize with default values of CLM
 	 * 
@@ -68,25 +62,6 @@ public class CLMConfiguration extends NetCDFData {
 		this(32.5, -170.0, 0.008, 0.008, -7.972, -1.252, 51, 51);
 	}
 
-	/**
-	 * Initialize with custom values and additional setting fields, checked for
-	 * validity
-	 * 
-	 * @throws IllegalArgumentException
-	 *             One of the arguments is not in the correct range
-	 */
-	public CLMConfiguration(double pollat, double pollon, double dlat,
-			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot, List<String> confItems, List<String> confValues)
-			throws IllegalArgumentException {
-		this(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot, je_tot);
-		if (confItems.size() != confValues.size())
-			throw new IllegalArgumentException(
-					"Number of setting names and values are not equal");
-		this.confItems = confItems;
-		this.confValues = confValues;
-	}
-	
 	/**
 	 * Initialize with custom values, checked for validity
 	 * 
@@ -189,43 +164,6 @@ public class CLMConfiguration extends NetCDFData {
 				lon.set(ilon.set(j, i), llp.getLongitude());
 			}
 		}
-	}
-
-	/**
-	 * Add additional parameters (institute, convention, date) to NetCDF file.
-	 * 
-	 * @param ncfile
-	 *            NetCDF file
-	 */
-	protected void addGlobalAttributesToNetCDFfile(NetcdfFileWriter ncfile) {
-		ncfile.addGroupAttribute(null, new Attribute("institution", "PIK"));
-		ncfile.addGroupAttribute(null, new Attribute("Conventions", "CF-1.4"));
-		ncfile.addGroupAttribute(null, new Attribute("conventionsURL",
-				"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4"));
-
-		DateFormatter df = new DateFormatter();
-		ncfile.addGroupAttribute(null, new Attribute("creation_date", df
-				.toDateTimeString(new Date())));
-
-		if (confItems!=null) {
-			for (int i = 0; i < confItems.size(); i++) {
-				ncfile.addGroupAttribute(null, new Attribute(confItems.get(i), confValues.get(i)));
-			}
-		}
-		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * citygml2ucp.configuration.NetCDFData#addVariablesToNetCDFfile(ucar
-	 * .nc2.NetcdfFileWriteable)
-	 */
-	@Override
-	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
-		addGlobalAttributesToNetCDFfile(ncfile);
-		return super.addToNetCDFfile(ncfile);
 	}
 
 	/**

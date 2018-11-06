@@ -22,6 +22,9 @@ import org.proj4.PJ;
 
 import citygml2ucp.configuration.UrbanCLMConfiguration;
 import citygml2ucp.tools.GMLFilenameFilter;
+import ucar.nc2.Attribute;
+import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.units.DateFormatter;
 
 /**
  * Main programme.
@@ -98,7 +101,7 @@ public class CityGMLConverter {
 		UrbanCLMConfiguration uclm = new UrbanCLMConfiguration(conf.pollat,
 				conf.pollon, conf.dlat, conf.dlon, conf.startlat_tot,
 				conf.startlon_tot, conf.ie_tot, conf.je_tot, conf.n_uclass,
-				conf.angle_udir, conf.ke_uhl, conf.hhl_uhl, conf.confItems, conf.confValues);
+				conf.angle_udir, conf.ke_uhl, conf.hhl_uhl);
 
 		PJ sourcePJ = new PJ(conf.proj4code);
 		PJ targetPJ = new PJ("+init=epsg:4326 +latlong");
@@ -194,14 +197,28 @@ public class CityGMLConverter {
 			uclm.reduceHeight(conf.heightReductionP);
 		}
 
-		stats.writeLogs();
-		stats.toNetCDFfile(conf.statsFile);
-
 		long lasted = new Date().getTime() - startTime;
-		System.out.printf("Urban parameter calculation took %.3f minutes.%n",
+		System.out.printf("Urban parameter calculation took %.1f minutes%n",
 				lasted / 1000. / 60.);
+		
+		System.out.println("Creating output");
+		// text logs
+		stats.writeLogs();
+		
+		// building statistics
+		NetcdfFileWriter ncfile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, conf.statsFile);
+		stats.toNetCDFfile(ncfile);
+		ncfile.close();
+		
+		// main output
+		ncfile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, conf.outputFile);
+		// Add additional parameters to NetCDF file.
+		DateFormatter dfDate = new DateFormatter();
+		ncfile.addGroupAttribute(null, new Attribute("creation_date", dfDate.toDateTimeString(new Date())));
+		conf.toNetCDFfile(ncfile);
+		uclm.toNetCDFfile(ncfile);
+		ncfile.close();
 
-		uclm.toNetCDFfile(conf.outputFile);
-
+		System.out.println("Finished");
 	}
 }

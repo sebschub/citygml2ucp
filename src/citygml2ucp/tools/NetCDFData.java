@@ -49,9 +49,8 @@ public class NetCDFData implements NetCDFWritable {
 	 * @throws IOException
 	 * @throws InvalidRangeException
 	 */
-	public void toNetCDFfile(String filename) throws IOException,
+	public void toNetCDFfile(NetcdfFileWriter ncfile) throws IOException,
 			InvalidRangeException {
-		NetcdfFileWriter ncfile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, filename);
 		// check whether data is larger than 2GiB (with some safety margin)
 		if (dataSize > 1900000000L) {
 			ncfile.setLargeFile(true);
@@ -61,7 +60,6 @@ public class NetCDFData implements NetCDFWritable {
 		addToNetCDFfile(ncfile);
 		ncfile.create();
 		writeToNetCDFfile(ncfile);
-		ncfile.close();
 	}
 
 	@Override

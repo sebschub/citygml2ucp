@@ -3,11 +3,14 @@ package citygml2ucp.convert;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
 import citygml2ucp.tools.PropertiesEnh;
+import ucar.nc2.Attribute;
+import ucar.nc2.NetcdfFileWriter;
 
 /**
  * Reading and storing of CityGMLConverter configuration.
@@ -364,4 +367,10 @@ public class CityGMLConverterConf {
 
 	}
 
+	public void toNetCDFfile(NetcdfFileWriter ncfile) throws IOException {
+		for (int i = 0; i < confItems.size(); i++) {
+			ncfile.addGroupAttribute(null, new Attribute(confItems.get(i), confValues.get(i)));
+		}
+	}
+	
 }
