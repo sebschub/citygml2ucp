@@ -62,7 +62,7 @@ public class CityGMLConverter {
 			}
 			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
 			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
-			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1) / 100.);
+			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1));
 			lScanner.close();
 		}
 		scanner.close();
