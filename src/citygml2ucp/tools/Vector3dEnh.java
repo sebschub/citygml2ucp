@@ -5,7 +5,7 @@ import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-public class Vector3dEnh extends Vector3d {
+public class Vector3dEnh extends Vector3d implements Comparable<Vector3dEnh>{
 
 	/**
 	 * 
@@ -50,6 +50,20 @@ public class Vector3dEnh extends Vector3d {
 	
 	public final double dot(Tuple3d v1) {
 		return (this.x * v1.x + this.y * v1.y + this.z * v1.z);
+	}
+
+	@Override
+	public int compareTo(Vector3dEnh o) {
+		if (o == null) {
+			throw new NullPointerException();
+		}
+
+		if (o.length() > this.length())
+			return -1;
+		if (o.length() < this.length())
+			return 1;
+
+		return 0;
 	}
 	
 }

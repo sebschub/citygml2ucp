@@ -1,5 +1,6 @@
 package citygml2ucp.tools;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,35 +21,30 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
  * 
  */
 public class Polygon3d extends ClosedSurface<Point3d> {
-	
+
 	public final String id;
 
 	/**
-	 * points with this distance are supposed to be equal and one is remove
-	 */
-	private static double equalDistance = 0.00001;
-
-	/**
-	 * the angle that the angle between normal and one in the "plane" is allowed
-	 * to differ
+	 * the angle that the angle between normal and one in the "plane" is allowed to
+	 * differ
 	 */
 	private static double diffAngle = 5. / 180. * Math.PI;
 
 	/**
 	 * Vector normal to polygon
 	 */
-	Vector3dEnh normalUnitVector;
+	Vector3d normalUnitVector;
 
 	/**
 	 * base vector of plane of polygon
 	 */
 	Vector3d directionUnitVector1, directionUnitVector2;
-	
+
 	/**
 	 * point in plane
 	 */
 	Vector3d supportVector;
-	
+
 	/**
 	 * 3d points of polygon
 	 */
@@ -71,104 +67,63 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	/**
 	 * Constructor.
 	 * 
-	 * @param surfaceProperty
-	 *            Describes the polygon
+	 * @param surfaceProperty Describes the polygon
 	 */
 	public Polygon3d(String id, SurfaceProperty surfaceProperty) {
 		this.id = id;
-		
+
 		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
 
 		points = new LinkedList<Point3d>();
 		// System.out.println(coord.size()/3);
 		for (int i = 0; i < coord.size(); i += 3) {
-			points.add(new Point3d(coord.get(i), coord.get(i + 1),
-					coord.get(i + 2)));
+			points.add(new Point3d(coord.get(i), coord.get(i + 1), coord.get(i + 2)));
 		}
 
 		/*
 		 * // for testing points2 = new LinkedList<Point3d>(points);
 		 */
 
-		// remove points which are very near to each other. Since
-		// the points ought to be planar, these vector between one
-		// correct and one "faulty" point is not in the plane
+		// create list of all possible
+		List<Vector3dEnh> connectionsList = new LinkedList<>();
 
-		// the last one is always the first one, don't delete it
-		{
-			int i = 0;
-			int j = 0;
-
-			while (i < points.size() - 1) {
-				while (j < points.size() - 1) {
-					if (i == j) {
-						j++;
-						continue;
-					}
-					double dist = (new Vector3dEnh(points.get(i),
-							points.get(j))).length();
-					// System.out.println("i: " + i + "  j: " + j);
-					// System.out.println(dist);
-					if (dist < equalDistance) {
-						points.remove(j);
-					} else {
-						j++;
-					}
-				}
-				i++;
-				j = 0;
+		for (int j = 0; j < points.size() - 2; j++) {
+			for (int i = j + 1; i < points.size() - 1; i++) {
+				connectionsList.add(new Vector3dEnh(points.get(i), points.get(j)));
 			}
 		}
 
-		normalUnitVector = new Vector3dEnh();
+		// sort according to length
+		Collections.sort(connectionsList, Collections.reverseOrder());
 
-		// find most rectangular vector
-		double min = Double.MAX_VALUE;
-		int imax = 0, jmax = 0;
-		Vector3d a, b;
-		for (int j = 0; j < points.size() - 1; j++) {
-			a = new Vector3dEnh(points.get(j), points.get(j + 1));
-			for (int i = j + 1; i < points.size(); i++) {
-				if (i + 1 == points.size()) {
-					b = new Vector3dEnh(points.get(i), points.get(0));
-				} else {
-					b = new Vector3dEnh(points.get(i), points
-							.get(i + 1));
-				}
+		// longest vector is first direction vector
+		directionUnitVector1 = new Vector3d(connectionsList.get(0));
+		directionUnitVector1.normalize();
 
-				Vector3d temp = new Vector3d(a);
-				temp.cross(a, b);
-
-				normalUnitVector.add(temp);
-
-				double dp = Math.abs(a.dot(b)) / a.length()
-						/ b.length();
-				if (dp < min) {
-					min = dp;
-					imax = i;
-					jmax = j;
-				}
+		// consider the second direction vector from the largest rest, smaller vectors
+		// might be dominated by points not in the plane (which is not according to
+		// standard)
+		int maxIndex = (int) (connectionsList.size() * 0.5);
+		double mostOrthogonalCos = 1.;
+		for (int i = 1; i <= maxIndex; i++) {
+			double absCos = Math.abs(directionUnitVector1.dot(connectionsList.get(i))
+					/ connectionsList.get(i).length());
+			if (absCos < mostOrthogonalCos) {
+				directionUnitVector2 = connectionsList.get(i);
+				mostOrthogonalCos = absCos;
 			}
 		}
-
-		normalUnitVector.normalize();
-
-		a = new Vector3dEnh(points.get(jmax), points.get(jmax + 1));
-		if (imax + 1 == points.size()) {
-			b = new Vector3dEnh(points.get(imax), points.get(0));
-		} else {
-			b = new Vector3dEnh(points.get(imax), points.get(imax + 1));
-		}
-
-		a.normalize();
-		directionUnitVector1 = new Vector3d(a);
-
-		// get perpendicular second vector;
-
-		a.scale(-a.dot(b));
-		a.add(b);
-		directionUnitVector2 = new Vector3d(a);
+		
+		// make directionUnitVector1 and directionUnitVector2 orthogonal
+		Vector3d tempVector = new Vector3d(directionUnitVector1);
+		tempVector.scale(-tempVector.dot(directionUnitVector2));
+		directionUnitVector2.add(tempVector);	
+		
 		directionUnitVector2.normalize();
+		
+		normalUnitVector = new Vector3d();
+		normalUnitVector.cross(directionUnitVector1, directionUnitVector2);
+		normalUnitVector.normalize();
 
 		supportVector = new Vector3d(points.get(0));
 
@@ -183,12 +138,12 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		}
 
 		polygon2d = new Polygon2d(xcoord, ycoord);
-		
+
 		this.signedArea = this.calcSignedArea();
 		this.centroid = this.calcCentroid();
 		this.angle = this.calculateAngle();
 	}
-	
+
 	/**
 	 * Get the angle of normal vector projected on horizontal plane.
 	 * 
@@ -197,7 +152,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 	public double getAngle() {
 		return this.angle;
 	}
-	
+
 	/**
 	 * Calculate the angle of normal vector projected on horizontal plane.
 	 * 
@@ -217,11 +172,10 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		return angle;
 	}
 
-	
-	public List<Point3d> getPoints(){
-		return this.points;		
+	public List<Point3d> getPoints() {
+		return this.points;
 	}
-	
+
 	/**
 	 * Is the polygon horizontal?
 	 * 
@@ -278,15 +232,12 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 		return new Point3d(a);
 	}
-	
-	
+
 	/**
 	 * Does the line between two points hit the polygon?
 	 * 
-	 * @param p1
-	 *            One point
-	 * @param p2
-	 *            Other point
+	 * @param p1 One point
+	 * @param p2 Other point
 	 * @return hit?
 	 */
 	public boolean isHitBy(Point3d p1, Point3d p2) {
@@ -296,29 +247,30 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		double dpdvnuv = normalUnitVector.dot(directionVectorp1p2);
 
 		// plane parallel to directionVectorp1p2 ?
-		if (Math.abs(dpdvnuv)/directionVectorp1p2.length() < 1e-10) {
+		if (Math.abs(dpdvnuv) / directionVectorp1p2.length() < 1e-10) {
 			return false;
 		}
 
-		/* Calculate potential point on the plane of this polygon
+		/*
+		 * Calculate potential point on the plane of this polygon
 		 * 
-		 * For a point on the plane of this polygon
-		 *     planePoint = supportPoint + a*directionUnitVector1 + b*directionUnitVector2
-		 * Point between p1 and p2 
-		 *     planePoint = p1 + scaleFactor * directionVectorp1p2
-		 * with 0 <= scaleFactor <= 1
-		 *     
+		 * For a point on the plane of this polygon planePoint = supportPoint +
+		 * a*directionUnitVector1 + b*directionUnitVector2 Point between p1 and p2
+		 * planePoint = p1 + scaleFactor * directionVectorp1p2 with 0 <= scaleFactor <=
+		 * 1
+		 * 
 		 * directionUnitVectorX and normalUnitVector are perpendicular, so
-		 *     normalUnitVector*supportPoint = normalUnitVector*p1 + scaleFactor * normalUnitVector*directionVectorp1p2
-		 * thus,
-		 *     scaleFactor = (normalUnitVector*supportPoint - normalUnitVector*p1) /  normalUnitVector*directionVectorp1p2
+		 * normalUnitVector*supportPoint = normalUnitVector*p1 + scaleFactor *
+		 * normalUnitVector*directionVectorp1p2 thus, scaleFactor =
+		 * (normalUnitVector*supportPoint - normalUnitVector*p1) /
+		 * normalUnitVector*directionVectorp1p2
 		 * 
 		 */
 
 		Vector3d planePoint = new Vector3d(p1);
 		Point3d temp = new Point3d(directionVectorp1p2);
 
-		double scaleFactor = (normalUnitVector.dot(supportVector) - normalUnitVector.dot(p1)) / dpdvnuv;
+		double scaleFactor = (normalUnitVector.dot(supportVector) - normalUnitVector.dot(new Vector3d(p1))) / dpdvnuv;
 
 		// possible point not on polygon?
 		if (scaleFactor < 0 || scaleFactor > 1) {
@@ -328,7 +280,7 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		temp.scale(scaleFactor);
 		planePoint.add(temp);
 
-		// Corresponding point in 2d plane		
+		// Corresponding point in 2d plane
 		planePoint.sub(supportVector);
 		double x = directionUnitVector1.dot(planePoint);
 		double y = directionUnitVector2.dot(planePoint);
