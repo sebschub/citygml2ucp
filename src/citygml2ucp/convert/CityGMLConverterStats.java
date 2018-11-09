@@ -82,12 +82,10 @@ public class CityGMLConverterStats extends NetCDFData {
 	/**
 	 * Constructor.
 	 * 
-	 * @param flist
-	 *            List of analysed files
 	 * @param conf
 	 *            CityGMLConverter configuration
 	 */
-	public CityGMLConverterStats(File[] flist, CityGMLConverterConf conf) {
+	public CityGMLConverterStats(CityGMLConverterConf conf) {
 		this.conf = conf;
 
 		unlimetedDimension = new WritableDimension("counter", 0, true, true,

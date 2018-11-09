@@ -2,7 +2,11 @@ package citygml2ucp.convert;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List; //import java.util.ArrayList;
@@ -21,7 +25,6 @@ import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.proj4.PJ;
 
 import citygml2ucp.configuration.UrbanCLMConfiguration;
-import citygml2ucp.tools.GMLFilenameFilter;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.units.DateFormatter;
@@ -111,17 +114,18 @@ public class CityGMLConverter {
 		CityGMLBuilder builder = ctx.createCityGMLBuilder();
 		CityGMLInputFactory in = builder.createCityGMLInputFactory();
 
-		File[] flist;
-		File folder = new File(conf.inputGMLFolder);
-		if (folder.isDirectory()) {
-			flist = new File(conf.inputGMLFolder)
-					.listFiles(new GMLFilenameFilter());
+		List<Path> paths = new ArrayList<>();
+		Path folder = Path.of(conf.inputGMLFolder);
+		if (Files.isDirectory(folder)) {
+			Files.walk(Paths.get(conf.inputGMLFolder))
+					.filter((p) -> p.toFile().getAbsolutePath().toLowerCase().endsWith("gml")
+							|| p.toFile().getAbsolutePath().toLowerCase().endsWith("xml"))
+					.forEach((p) -> paths.add(p));
 		} else {
-			flist = new File[1];
-			flist[0] = folder;
+			paths.add(folder);
 		}
 
-		CityGMLConverterStats stats = new CityGMLConverterStats(flist, conf);
+		CityGMLConverterStats stats = new CityGMLConverterStats(conf);
 
 		readImpSurfaceFile(conf, uclm);
 
@@ -137,16 +141,16 @@ public class CityGMLConverter {
 			cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats, df);
 			System.out.println("Reading files");
 		}
-		int flistLengthLength = (int)(Math.log10(flist.length)+1);
+		int pathsLengthLength = (int)(Math.log10(paths.size())+1);
 		// here loop over citygmlfiles
-		for (int i = 0; i < flist.length; i++) {
+		for (int i = 0; i < paths.size(); i++) {
 
-			File file = flist[i];
+			Path file = paths.get(i);
 
-			System.out.println(" File " + String.format("%" + flistLengthLength + "d",i + 1) + "/"
-					+ flist.length + ": " + file);
+			System.out.println(" File " + String.format("%" + pathsLengthLength + "d",i + 1) + "/"
+					+ paths.size() + ": " + file);
 
-			CityGMLReader reader = in.createCityGMLReader(file);
+			CityGMLReader reader = in.createCityGMLReader(file.toFile());
 			while (reader.hasNext()) {
 				CityGML citygml = reader.nextFeature();
 
