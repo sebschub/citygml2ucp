@@ -121,10 +121,15 @@ public class CityGMLConverter {
 					.filter((p) -> p.toFile().getAbsolutePath().toLowerCase().endsWith("gml")
 							|| p.toFile().getAbsolutePath().toLowerCase().endsWith("xml"))
 					.forEach((p) -> paths.add(p));
+			if (paths.size() == 0) {
+				System.err.println("No gml or xml files in " + conf.inputGMLFolder + " found");
+				System.err.println("Stopping now");
+				System.exit(10);
+			}
 		} else {
 			paths.add(folder);
 		}
-
+		
 		CityGMLConverterStats stats = new CityGMLConverterStats(conf);
 
 		readImpSurfaceFile(conf, uclm);
