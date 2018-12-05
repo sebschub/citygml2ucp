@@ -73,7 +73,8 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		this.id = id;
 
 		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
-
+		System.out.println("New polygon");
+		System.out.println(coord);
 		points = new LinkedList<Point3d>();
 		// System.out.println(coord.size()/3);
 		for (int i = 0; i < coord.size(); i += 3) {
@@ -116,6 +117,8 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		
 		// make directionUnitVector1 and directionUnitVector2 orthogonal
 		Vector3d tempVector = new Vector3d(directionUnitVector1);
+		System.out.println(tempVector);
+		System.out.println(directionUnitVector2);
 		tempVector.scale(-tempVector.dot(directionUnitVector2));
 		directionUnitVector2.add(tempVector);	
 		
