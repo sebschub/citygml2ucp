@@ -114,6 +114,11 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 			}
 		}
 		
+		// if the calculation of orthogonal vectors did not succeed, it's probably due to faulty polygon
+		if (directionUnitVector2 == null) {
+			throw new IllegalArgumentException("Calculation of directionUnitVector2 failed. Illegal polygon.");
+		}
+		
 		// make directionUnitVector1 and directionUnitVector2 orthogonal
 		Vector3d tempVector = new Vector3d(directionUnitVector1);
 		tempVector.scale(-tempVector.dot(directionUnitVector2));
