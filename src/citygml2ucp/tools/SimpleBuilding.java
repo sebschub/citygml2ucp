@@ -1,5 +1,7 @@
 package citygml2ucp.tools;
 
+import java.util.List;
+
 import javax.vecmath.Point3d;
 
 public class SimpleBuilding {
@@ -12,14 +14,14 @@ public class SimpleBuilding {
 
 	public final double area;
 
-	public final Polygon3d[] roofs;
+	public final List<Polygon3dWithVisibilities> roofs;
 
-	public final Polygon3dWithVisibilities[] walls;
+	public final List<Polygon3dWithVisibilities> walls;
 
 	public final int irlat, irlon;
 
-	public SimpleBuilding(String name, String id, Point3d location, double height, double area, Polygon3d[] roofs,
-			Polygon3dWithVisibilities[] walls, int irlat, int irlon) {
+	public SimpleBuilding(String name, String id, Point3d location, double height, double area, List<Polygon3dWithVisibilities> roofs,
+			List<Polygon3dWithVisibilities> walls, int irlat, int irlon) {
 		this.name = name;
 		this.id = id;
 		this.location = location;

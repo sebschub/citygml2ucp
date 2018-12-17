@@ -32,6 +32,11 @@ import ucar.nc2.NetcdfFileWriter;
 public class CityGMLConverterStats extends NetCDFData {
 
 	/**
+	 * Map for all invalid polygons
+	 */
+	private Map<String,List<String>> invalid = new HashMap<>();
+	
+	/**
 	 * Map for all non planar polygons
 	 */
 	private Map<String,List<String>> nonPlanar = new HashMap<>();
@@ -93,6 +98,15 @@ public class CityGMLConverterStats extends NetCDFData {
 		toWrite.add(unlimetedDimension);
 	}
 
+	/**
+	 * Add invalid polygon information.
+	 * 
+	 * @param invalid
+	 *            Map of building id and list of surface ids that include invalid polygons
+	 */
+	public void addInvalid(Map<String,List<String>> invalid) {
+		this.invalid.putAll(invalid);
+	}
 	
 	/**
 	 * Add non planar information.
@@ -184,6 +198,7 @@ public class CityGMLConverterStats extends NetCDFData {
 		writeStringList(fw, "Building without walls", noWallList);
 		writeStringList(fw, "Building without grounds", noGroundList);
 	
+		writeStringMap(fw, "Surfaces with invalid polygons", invalid);
 		writeStringMap(fw, "Non-Planar surface", nonPlanar);
 		writeStringMap(fw, "Surface without distance", surfaceWithoutDistance);
 
