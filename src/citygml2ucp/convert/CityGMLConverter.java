@@ -21,6 +21,7 @@ import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.xml.io.CityGMLInputFactory;
+import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.proj4.PJ;
 
@@ -157,7 +158,15 @@ public class CityGMLConverter {
 
 			CityGMLReader reader = in.createCityGMLReader(file.toFile());
 			while (reader.hasNext()) {
-				CityGML citygml = reader.nextFeature();
+				CityGML citygml;
+				// try to read feature and skip if failed
+				try{
+					citygml = reader.nextFeature();
+				} catch ( CityGMLReadException e ) {
+					stats.addReadError(file.toString());;
+					System.err.println("Cannot read " + file);
+					break;
+				}
 
 				if (citygml.getCityGMLClass() == CityGMLClass.CITY_MODEL) {
 					CityModel cityModel = (CityModel)citygml;
