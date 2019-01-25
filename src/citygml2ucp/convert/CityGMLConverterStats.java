@@ -47,6 +47,11 @@ public class CityGMLConverterStats extends NetCDFData {
 	private Map<String,List<String>> surfaceWithoutDistance = new HashMap<>();
 
 	/**
+	 * List for files with read error
+	 */
+	private List<String> readErrorList = new LinkedList<>();
+
+	/**
 	 * List for buildings with no defined wall
 	 */
 	private List<String> noWallList = new LinkedList<>();
@@ -129,6 +134,16 @@ public class CityGMLConverterStats extends NetCDFData {
 	public void addNoSurfButBuildFrac(Map<String,List<String>> surfaceWithoutDistance) {
 		this.surfaceWithoutDistance.putAll(surfaceWithoutDistance);
 	}
+
+	/**
+	 * Add read error information.
+	 * 
+	 * @param readError
+	 *            String of file with read error
+	 */
+	public void addReadError(String readError) {
+		readErrorList.add(readError);
+	}
 	
 	/**
 	 * Add no wall information.
@@ -194,6 +209,7 @@ public class CityGMLConverterStats extends NetCDFData {
 		
 		Writer fw = new FileWriter(log);
 		
+		writeStringList(fw, "Files with read error", readErrorList);
 		writeStringList(fw, "Building without roofs", noRoofList);
 		writeStringList(fw, "Building without walls", noWallList);
 		writeStringList(fw, "Building without grounds", noGroundList);
