@@ -506,9 +506,8 @@ class CityGMLConverterThread extends Thread {
 							}
 						}
 
-						wallSending.visibilities.add(new Polygon3dVisibility(wallSending, wallReceiving, conf.effDist));
-						wallReceiving.visibilities
-								.add(new Polygon3dVisibility(wallReceiving, wallSending, conf.effDist));
+						wallSending.visibilities.add(wallReceiving);
+						wallReceiving.visibilities.add(wallSending);
 
 					}
 				}
@@ -563,7 +562,8 @@ class CityGMLConverterThread extends Thread {
 							"  Wall with area " + df.format(sendingWall.getArea()) + " and ID " + sendingWall.id);
 				}
 
-				Collections.sort(sendingWall.visibilities);
+				List<Polygon3dVisibility> visibilityList = sendingWall.generateVisibilityList(conf.effDist);
+				Collections.sort(visibilityList);
 
 				// mean until area of sending surface is reached
 				double maxArea = sendingWall.getArea();
@@ -571,32 +571,32 @@ class CityGMLConverterThread extends Thread {
 				double distance = 0;
 				int ind = 0;
 
-				while (ind < sendingWall.visibilities.size() - 1
-						&& sendingWall.visibilities.get(ind).distance < conf.mindist) {
+				while (ind < visibilityList.size() - 1
+						&& visibilityList.get(ind).distance < conf.mindist) {
 					ind++;
 				}
 
 				do {
-					if (Double.isNaN(sendingWall.visibilities.get(ind).distance)) {
+					if (Double.isNaN(visibilityList.get(ind).distance)) {
 						System.out.println("distance is nan");
 					}
 
 					if (conf.debugOutput) {
 						System.out.println("   Considering target with area "
-								+ df.format(sendingWall.visibilities.get(ind).receiving.getArea()) + ", distance "
-								+ df.format(sendingWall.visibilities.get(ind).distance) + ", and ID "
-								+ sendingWall.visibilities.get(ind).receiving.id);
+								+ df.format(visibilityList.get(ind).receiving.getArea()) + ", distance "
+								+ df.format(visibilityList.get(ind).distance) + ", and ID "
+								+ visibilityList.get(ind).receiving.id);
 					}
 
-					double weight = sendingWall.visibilities.get(ind).receiving.getArea();
+					double weight = visibilityList.get(ind).receiving.getArea();
 					if (conf.effDist) {
-						weight *= Math.abs(sendingWall.visibilities.get(ind).getCosAngle());
+						weight *= Math.abs(visibilityList.get(ind).getCosAngle());
 					}
-					distance += sendingWall.visibilities.get(ind).distance * weight;
+					distance += visibilityList.get(ind).distance * weight;
 					sumArea += weight;
 
 					ind += 1;
-				} while (sumArea < maxArea && ind < sendingWall.visibilities.size());
+				} while (sumArea < maxArea && ind < visibilityList.size());
 				if (sumArea < 1.e-5)
 					continue;
 				distance /= sumArea;
