@@ -52,6 +52,11 @@ public class CityGMLConverterStats extends NetCDFData {
 	private List<String> readErrorList = new LinkedList<>();
 
 	/**
+	 * List for files with ignored buildingParts
+	 */
+	private List<String> ignoredBuildingPartList = new LinkedList<>();
+	
+	/**
 	 * List for buildings with no defined wall
 	 */
 	private List<String> noWallList = new LinkedList<>();
@@ -160,6 +165,17 @@ public class CityGMLConverterStats extends NetCDFData {
 	public void addReadError(String readError) {
 		readErrorList.add(readError);
 	}
+
+	/**
+	 * Add ignored buildingPart information.
+	 * 
+	 * @param buildingId
+	 *            String of building Id
+	 */
+	public void addIgnoredBuildingPart(String buildingId) {
+		ignoredBuildingPartList.add(buildingId);
+	}
+	
 	
 	/**
 	 * Add no wall information.
@@ -247,6 +263,7 @@ public class CityGMLConverterStats extends NetCDFData {
 		Writer fw = new FileWriter(log);
 		
 		writeStringList(fw, "Files with read error", readErrorList);
+		writeStringList(fw, "Building with ignored building parts", ignoredBuildingPartList);
 		writeStringList(fw, "Building without roofs", noRoofList);
 		writeStringList(fw, "Building without walls", noWallList);
 		writeStringList(fw, "Building without grounds", noGroundList);

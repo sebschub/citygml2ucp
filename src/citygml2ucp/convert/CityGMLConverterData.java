@@ -149,13 +149,12 @@ class CityGMLConverterData {
 				List<Polygon3dWithVisibilities> buildingWalls = new ArrayList<>();
 				List<Polygon3dWithVisibilities> buildingRoofs = new ArrayList<>();
 				List<Polygon3d> buildingGrounds = new ArrayList<>();
-				if (building.getBoundedBySurface().size() > 0) {
-					// found boundary surfaces, they should cover building the buidling just fine,
+				if (building.isSetBoundedBySurface()) {
+					// found boundary surfaces, they should cover building the building just fine,
 					// so building parts should not be required. Still, I haven't checked this case,
-					// so throw error here if there are building part.
-					if (building.getConsistsOfBuildingPart().size() > 0) {
-						throw new IllegalArgumentException(
-								"Building has boundary surfaces but also building parts, check building manually and modify code!");
+					// so take a note for this.
+					if (building.isSetConsistsOfBuildingPart()) {
+						stats.addIgnoredBuildingPart(buildingId);
 					}
 					for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
 						AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
@@ -168,23 +167,13 @@ class CityGMLConverterData {
 							buildingGrounds.addAll(polygons);
 						}
 					}
-				} else if (building.getConsistsOfBuildingPart().size() > 0) {
-					for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
-						BuildingPart bp = buildingPartProperty.getBuildingPart();
-						for (BoundarySurfaceProperty boundarySurfaceProperty : bp.getBoundedBySurface()) {
-							AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
-							List<Polygon3dWithVisibilities> polygons = getAllSurfaces(bs, buildingId);
-							if (bs instanceof WallSurface) {
-								buildingWalls.addAll(polygons);
-							} else if (bs instanceof RoofSurface) {
-								buildingRoofs.addAll(polygons);
-							} else if (bs instanceof GroundSurface) {
-								buildingGrounds.addAll(polygons);
-							}
-						}
-					}
 				} else if (building.isSetLod1Solid()) {
-
+					// found lod1dsolid, they should cover main part of the building building.
+					// Ignore the rest for now but take a note.
+					if (building.isSetConsistsOfBuildingPart()) {
+						stats.addIgnoredBuildingPart(buildingId);
+					}
+					
 					List<Polygon3dWithVisibilities> horizontalSurfaces = new ArrayList<>();
 					
 					CompositeSurface surfaceCS = (CompositeSurface)((Solid)building.getLod1Solid().getSolid()).getExterior().getSurface();
@@ -212,9 +201,21 @@ class CityGMLConverterData {
 					buildingGrounds.add(horizontalSurfaces.get(minHeightIndex));
 					buildingRoofs = horizontalSurfaces;
 					buildingRoofs.remove(minHeightIndex);
-					System.out.println("Number of roofs: " + buildingRoofs.size());
-					System.out.println("Number of walls: " + buildingWalls.size());
-					System.out.println("Number of grounds: " + buildingGrounds.size());
+				} else if (building.isSetConsistsOfBuildingPart()) {
+					for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
+						BuildingPart bp = buildingPartProperty.getBuildingPart();
+						for (BoundarySurfaceProperty boundarySurfaceProperty : bp.getBoundedBySurface()) {
+							AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+							List<Polygon3dWithVisibilities> polygons = getAllSurfaces(bs, buildingId);
+							if (bs instanceof WallSurface) {
+								buildingWalls.addAll(polygons);
+							} else if (bs instanceof RoofSurface) {
+								buildingRoofs.addAll(polygons);
+							} else if (bs instanceof GroundSurface) {
+								buildingGrounds.addAll(polygons);
+							}
+						}
+					}
 				} else {
 					System.out
 							.println("Building " + building.getId() + " has no boundary surfaces nor building parts nor Lod1Solid.");
