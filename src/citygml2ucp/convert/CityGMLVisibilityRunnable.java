@@ -35,7 +35,7 @@ public class CityGMLVisibilityRunnable implements Runnable {
 	public void run() {
 		
 		int numberChunksLength = (int) (Math.log10(numberChunks) + 1);
-		System.out.println(" Started chunk " + String.format("%" + numberChunksLength + "d", chunkIndex + 1)
+		System.out.println(" Started chunk  " + String.format("%" + numberChunksLength + "d", chunkIndex + 1)
 		+ "/" + numberChunks);
 		for (int iBuildingSending = this.start; iBuildingSending < this.end; iBuildingSending++) {
 			SimpleBuilding buildingSending = citydata.buildings.get(iBuildingSending);
