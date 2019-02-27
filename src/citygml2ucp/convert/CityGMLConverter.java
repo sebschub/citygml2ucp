@@ -186,13 +186,15 @@ public class CityGMLConverter {
 			reader.close();
 		}
 		
-		int nThreads = (cgml.buildings.size() + conf.nBuildingsPerThread - 1) / conf.nBuildingsPerThread;
+		int nChunks = (cgml.buildings.size() + conf.nBuildingsPerThread - 1) / conf.nBuildingsPerThread;
+		int nThreads = Math.min(conf.nThreads, nChunks);
 		System.out.println("Splitting visibility calculation in " + 
-				nThreads + " chunk(s) with " + conf.nBuildingsPerThread + " buildings each, using " + 
-				Math.min(conf.nThreads, nThreads) + " thread(s)");
-		for (int thread = 0; thread < nThreads; thread++) {
-			exec.execute(new CityGMLVisibilityRunnable(cgml, thread * conf.nBuildingsPerThread,
-					Math.min((thread + 1) * conf.nBuildingsPerThread, cgml.buildings.size()), thread, nThreads));
+				nChunks + " chunk(s) with " + conf.nBuildingsPerThread + " buildings each, using " + 
+				Math.min(conf.nThreads, nChunks) + " thread(s)");
+		for (int indexChunk = 0; indexChunk < nChunks; indexChunk++) {
+			exec.execute(new CityGMLVisibilityRunnable(cgml, indexChunk * conf.nBuildingsPerThread,
+					Math.min((indexChunk + 1) * conf.nBuildingsPerThread, cgml.buildings.size()), indexChunk,
+					nThreads));
 		}
 				
 		exec.shutdown();

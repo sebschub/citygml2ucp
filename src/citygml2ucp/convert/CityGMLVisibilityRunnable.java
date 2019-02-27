@@ -17,27 +17,40 @@ public class CityGMLVisibilityRunnable implements Runnable {
 	
 	private final int start, end;
 	
-	private final int chunkIndex, numberChunks;
+	private final int chunkIndex, nThreads;
 	
 	/**
 	 * 
 	 */
-	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int numberChunks) {
+	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int nThreads) {
 		this.citydata = citydata;
 		this.start = start;
 		this.end = end;
 		
 		this.chunkIndex = chunkIndex;
-		this.numberChunks = numberChunks;
+		this.nThreads = nThreads;
 	}
 
 	@Override
 	public void run() {
 		
-		int numberChunksLength = (int) (Math.log10(numberChunks) + 1);
-		System.out.println(" Started chunk  " + String.format("%" + numberChunksLength + "d", chunkIndex + 1)
-		+ "/" + numberChunks);
+		// length of maximum number in message
+		int outputLength;
+		if (nThreads == 1) {
+			// write number of building in case of only one chunk
+			outputLength = (int) (Math.log10(citydata.buildings.size()) + 1);
+		} else {
+			// write of chunk
+			outputLength = (int) (Math.log10(nThreads) + 1);
+			System.out.println(" Started chunk  " + String.format("%" + outputLength + "d", chunkIndex + 1)
+			+ "/" + nThreads);
+		}
+		
 		for (int iBuildingSending = this.start; iBuildingSending < this.end; iBuildingSending++) {
+			if (nThreads == 1) {
+				System.out.println(" Building " + String.format("%" + outputLength + "d", iBuildingSending + 1)
+						+ "/" + citydata.buildings.size());
+			}
 			SimpleBuilding buildingSending = citydata.buildings.get(iBuildingSending);
 
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.size() - 1; iWallSending++) {
@@ -110,9 +123,10 @@ public class CityGMLVisibilityRunnable implements Runnable {
 				}
 			}
 		}
-		System.out.println(" Finished chunk " + String.format("%" + numberChunksLength + "d", chunkIndex + 1)
-		+ "/" + numberChunks);
-
+		if (nThreads > 1) {
+			System.out.println(
+					" Finished chunk " + String.format("%" + outputLength + "d", chunkIndex + 1) + "/" + nThreads);
+		}
 	}
 
 }
