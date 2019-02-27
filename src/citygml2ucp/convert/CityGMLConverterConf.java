@@ -155,6 +155,13 @@ public class CityGMLConverterConf {
 	private static int nThreadsDefault = 1;
 
 	/**
+	 * Number of buildings per thread
+	 */
+	int nBuildingsPerThread;
+	private static int nBuildingsPerThreadDefault = 1000;
+
+	
+	/**
 	 * Folder/File of the CityGML data set
 	 */
 	String inputGMLFolder;
@@ -308,7 +315,8 @@ public class CityGMLConverterConf {
 			if (heightReductionP > 0.) doHeightReduction = true;
 			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
-
+			nBuildingsPerThread = prop.getInt("nBuildingsPerThread", nBuildingsPerThreadDefault);
+			
 			inputGMLFolder = prop.getString("inputGMLFolder",
 					inputGMLFolderDefault);
 			outputFolder = prop.getString("outputFolder", outputFolderDefault);
