@@ -193,6 +193,9 @@ public class CityGMLConverterConf {
 	String impSurfFile;
 	private static String impSurfFileDefault = "/home/schubert/Documents/workspace/datasets/vg";
 
+	boolean impSurfFileNC;
+	private static boolean impSurfFileNCDefault = true;
+	
 	String logFile;
 	private static String logFileDefault = "run.log";
 	
@@ -213,6 +216,9 @@ public class CityGMLConverterConf {
 	 */
 	int rowImpSurf;
 	private static int rowImpSurfDefault = 3;
+	
+	String variableImpSurf;
+	private static String variableImpSurfDefault = "fr_urb";
 
 	/**
 	 * Number of lines to skip at the at end of the file
@@ -328,12 +334,15 @@ public class CityGMLConverterConf {
 			statsFile = prop.getString("statsFile", statsFileDefault);
 			statsFile = outputFolder + statsFile;
 
+			impSurfFileNC = prop.getBoolean("impSurfFileNC", impSurfFileNCDefault);
 			impSurfFile = prop.getString("impSurfFile", impSurfFileDefault);
 
 			rowLat = prop.getInt("rowLat", rowLatDefault);
 			rowLon = prop.getInt("rowLon", rowLonDefault);
 			rowImpSurf = prop.getInt("rowImpSurf", rowImpSurfDefault);
 
+			variableImpSurf = prop.getString("variableImpSurf", variableImpSurfDefault);
+			
 			skipLines = prop.getInt("skipLines", skipLinesDefault);
 
 			sepString = prop.getString("sepString", sepStringDefault);

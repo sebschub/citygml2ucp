@@ -27,7 +27,9 @@ import org.proj4.PJ;
 
 import citygml2ucp.configuration.UrbanCLMConfiguration;
 import ucar.nc2.Attribute;
+import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.Variable;
 import ucar.nc2.units.DateFormatter;
 
 /**
@@ -50,30 +52,41 @@ public class CityGMLConverter {
 	 */
 	private static void readImpSurfaceFile(CityGMLConverterConf conf,
 			UrbanCLMConfiguration uclm) throws IOException {
-		Scanner scanner = new Scanner(new File(conf.impSurfFile));
-		for (int i = 0; i < conf.skipLines; i++) {
-			if (scanner.hasNextLine()) {
-				scanner.nextLine();
-			} else {
-				scanner.close();
-				throw new IOException(
-						"Impervious Surface has less lines then skipped at beginning.");
+		if (conf.impSurfFileNC) {
+			NetcdfFile ncfile = NetcdfFile.open(conf.impSurfFile);
+			Variable v = ncfile.findVariable(conf.variableImpSurf);
+			double[][] data = (double[][]) v.read().copyToNDJavaArray();
+			ncfile.close();
+			for (int lat = 0; lat < conf.je_tot; lat++) {
+				for (int lon = 0; lon < conf.ie_tot; lon++) {
+					uclm.setUrbanFrac(lat, lon, data[lat][lon]);
+				}
 			}
-		}
-		while (scanner.hasNextLine()) {
-			Scanner lScanner = new Scanner(scanner.nextLine());
-			lScanner.useDelimiter(conf.sepString);
-			List<Double> values = new LinkedList<Double>();
-			while (lScanner.hasNext()) {
-				values.add(Double.parseDouble(lScanner.next()));
+		} else {
+			Scanner scanner = new Scanner(new File(conf.impSurfFile));
+			for (int i = 0; i < conf.skipLines; i++) {
+				if (scanner.hasNextLine()) {
+					scanner.nextLine();
+				} else {
+					scanner.close();
+					throw new IOException(
+							"Impervious Surface has less lines then skipped at beginning.");
+				}
 			}
-			int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
-			int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
-			uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1));
-			lScanner.close();
+			while (scanner.hasNextLine()) {
+				Scanner lScanner = new Scanner(scanner.nextLine());
+				lScanner.useDelimiter(conf.sepString);
+				List<Double> values = new LinkedList<Double>();
+				while (lScanner.hasNext()) {
+					values.add(Double.parseDouble(lScanner.next()));
+				}
+				int lat = uclm.getRLatIndex(values.get(conf.rowLat - 1));
+				int lon = uclm.getRLonIndex(values.get(conf.rowLon - 1));
+				uclm.setUrbanFrac(lat, lon, values.get(conf.rowImpSurf - 1));
+				lScanner.close();
+			}
+			scanner.close();
 		}
-		scanner.close();
-
 	}
 	
 	/**
