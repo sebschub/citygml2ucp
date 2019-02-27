@@ -1,7 +1,5 @@
 package citygml2ucp.convert;
 
-import static citygml2ucp.tools.Polygon2d.xyProjectedPolygon2d;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +27,8 @@ import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.basicTypes.Code;
 import org.citygml4j.model.gml.feature.BoundingShape;
+import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
+import org.citygml4j.model.gml.geometry.primitives.Solid;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.util.bbox.BoundingBoxOptions;
 import org.proj4.PJ;
@@ -54,11 +54,6 @@ import ucar.unidata.geoloc.ProjectionPoint;
 class CityGMLConverterThread extends Thread {
 
 	private final DecimalFormat df;
-
-	/**
-	 * Factor for height of a building: 0 at lower bottom of roof, 1 at top of roof
-	 */
-	private final static double roofHeightFactor = 0.5;
 
 	/**
 	 * Number of urban class when no urban classes are considered
@@ -215,10 +210,9 @@ class CityGMLConverterThread extends Thread {
 
 				// analyse semantic elements of building: get walls, roofs and
 				// ground surfaces
-				List<WallSurface> walls = new ArrayList<>();
-				List<RoofSurface> roofs = new ArrayList<>();
-				List<GroundSurface> grounds = new ArrayList<>();
-
+				List<Polygon3dWithVisibilities> buildingWalls = new ArrayList<>();
+				List<Polygon3dWithVisibilities> buildingRoofs = new ArrayList<>();
+				List<Polygon3d> buildingGrounds = new ArrayList<>();
 				if (building.getBoundedBySurface().size() > 0) {
 					// found boundary surfaces, they should cover building the buidling just fine,
 					// so building parts should not be required. Still, I haven't checked this case,
@@ -229,12 +223,13 @@ class CityGMLConverterThread extends Thread {
 					}
 					for (BoundarySurfaceProperty boundarySurfaceProperty : building.getBoundedBySurface()) {
 						AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+						List<Polygon3dWithVisibilities> polygons = getAllSurfaces(bs, buildingId);
 						if (bs instanceof WallSurface) {
-							walls.add((WallSurface) bs);
+							buildingWalls.addAll(polygons);
 						} else if (bs instanceof RoofSurface) {
-							roofs.add((RoofSurface) bs);
+							buildingRoofs.addAll(polygons);
 						} else if (bs instanceof GroundSurface) {
-							grounds.add((GroundSurface) bs);
+							buildingGrounds.addAll(polygons);
 						}
 					}
 				} else if (building.getConsistsOfBuildingPart().size() > 0) {
@@ -242,44 +237,96 @@ class CityGMLConverterThread extends Thread {
 						BuildingPart bp = buildingPartProperty.getBuildingPart();
 						for (BoundarySurfaceProperty boundarySurfaceProperty : bp.getBoundedBySurface()) {
 							AbstractBoundarySurface bs = boundarySurfaceProperty.getObject();
+							List<Polygon3dWithVisibilities> polygons = getAllSurfaces(bs, buildingId);
 							if (bs instanceof WallSurface) {
-								walls.add((WallSurface) bs);
+								buildingWalls.addAll(polygons);
 							} else if (bs instanceof RoofSurface) {
-								roofs.add((RoofSurface) bs);
+								buildingRoofs.addAll(polygons);
 							} else if (bs instanceof GroundSurface) {
-								grounds.add((GroundSurface) bs);
+								buildingGrounds.addAll(polygons);
 							}
 						}
 					}
+				} else if (building.isSetLod1Solid()) {
+
+					List<Polygon3dWithVisibilities> horizontalSurfaces = new ArrayList<>();
+					
+					CompositeSurface surfaceCS = (CompositeSurface)((Solid)building.getLod1Solid().getSolid()).getExterior().getSurface();
+					List<SurfaceProperty> surfacesSP = surfaceCS.getSurfaceMember();
+					
+					int minHeightIndex = -1;
+					double minHeight = Double.MAX_VALUE;
+					
+					for (int surfaceSPIndex = 0; surfaceSPIndex < surfacesSP.size(); surfaceSPIndex++) {
+						try {
+							Polygon3dWithVisibilities polygon = new Polygon3dWithVisibilities(buildingId, surfacesSP.get(surfaceSPIndex));
+							if (polygon.isHorizontal()) {
+								horizontalSurfaces.add(polygon);
+								if (polygon.getHeight() < minHeight) {
+									minHeightIndex = surfaceSPIndex;
+								}
+							} else {
+								buildingWalls.add(polygon);
+							}
+						} catch (IllegalArgumentException e) {
+							// get entry of invalid polygons for this building
+							List<String> invalidPolygons;
+							if (invalid.containsKey(buildingId)) {
+								invalidPolygons = invalid.get(buildingId);
+							} else {
+								invalidPolygons = new LinkedList<>();
+							}
+							// put surface id that includes the faulty polygon in the list
+							invalidPolygons.add(surfaceCS.getId());
+							// put list into Map
+							invalid.put(buildingId, invalidPolygons);
+						}
+					}
+					// assume only lowest horizontal surface is ground
+					buildingGrounds.add(horizontalSurfaces.get(minHeightIndex));
+					buildingRoofs = horizontalSurfaces;
+					buildingRoofs.remove(minHeightIndex);
+					System.out.println("Number of roofs: " + buildingRoofs.size());
+					System.out.println("Number of walls: " + buildingWalls.size());
+					System.out.println("Number of grounds: " + buildingGrounds.size());
 				} else {
 					System.out
-							.println("Building " + building.getId() + " has no boundary surfaces nor building parts.");
+							.println("Building " + building.getId() + " has no boundary surfaces nor building parts nor Lod1Solid.");
 				}
 
-				List<Polygon3dWithVisibilities> buildingRoofs;
 				double height;
-				if (roofs.size() > 0) {
+				if (buildingRoofs.size() > 0) {
 					// calculate weighted mean of heights of roofs and use it as
 					// height information
-					buildingRoofs = getAllSurfaces(roofs, buildingId);
-					height = calcBuildingHeight(roofs, lc.get(2));
+					double sumRoofArea = 0.;
+					height = 0.;
+
+					for (Polygon3d roof : buildingRoofs) {
+						double roofArea = roof.getXYProjectedArea();
+						sumRoofArea += roofArea;
+						// height of roof - ground height
+						height += roofArea * (roof.getHeight() - lc.get(2));
+					}
+					// normalize
+					height /= sumRoofArea;
 				} else {
 					noRoof.add(buildingId);
 					// maximum height = height of bounding of bounding box
 					height = uc.get(2) - lc.get(2);
-					buildingRoofs = new ArrayList<Polygon3dWithVisibilities>();
 				}
 
 				double area = 0.;
-				if (grounds.size() > 0) {
-					area = calcGroundSize(grounds);
+				if (buildingGrounds.size() > 0) {
+					for (Polygon3d ground : buildingGrounds) {
+						area += ground.getXYProjectedArea();
+					}
+					// area in km2
+					area /= 1000000.;
 				} else {
 					noGround.add(buildingId);
 				}
 
-				List<Polygon3dWithVisibilities> buildingWalls;
-				if (walls.size() > 0) {
-					buildingWalls = getAllSurfaces(walls, buildingId);
+				if (buildingWalls.size() > 0) {
 					// check coplanarity
 					List<String> nonPlanarLocal = new LinkedList<>();
 					for (Polygon3dWithVisibilities wall : buildingWalls) {
@@ -292,16 +339,15 @@ class CityGMLConverterThread extends Thread {
 				} else {
 					noWall.add(buildingId);
 					// ignore this building for visibility for now
-					buildingWalls = new ArrayList<Polygon3dWithVisibilities>();
 				}
 
 				localBuildings[bID] = new SimpleBuilding(buildingName, buildingId, location, height, area,
 						buildingRoofs, buildingWalls, uclm.getRLatIndex(rotatedCoordinates.getY()),
 						uclm.getRLonIndex(rotatedCoordinates.getX()));
-
+				}
 			}
 
-		}
+		
 
 		this.buildings.addAll(Arrays.asList(localBuildings));
 
@@ -318,95 +364,39 @@ class CityGMLConverterThread extends Thread {
 		buildingAreaSum = new double[uclm.getNuclasses()][uclm.getJe_tot()][uclm.getIe_tot()];
 	}
 
-	/**
-	 * Calculate the height of a building.
-	 * 
-	 * @param roofs        Roof surfaces of the building
-	 * @param groundHeight Ground height of the building (defines the height 0)
-	 * @return Height of the building
-	 */
-	public static double calcBuildingHeight(List<RoofSurface> roofs, double groundHeight) {
-		double sumRoofArea = 0.;
-		double roofHeight = 0.;
-
-		for (RoofSurface roof : roofs) {
-			double roofArea;
-			List<SurfaceProperty> surface = roof.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
-			for (int i = 0; i < surface.size(); i++) {
-				SurfaceProperty surfaceProperty = surface.get(i);
-
-				roofArea = xyProjectedPolygon2d(surfaceProperty).getArea();
-				sumRoofArea += roofArea;
-
-				// min and max height of surfaceProperty
-				double[] minmax = getMinMaxHeight(surfaceProperty);
-
-				// a+f(b-a) with a=minmax[0]-groundHeight,
-				// b=minmax[1]-groundHeight (ground height cancels in
-				// brakets)
-				roofHeight += roofArea * (minmax[0] - groundHeight + roofHeightFactor * (minmax[1] - minmax[0]));
-			}
-		}
-
-		// normalize
-		roofHeight /= sumRoofArea;
-
-		return roofHeight;
-	}
 
 	/**
-	 * Calculate the ground size of a building.
-	 * 
-	 * @param grounds Ground surfaces of the building
-	 * @return Ground area of the building
-	 */
-	public static double calcGroundSize(List<GroundSurface> grounds) {
-		double area = 0.;
-		for (GroundSurface ground : grounds) {
-			List<SurfaceProperty> surface = ground.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
-			for (SurfaceProperty surfaceProperty : surface) {
-				// area in km2
-				area += xyProjectedPolygon2d(surfaceProperty).getArea() / 1000000.;
-			}
-		}
-		return area;
-	}
-
-	/**
-	 * Extract all polygons from a list of surfaces.
+	 * Extract all polygons from surface with potentially sub-polygons.
 	 * 
 	 * @param              <T> either RoofSurface, WallSurface or GroundSurface
-	 * @param listSurfaces List of surfaces
+	 * @param surface Surface
 	 * @return Array of polygons
 	 */
-	public <T extends AbstractBoundarySurface> List<Polygon3dWithVisibilities> getAllSurfaces(List<T> listSurfaces,
+	public <T extends AbstractBoundarySurface> List<Polygon3dWithVisibilities> getAllSurfaces(T surface,
 			String buildingId) {
 
 		// new array to include all these surfaces
-		List<Polygon3dWithVisibilities> surfaces = new ArrayList<Polygon3dWithVisibilities>();
+		List<Polygon3dWithVisibilities> polygons = new ArrayList<Polygon3dWithVisibilities>();
 
-		for (T surface : listSurfaces) {
-			List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
-			for (int i = 0; i < surf.size(); i++) {
-				try {
-					Polygon3dWithVisibilities polygon = new Polygon3dWithVisibilities(surface.getId(), surf.get(i));
-					surfaces.add(polygon);
-				} catch (IllegalArgumentException e) {
-					// get entry of invalid polygons for this building
-					List<String> invalidPolygons;
-					if (invalid.containsKey(buildingId)) {
-						invalidPolygons = invalid.get(buildingId);
-					} else {
-						invalidPolygons = new LinkedList<>();
-					}
-					// put surface id that includes the faulty polygon in the list
-					invalidPolygons.add(surface.getId());
-					// put list into Map
-					invalid.put(buildingId, invalidPolygons);
+		List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
+		for (int i = 0; i < surf.size(); i++) {
+			try {
+				polygons.add(new Polygon3dWithVisibilities(surface.getId(), surf.get(i)));
+			} catch (IllegalArgumentException e) {
+				// get entry of invalid polygons for this building
+				List<String> invalidPolygons;
+				if (invalid.containsKey(buildingId)) {
+					invalidPolygons = invalid.get(buildingId);
+				} else {
+					invalidPolygons = new LinkedList<>();
 				}
+				// put surface id that includes the faulty polygon in the list
+				invalidPolygons.add(surface.getId());
+				// put list into Map
+				invalid.put(buildingId, invalidPolygons);
 			}
 		}
-		return surfaces;
+		return polygons;
 	}
 
 	/**

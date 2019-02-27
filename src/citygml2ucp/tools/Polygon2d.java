@@ -3,10 +3,7 @@
  */
 package citygml2ucp.tools;
 
-import java.util.List;
-
 import javax.vecmath.Point2d;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 
 /**
  * A 2d polygon based on {@link javax.vecmath.Point2d Point2d}.
@@ -21,17 +18,14 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 	 */
 	private double[] xcoord, ycoord;
 
-	public static Polygon2d xyProjectedPolygon2d(SurfaceProperty surfaceProperty) {
-		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
-		int pos = 0;
+	public static Polygon2d xyProjectedPolygon2d(Polygon3d polygon) {
 
-		double[] xcoord = new double[coord.size()/3];
-		double[] ycoord = new double[coord.size()/3];
+		double[] xcoord = new double[polygon.points.size()];
+		double[] ycoord = new double[polygon.points.size()];
 
-		for (int i = 0; i < coord.size() / 3; i++) {
-			xcoord[i] = coord.get(pos);
-			ycoord[i] = coord.get(pos+1);
-			pos += 3;
+		for (int i = 0; i < polygon.points.size(); i++) {
+			xcoord[i] = polygon.points.get(i).x;
+			ycoord[i] = polygon.points.get(i).y;
 		}
 		return new Polygon2d(xcoord, ycoord); 
 	}

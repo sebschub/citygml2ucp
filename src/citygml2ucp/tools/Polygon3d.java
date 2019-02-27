@@ -294,4 +294,13 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		return polygon2d.contains(x, y);
 	}
 
+	public double getHeight() {
+		return this.centroid.z;
+	}
+	
+	public double getXYProjectedArea() {
+		return Polygon2d.xyProjectedPolygon2d(this).getArea();
+	}
+	
+	
 }
