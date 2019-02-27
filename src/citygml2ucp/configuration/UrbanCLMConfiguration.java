@@ -91,15 +91,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	 */
 	private double streetSurfaceSum[][][][];
 
-	/**
-	 * Maximum height of buildings
-	 */
-	public double maxHeight = -Double.MAX_VALUE;
-	/**
-	 * Minimum height of buildings
-	 */
-	public double minHeight = Double.MAX_VALUE;
-
 	private void initalizeUrbanFields(int n_uclass, double[] ang_udir,
 			int[] ke_uhl, double[] height) {
 

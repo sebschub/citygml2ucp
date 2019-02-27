@@ -74,11 +74,12 @@ public class CityGMLConverterStats extends NetCDFData {
 	/**
 	 * Height of the buildings
 	 */
-	public List<Double> buildingHeights = new ArrayList<Double>();
+	private List<Double> buildingHeights = new ArrayList<Double>();
+
 	/**
 	 * Ground size of the buildings
 	 */
-	public List<Double> buildingGrounds = new ArrayList<Double>();
+	private List<Double> buildingGrounds = new ArrayList<Double>();
 
 	/**
 	 * Field for output
@@ -103,14 +104,29 @@ public class CityGMLConverterStats extends NetCDFData {
 		toWrite.add(unlimetedDimension);
 	}
 
+	
+	private void addMapElements(Map<String, List<String>> map, String key, String value) {
+		List<String> list;
+		if (map.containsKey(key)) {
+			list = map.get(key);
+			// put surface id that includes the faulty polygon in the list
+			list.add(value);
+		} else {
+			list = new LinkedList<>();
+			// put surface id that includes the faulty polygon in the list
+			list.add(value);
+			// put list into Map
+			map.put(key, list);
+		}
+	}
+	
 	/**
 	 * Add invalid polygon information.
-	 * 
-	 * @param invalid
-	 *            Map of building id and list of surface ids that include invalid polygons
+	 * @param buildingId
+	 * @param surfaceId
 	 */
-	public void addInvalid(Map<String,List<String>> invalid) {
-		this.invalid.putAll(invalid);
+	public void addInvalid(String buildingId, String surfaceId) {
+		addMapElements(invalid, buildingId, surfaceId);
 	}
 	
 	/**
@@ -119,8 +135,8 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param nonPlanar
 	 *            Map of building id and list of non-planar surface ids
 	 */
-	public void addNonPlanar(Map<String,List<String>> nonPlanar) {
-		this.nonPlanar.putAll(nonPlanar);
+	public void addNonPlanar(String buildingId, String surfaceId) {
+		addMapElements(nonPlanar, buildingId, surfaceId);
 	}
 
 	/**
@@ -131,8 +147,8 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param list
 	 *            List of ground sizes ignored
 	 */
-	public void addNoSurfButBuildFrac(Map<String,List<String>> surfaceWithoutDistance) {
-		this.surfaceWithoutDistance.putAll(surfaceWithoutDistance);
+	public void addSurfaceWithoutDistance(String buildingId, String surfaceId) {
+		addMapElements(surfaceWithoutDistance, buildingId, surfaceId);
 	}
 
 	/**
@@ -151,8 +167,8 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param noWall
 	 *            List of building IDs with no defined wall
 	 */
-	public void addNoWall(List<String> noWall) {
-		noWallList.addAll(noWall);
+	public void addNoWall(String noWall) {
+		noWallList.add(noWall);
 	}
 	
 	/**
@@ -161,8 +177,8 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param noRoof
 	 *            List of building IDs with no defined roof
 	 */
-	public void addNoRoof(List<String> noRoof) {
-		noRoofList.addAll(noRoof);
+	public void addNoRoof(String noRoof) {
+		noRoofList.add(noRoof);
 	}
 	
 	/**
@@ -171,10 +187,31 @@ public class CityGMLConverterStats extends NetCDFData {
 	 * @param noground
 	 *            List of building IDs with no defined ground
 	 */
-	public void addNoGround(List<String> noGround) {
-		noGroundList.addAll(noGround);
+	public void addNoGround(String noGround) {
+		noGroundList.add(noGround);
 	}
 
+	
+	public List<Double> getBuildingHeights() {
+		return buildingHeights;
+	}
+
+
+	public void addBuildingHeight(double buildingHeight) {
+		this.buildingHeights.add(buildingHeight);
+	}
+
+	
+	public List<Double> getBuildingGrounds() {
+		return buildingGrounds;
+	}
+
+
+	public void addBuildingGround(Double buildingGround) {
+		this.buildingGrounds.add(buildingGround);
+	}
+
+	
 	private void writeStringList(Writer fw, String header, List<String> list) throws IOException {
 		fw.append(header);
 		fw.append(System.getProperty("line.separator"));

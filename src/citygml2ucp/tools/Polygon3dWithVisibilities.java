@@ -3,6 +3,7 @@
  */
 package citygml2ucp.tools;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,14 +16,15 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 public class Polygon3dWithVisibilities extends Polygon3d {
 
 	
-	public List<Polygon3d> visibilities;
+	public List<Polygon3dWithVisibilities> visibilities;
 	
 	/**
 	 * @param surfaceProperty
 	 */
 	public Polygon3dWithVisibilities(String id, SurfaceProperty surfaceProperty) {
 		super(id, surfaceProperty);
-		this.visibilities = new LinkedList<>();
+		// we want to add elements in parallel so to be sure, use synchronizedList
+		this.visibilities = Collections.synchronizedList(new LinkedList<>());
 	}
 	
 	public List<Polygon3dVisibility> generateVisibilityList(boolean eff) {

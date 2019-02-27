@@ -7,12 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List; //import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.citygml4j.CityGMLContext;
@@ -148,18 +149,10 @@ public class CityGMLConverter {
 
 		readImpSurfaceFile(conf, uclm);
 
-		CityGMLConverterThread cgmlct = null;
-		ThreadPoolExecutor exec = null;
-		if (conf.separateFiles) {
-			exec = new ThreadPoolExecutor(conf.nThreads,
-					conf.nThreads, Long.MAX_VALUE, TimeUnit.MILLISECONDS,
-					new LinkedBlockingQueue<Runnable>(conf.nThreadsQueue),
-					new ThreadPoolExecutor.CallerRunsPolicy());
-			System.out.println("Processing files");
-		} else {
-			cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats, df);
-			System.out.println("Reading files");
-		}
+		ExecutorService exec = Executors.newFixedThreadPool(conf.nThreads);
+		CityGMLConverterData cgml = new CityGMLConverterData(uclm, conf, sourcePJ, targetPJ, stats, df);
+		System.out.println("Reading files");
+
 		int pathsLengthLength = (int)(Math.log10(paths.size())+1);
 		// here loop over citygmlfiles
 		for (int i = 0; i < paths.size(); i++) {
@@ -184,37 +177,33 @@ public class CityGMLConverter {
 				if (citygml.getCityGMLClass() == CityGMLClass.CITY_MODEL) {
 					CityModel cityModel = (CityModel)citygml;
 
-					if (conf.separateFiles) {
-						cgmlct = new CityGMLConverterThread(uclm, conf, sourcePJ, targetPJ, stats, df);
-					}
-
-					cgmlct.addBuildings(cityModel);
+					cgml.addBuildings(cityModel);
 					// everything that is need is now in cgmlct, rest can be deleted
 					cityModel = null;
-
-					if (conf.separateFiles) {
-						if (conf.nThreads > 1) {
-							exec.execute(cgmlct);
-						} else {
-							cgmlct.run();
-						}
-					}
 				}
 			}
 
 			reader.close();
-
 		}
-
-		if (conf.separateFiles) {
-			exec.shutdown();
-			exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} else {
-			cgmlct.run();
+		
+		System.out.println("Processing files");
+		final int buildingsPerThread = 1000;
+		int nThreads = (cgml.buildings.size() + buildingsPerThread - 1) / buildingsPerThread;
+		System.out.println("Splitting visibility calculation in " + 
+				nThreads + " chucks with " + buildingsPerThread + " buildings each, using " + 
+				conf.nThreads + " threads");
+		for (int thread = 0; thread < nThreads; thread++) {
+			exec.execute(new CityGMLVisibilityRunnable(cgml, thread * buildingsPerThread,
+					Math.min((thread + 1) * buildingsPerThread, cgml.buildings.size())));
 		}
-
-		System.out.println("Largest Building: " + df.format(uclm.maxHeight) + " m");
-		System.out.println("Smallest Building: " + df.format(uclm.minHeight) + " m");
+				
+		exec.shutdown();
+		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		
+		cgml.calcStreetProperties();
+		
+		System.out.println("Largest Building: " + df.format(Collections.max(stats.getBuildingHeights())) + " m");
+		System.out.println("Smallest Building: " + df.format(Collections.min(stats.getBuildingHeights())) + " m");
 
 		uclm.fakeUrbanClassFrac();
 		uclm.normBuildingFrac();

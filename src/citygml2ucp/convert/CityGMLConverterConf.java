@@ -148,20 +148,11 @@ public class CityGMLConverterConf {
 	double heightReductionP;
 	private static final double heightReductionPDefault = 0.;
 	
-	boolean separateFiles;
-	private static boolean separateFilesDefault = false;
-	
 	/**
 	 * Number of maximal parallel threads
 	 */
 	int nThreads;
 	private static int nThreadsDefault = 1;
-
-	/**
-	 * Maximum threads in the queue
-	 */
-	int nThreadsQueue;
-	private static int nThreadsQueueDefault = 1;
 
 	/**
 	 * Folder/File of the CityGML data set
@@ -313,13 +304,10 @@ public class CityGMLConverterConf {
 
 			effDist = prop.getBoolean("effDist", effDistDefault);
 
-			separateFiles = prop.getBoolean("separateFiles", separateFilesDefault);
-			
 			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
 			if (heightReductionP > 0.) doHeightReduction = true;
 			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
-			nThreadsQueue = prop.getInt("nThreadsQueue", nThreadsQueueDefault);
 
 			inputGMLFolder = prop.getString("inputGMLFolder",
 					inputGMLFolderDefault);
