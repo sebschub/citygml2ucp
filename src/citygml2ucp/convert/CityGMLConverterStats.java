@@ -20,7 +20,6 @@ import citygml2ucp.tools.WritableField;
 import citygml2ucp.tools.WritableFieldFloat;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
-import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFileWriter;
 
 /**
@@ -262,15 +261,15 @@ public class CityGMLConverterStats extends NetCDFData {
 		
 		Writer fw = new FileWriter(log);
 		
-		writeStringList(fw, "Files with read error", readErrorList);
-		writeStringList(fw, "Building with ignored building parts", ignoredBuildingPartList);
-		writeStringList(fw, "Building without roofs", noRoofList);
-		writeStringList(fw, "Building without walls", noWallList);
-		writeStringList(fw, "Building without grounds", noGroundList);
+		writeStringList(fw, "* Files with read error", readErrorList);
+		writeStringList(fw, "* Building with ignored building parts", ignoredBuildingPartList);
+		writeStringList(fw, "* Building without roofs", noRoofList);
+		writeStringList(fw, "* Building without walls", noWallList);
+		writeStringList(fw, "* Building without grounds", noGroundList);
 	
-		writeStringMap(fw, "Surfaces with invalid polygons", invalid);
-		writeStringMap(fw, "Non-Planar surface", nonPlanar);
-		writeStringMap(fw, "Surface without distance", surfaceWithoutDistance);
+		writeStringMap(fw, "* Surfaces with invalid polygons", invalid);
+		writeStringMap(fw, "* Non-Planar surface", nonPlanar);
+		writeStringMap(fw, "* Surface without distance", surfaceWithoutDistance);
 
 		fw.close();
 	}
@@ -285,8 +284,6 @@ public class CityGMLConverterStats extends NetCDFData {
 
 	@Override
 	public DimensionsAndVariables addToNetCDFfile(NetcdfFileWriter ncfile) {
-		ncfile.addGroupAttribute(null, new Attribute("institution", "PIK"));
-
 		List<WritableDimension> dimlist = new ArrayList<>();
 		dimlist.add(unlimetedDimension);
 		unlimetedDimension.setLength(buildingHeights.size());
