@@ -143,6 +143,10 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 		}
 
 		polygon2d = new Polygon2d(xcoord, ycoord);
+		// area of polygon is 0. This is a faulty one.
+		if (polygon2d.getArea() == 0.) {
+			throw new IllegalArgumentException("Polygon with area of 0. Illegal polygon.");
+		}
 
 		this.signedArea = this.calcSignedArea();
 		this.centroid = this.calcCentroid();
