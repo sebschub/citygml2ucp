@@ -149,7 +149,6 @@ public class CityGMLConverter {
 
 		readImpSurfaceFile(conf, uclm);
 
-		ExecutorService exec = Executors.newFixedThreadPool(conf.nThreads);
 		CityGMLConverterData cgml = new CityGMLConverterData(uclm, conf, sourcePJ, targetPJ, stats, df);
 		System.out.println("Reading files");
 
@@ -186,15 +185,26 @@ public class CityGMLConverter {
 			reader.close();
 		}
 		
-		int nChunks = (cgml.buildings.size() + conf.nBuildingsPerThread - 1) / conf.nBuildingsPerThread;
-		int nThreads = Math.min(conf.nThreads, nChunks);
-		System.out.println("Splitting visibility calculation in " + 
-				nChunks + " chunk(s) with " + conf.nBuildingsPerThread + " buildings each, using " + 
-				Math.min(conf.nThreads, nChunks) + " thread(s)");
+		int nChunks;
+		int nThreads;
+		if (conf.nThreads == 1) {
+			nChunks = 1;
+			nThreads = 1;
+			System.out.println("Visibility calculation using 1 thread");
+		} else {
+			nChunks = (cgml.buildings.size() + conf.nBuildingsPerThread - 1) / conf.nBuildingsPerThread;
+			nThreads = Math.min(conf.nThreads, nChunks);
+			System.out.println("Splitting visibility calculation in " + 
+					nChunks + " chunk(s) with " + conf.nBuildingsPerThread + " buildings each, using " + 
+					nThreads + " thread(s)");
+		}
+
+		ExecutorService exec = Executors.newFixedThreadPool(nThreads);
+		
 		for (int indexChunk = 0; indexChunk < nChunks; indexChunk++) {
 			exec.execute(new CityGMLVisibilityRunnable(cgml, indexChunk * conf.nBuildingsPerThread,
 					Math.min((indexChunk + 1) * conf.nBuildingsPerThread, cgml.buildings.size()), indexChunk,
-					nThreads));
+					nChunks));
 		}
 				
 		exec.shutdown();

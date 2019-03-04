@@ -17,18 +17,18 @@ public class CityGMLVisibilityRunnable implements Runnable {
 	
 	private final int start, end;
 	
-	private final int chunkIndex, nThreads;
+	private final int chunkIndex, nChunks;
 	
 	/**
 	 * 
 	 */
-	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int nThreads) {
+	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int nChunks) {
 		this.citydata = citydata;
 		this.start = start;
 		this.end = end;
 		
 		this.chunkIndex = chunkIndex;
-		this.nThreads = nThreads;
+		this.nChunks = nChunks;
 	}
 
 	@Override
@@ -36,18 +36,18 @@ public class CityGMLVisibilityRunnable implements Runnable {
 		
 		// length of maximum number in message
 		int outputLength;
-		if (nThreads == 1) {
+		if (nChunks == 1) {
 			// write number of building in case of only one chunk
 			outputLength = (int) (Math.log10(citydata.buildings.size()) + 1);
 		} else {
 			// write of chunk
-			outputLength = (int) (Math.log10(nThreads) + 1);
+			outputLength = (int) (Math.log10(nChunks) + 1);
 			System.out.println(" Started chunk  " + String.format("%" + outputLength + "d", chunkIndex + 1)
-			+ "/" + nThreads);
+			+ "/" + nChunks);
 		}
 		
 		for (int iBuildingSending = this.start; iBuildingSending < this.end; iBuildingSending++) {
-			if (nThreads == 1) {
+			if (nChunks == 1) {
 				System.out.println(" Building " + String.format("%" + outputLength + "d", iBuildingSending + 1)
 						+ "/" + citydata.buildings.size());
 			}
@@ -123,9 +123,9 @@ public class CityGMLVisibilityRunnable implements Runnable {
 				}
 			}
 		}
-		if (nThreads > 1) {
+		if (nChunks > 1) {
 			System.out.println(
-					" Finished chunk " + String.format("%" + outputLength + "d", chunkIndex + 1) + "/" + nThreads);
+					" Finished chunk " + String.format("%" + outputLength + "d", chunkIndex + 1) + "/" + nChunks);
 		}
 	}
 
