@@ -48,8 +48,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	/**
 	 * Dimension for the urban height
 	 */
-	protected WritableAxis height, height1, heightsend;
-	protected double[] heighta;
+	protected WritableAxis height1;
 
 	/**
 	 * Probability to have a building on a certain height level
@@ -120,21 +119,18 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		addToWrite(this.ke_uhl);
 
 		// find max of ke_uhl:
-		int maxv = ke_uhl[0];
+		ke_urbanmax = ke_uhl[0];
 		for (int i = 0; i < ke_uhl.length; i++) {
 			if (ke_uhl[i] < 1) {
 				throw new IllegalArgumentException(
 						"all ke_uhl elements must be positive.");
 			}
-			if (ke_uhl[i] > maxv) {
-				maxv = ke_uhl[i];
+			if (ke_uhl[i] > ke_urbanmax) {
+				ke_urbanmax = ke_uhl[i];
 			}
 		}
 
-		ke_urbanmax = maxv;
-
 		// height
-		this.heighta = height;
 		if (height.length != ke_urbanmax) {
 			throw new IllegalArgumentException(
 					"height must be given for maximal number of urban level.");
@@ -740,10 +736,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public void setKe_urban(int uc, int ke) {
 		Index ind = ke_uhl.getIndex();
 		ke_uhl.setInt(ind.set(uc), ke);
-	}
-
-	public double[] getHeightA() {
-		return this.heighta;
 	}
 
 	public int getHeightIndex(double height) {
