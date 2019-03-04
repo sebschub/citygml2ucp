@@ -139,16 +139,6 @@ public class CityGMLConverterConf {
 	private static final boolean effDistDefault = false;
 
 	/**
-	 * Do a height reduction ignoring large buildings?
-	 */
-	boolean doHeightReduction = false;
-	/**
-	 * Value of summed probablity which is ok to ignore
-	 */
-	double heightReductionP;
-	private static final double heightReductionPDefault = 0.;
-	
-	/**
 	 * Number of maximal parallel threads
 	 */
 	int nThreads;
@@ -311,9 +301,6 @@ public class CityGMLConverterConf {
 
 			effDist = prop.getBoolean("effDist", effDistDefault);
 
-			heightReductionP = prop.getDouble("heightReductionP", heightReductionPDefault);
-			if (heightReductionP > 0.) doHeightReduction = true;
-			
 			nThreads = prop.getInt("nThreads", nThreadsDefault);
 			nBuildingsPerThread = prop.getInt("nBuildingsPerThread", nBuildingsPerThreadDefault);
 			

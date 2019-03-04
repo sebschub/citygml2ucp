@@ -67,6 +67,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	protected WritableField w_street;
 
 	/**
+	 * Fraction of buildings whose height was reduced to the maximum
+	 */
+	protected WritableField fr_roof_adj;
+	
+	/**
 	 * Urban fraction of a grid cell
 	 */
 	protected WritableField fr_urb;
@@ -207,6 +212,13 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				"building_width", "building width", "m",
 				"rotated_pole");
 		addToWrite(this.w_build);
+		
+		// adjusted roof fraction
+		this.fr_roof_adj = new WritableFieldDouble("FR_ROOF_AD", ldim,
+				"fr_roof_adjusted", "fraction roof adjusted", "1",
+				"rotated_pole");
+		addToWrite(this.fr_roof_adj);
+
 
 		ldim.add(2, this.height1);
 		// dims is now nucdim, angle_udir, zdim, latdim, londim
@@ -260,6 +272,14 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 				heighti, rlati, rloni)
 				+ value);
 	}
+	
+	public void incBuildProbAdjusted(int uc, int sd, int rlati, int rloni,
+			double value) {
+		setBuildProbAdjusted(uc, sd, rlati, rloni, getBuildProbAdjusted(uc, sd,
+				rlati, rloni)
+				+ value);
+	}
+
 
 	public void setUrbanFrac(int lat, int lon, double value) {
 		if (lat >= getJe_tot() || lat < 0) {
@@ -383,6 +403,22 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		fr_roof.set(ind.set(uc, sd, lev, rlati, rloni), value);
 	}
 
+	public void setBuildProbAdjusted(int uc, int sd, int rlati, int rloni,
+			double value) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (rlati >= getJe_tot() || rlati < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (rloni >= getIe_tot() || rloni < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+		Index ind = fr_roof_adj.getIndex();
+		fr_roof_adj.set(ind.set(uc, sd, rlati, rloni), value);
+	}
+
+	
 	public double getBuildProb(int uc, int sd, int lev, LatLonPoint llp) {
 		ProjectionPoint pp = rotpol.latLonToProj(llp);
 		return getBuildProb(uc, sd, lev, getRLatIndex(pp.getY()),
@@ -405,6 +441,21 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 		Index ind = fr_roof.getIndex();
 		return fr_roof.get(ind.set(uc, sd, lev, rlati, rloni));
+	}
+	
+	public double getBuildProbAdjusted(int uc, int sd, int rlati, int rloni) {
+		if (uc >= getNuclasses() || uc < 0) {
+			throw new IllegalArgumentException("uc not in range");
+		}
+		if (rlati >= getJe_tot() || rlati < 0) {
+			throw new IllegalArgumentException("lat not in range");
+		}
+		if (rloni >= getIe_tot() || rloni < 0) {
+			throw new IllegalArgumentException("lon not in range");
+		}
+
+		Index ind = fr_roof_adj.getIndex();
+		return fr_roof_adj.get(ind.set(uc, sd, rlati, rloni));
 	}
 
 	public double getBuildingFrac(int uc, int irlat, int irlon) {
@@ -591,6 +642,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 											getBuildProb(uc, sd, lev, lat, lon)
 													/ sumStreet[sd]);
 								}
+								setBuildProbAdjusted(uc, sd, lat, lon,
+										getBuildProbAdjusted(uc, sd, lat, lon)
+												/ sumStreet[sd]);
 							} else {
 								for (int lev = 0; lev < getKe_urban(uc); lev++) {
 									setBuildProb(uc, sd, lev, lat, lon, 0.);
@@ -616,73 +670,6 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		}
 	}
 
-	/**
-	 * Find the highest index for every grid cell for which the summed probability over that level
-	 * is smaller than {@code ignoreBP}, set height parameters
-	 * correspondingly and reduce output size.
-	 * 
-	 * @param ignoredBP
-	 *            Percentage of ignored buildings
-	 */
-	public void reduceHeight(double ignoredBP) {
-
-		int[] maxLength = new int[getNuclasses()];
-		// get the height above which buildings can be ignored
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			maxLength[uc] = 0;
-			for (int lat = 0; lat < getJe_tot(); lat++) {
-				for (int lon = 0; lon < getIe_tot(); lon++) {
-					if (getBuildingFrac(uc, lat, lon) > 1.e-12) {
-						for (int sd = 0; sd < getNstreedir(); sd++) {
-							int localeMaxLength = getKe_urban(uc);
-							double ignored = 0;
-							for (int lev = getKe_urban(uc) - 1; lev >= 0.; lev--) {
-								ignored += getBuildProb(uc, sd, lev, lat, lon);
-								if (ignored < ignoredBP)
-									localeMaxLength--;
-							}
-							double sum = 0.;
-							for (int lev = 0; lev < localeMaxLength; lev++) {
-								sum += getBuildProb(uc, sd, lev, lat, lon);
-							}
-							if (sum > 1.e-14) {
-								sum = 1. / sum;
-								for (int lev = 0; lev < localeMaxLength; lev++) {
-									setBuildProb(uc, sd, lev, lat, lon,
-											getBuildProb(uc, sd, lev, lat, lon)
-													* sum);
-								}
-							}
-							for (int lev = localeMaxLength; lev < getKe_urban(uc); lev++) {
-								setBuildProb(uc, sd, lev, lat, lon, 0.);
-							}
-							if (localeMaxLength > maxLength[uc])
-								maxLength[uc] = localeMaxLength;
-						}
-					}
-				}
-			}
-		}
-
-		int maxmaxLength = 0;
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			if (maxmaxLength < maxLength[uc]) {
-				maxmaxLength = maxLength[uc];
-			}
-		}
-
-		
-		for (int uc = 0; uc < getNuclasses(); uc++) {
-			setKe_urban(uc, maxLength[uc]);
-		}
-		ke_urbanmax = maxmaxLength;
-		System.out.println("Height reduced to " + ke_urbanmax + " levels.");
-
-		height1.setLength(maxmaxLength);
-
-		fr_roof.resetDim();
-
-	}
 
 	/**
 	 * Set fields to the missing value where not defined.

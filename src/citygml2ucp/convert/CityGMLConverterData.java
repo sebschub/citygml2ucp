@@ -414,7 +414,16 @@ class CityGMLConverterData {
 				uclm.incStreetWidth(iuc, indexAngle, building.irlat, building.irlon, distance * sendingWall.getArea());
 
 				uclm.incStreetSurfaceSum(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
-				uclm.incBuildProb(iuc, indexAngle, uclm.getHeightIndex(building.height), building.irlat, building.irlon, sendingWall.getArea());
+				
+				int indexHeight;
+				try {
+					indexHeight = uclm.getHeightIndex(building.height);
+				} catch (IllegalArgumentException e) {
+					// assume that building is too high for specified hhl_uhl so use highest possibility
+					indexHeight = uclm.getKe_urban(iuc) - 1;
+					uclm.incBuildProbAdjusted(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
+				}
+				uclm.incBuildProb(iuc, indexAngle, indexHeight, building.irlat, building.irlon, sendingWall.getArea());
 
 			}
 			uclm.incBuildingFrac(iuc, building.irlat, building.irlon, building.area);
