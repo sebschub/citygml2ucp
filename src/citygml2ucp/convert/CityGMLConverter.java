@@ -221,7 +221,7 @@ public class CityGMLConverter {
 		uclm.normStreetWidth();
 		uclm.calculateBuildingWidth();
 		if (conf.consistentOutput) {
-			uclm.defineMissingData();
+			uclm.defineMissingData(conf.frUrbLimit);
 		}
 		
 		long lasted = new Date().getTime() - startTime;

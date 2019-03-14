@@ -221,10 +221,16 @@ public class CityGMLConverterConf {
 	private static String sepStringDefault = ",";
 
 	/**
-	 * Output all fields only where building and urban fraction > 1e-12?
+	 * Output all fields only where urban fraction >= frUrbLimit?
 	 */
 	boolean consistentOutput;
 	private static boolean consistentOutputDefault = true;
+	
+	/**
+	 * If consistentOutput, output only for fr_urb >= frUrbLimit
+	 */
+	double frUrbLimit;
+	private static double frUrbLimitDefault = 0.05;
 	
 	/**
 	 * Debug output
@@ -332,6 +338,10 @@ public class CityGMLConverterConf {
 
 			consistentOutput = prop.getBoolean("consistentOutput",
 					consistentOutputDefault);
+			
+			frUrbLimit = prop.getDouble("frUrbLimit",
+					frUrbLimitDefault);
+
 
 			debugOutput = prop.getBoolean("debugOutput",
 					debugOutputDefault);

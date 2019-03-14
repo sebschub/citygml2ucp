@@ -675,9 +675,9 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	/**
 	 * Set fields to the missing value where not defined.
 	 * 
-	 * Building and urban fraction > 1.e-12 define an urban cell.
+	 * Building fraction > 1.e-12  and urban fraction > frUrbLimit define an urban cell.
 	 */
-	public void defineMissingData() {
+	public void defineMissingData(double frUrbLimit) {
 		for (int uc = 0; uc < getNuclasses(); uc++) {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
@@ -688,7 +688,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 						}
 					}
 					setUndef = (getBuildingFrac(uc, lat, lon) < 1.e-12)
-							|| (getUrbanFrac(lat, lon) < 1.e-12)
+							|| (getUrbanFrac(lat, lon) < frUrbLimit)
 							|| setUndef;
 					if (setUndef) {
 						for (int sd = 0; sd < getNstreedir(); sd++) {
