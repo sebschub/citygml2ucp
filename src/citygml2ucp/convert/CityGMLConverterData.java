@@ -3,12 +3,14 @@ package citygml2ucp.convert;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.vecmath.Point3d;
 
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
+import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
 import org.citygml4j.model.citygml.building.Building;
 import org.citygml4j.model.citygml.building.BuildingPart;
@@ -168,39 +170,16 @@ class CityGMLConverterData {
 						}
 					}
 				} else if (building.isSetLod1Solid()) {
-					// found lod1dsolid, they should cover main part of the building building.
-					// Ignore the rest for now but take a note.
+					// add building parts
 					if (building.isSetConsistsOfBuildingPart()) {
-						stats.addIgnoredBuildingPart(buildingId);
-					}
-					
-					List<Polygon3dWithVisibilities> horizontalSurfaces = new ArrayList<>();
-					
-					CompositeSurface surfaceCS = (CompositeSurface)((Solid)building.getLod1Solid().getSolid()).getExterior().getSurface();
-					List<SurfaceProperty> surfacesSP = surfaceCS.getSurfaceMember();
-					
-					int minHeightIndex = -1;
-					double minHeight = Double.MAX_VALUE;
-					
-					for (int surfaceSPIndex = 0; surfaceSPIndex < surfacesSP.size(); surfaceSPIndex++) {
-						try {
-							Polygon3dWithVisibilities polygon = new Polygon3dWithVisibilities(buildingId, surfacesSP.get(surfaceSPIndex));
-							if (polygon.isHorizontal()) {
-								horizontalSurfaces.add(polygon);
-								if (polygon.getHeight() < minHeight) {
-									minHeightIndex = surfaceSPIndex;
-								}
-							} else {
-								buildingWalls.add(polygon);
-							}
-						} catch (IllegalArgumentException e) {
-							stats.addInvalid(buildingId, surfaceCS.getId());
+						//stats.addIgnoredBuildingPart(buildingId);
+						for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
+							addLod1DSolidToPolygons(buildingPartProperty.getBuildingPart(), buildingId,
+									buildingWalls, buildingRoofs, buildingGrounds);
 						}
 					}
-					// assume only lowest horizontal surface is ground
-					buildingGrounds.add(horizontalSurfaces.get(minHeightIndex));
-					buildingRoofs = horizontalSurfaces;
-					buildingRoofs.remove(minHeightIndex);
+					// add main part
+					addLod1DSolidToPolygons(building, buildingId, buildingWalls, buildingRoofs, buildingGrounds);
 				} else if (building.isSetConsistsOfBuildingPart()) {
 					for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
 						BuildingPart bp = buildingPartProperty.getBuildingPart();
@@ -273,6 +252,55 @@ class CityGMLConverterData {
 				stats.addBuildingGround(area);
 			}
 		}
+	}
+
+	/**
+	 * @param bp
+	 * @param buildingId
+	 * @param buildingWalls
+	 * @param buildingRoofs
+	 * @param buildingGrounds
+	 */
+	private void addLod1DSolidToPolygons(AbstractBuilding bp, String buildingId,
+			List<Polygon3dWithVisibilities> buildingWalls, List<Polygon3dWithVisibilities> buildingRoofs,
+			List<Polygon3d> buildingGrounds) {
+		List<Polygon3dWithVisibilities> horizontalSurfaces = new ArrayList<>();
+		
+		List<SurfaceProperty> surfacesSP;
+		try {
+			CompositeSurface surfaceCS = (CompositeSurface)((Solid)bp.getLod1Solid().getSolid()).getExterior().getSurface();
+			surfacesSP = surfaceCS.getSurfaceMember();
+
+			for (SurfaceProperty surface : surfacesSP) {
+				try {
+					Polygon3dWithVisibilities polygon = new Polygon3dWithVisibilities(buildingId, surface);
+					if (polygon.isHorizontal()) {
+						horizontalSurfaces.add(polygon);
+					} else {
+						buildingWalls.add(polygon);
+					}
+				} catch (IllegalArgumentException e) {
+					stats.addInvalid(buildingId, surfaceCS.getId());
+				}
+			}
+			
+			double avHeight = horizontalSurfaces.stream().mapToDouble(hs -> hs.getHeight()).average().orElse(Double.NaN);
+
+			// assume horizontal surfaces below average is ground, above is roof
+			for (Polygon3dWithVisibilities horizontalSurface : horizontalSurfaces) {
+				if (horizontalSurface.getHeight() < avHeight) {
+					buildingGrounds.add(horizontalSurface);							
+				} else {
+					buildingRoofs.add(horizontalSurface);
+				}						
+			}
+		
+		} catch (Exception e) {
+			stats.addIgnoredBuildingPart(buildingId);
+			surfacesSP = new LinkedList<>();
+		}
+		
+
 	}
 
 
