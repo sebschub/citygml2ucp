@@ -450,6 +450,12 @@ class CityGMLConverterData {
 					// assume that building is too high for specified hhl_uhl so use highest possibility
 					indexHeight = uclm.getKe_urban(iuc) - 1;
 					uclm.incBuildProbAdjusted(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
+					if (conf.debugOutput) {
+						System.out.println("   Building with height " 
+								+ df.format(building.height)
+								+ " reduced to " 
+								+ df.format(uclm.getUrbanHeight(indexHeight)));
+					}
 				}
 				uclm.incBuildProb(iuc, indexAngle, indexHeight, building.irlat, building.irlon, sendingWall.getArea());
 

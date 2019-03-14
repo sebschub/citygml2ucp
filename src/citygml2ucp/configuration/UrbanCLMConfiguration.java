@@ -612,6 +612,11 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		return ang_udir.getValue(sd);
 	}
 
+	public double getUrbanHeight(int iu) {
+		return this.height1.getValue(iu);
+	}
+
+	
 	/**
 	 * Normalize the building probability for one street direction and calculate
 	 * the fraction of the street direction in a grid cell.
