@@ -13,12 +13,12 @@ public class DimensionsAndVariables {
 	public final List<Variable> variable;
 
 	public DimensionsAndVariables(List<Dimension> dimension, List<Variable> variable) {
-		this.dimension = (Objects.isNull(dimension)) ? new ArrayList<Dimension>() : dimension;
-		this.variable  = (Objects.isNull(variable))  ? new ArrayList<Variable>()  : variable;
+		this.dimension = (Objects.isNull(dimension)) ? new ArrayList<>() : dimension;
+		this.variable  = (Objects.isNull(variable))  ? new ArrayList<>()  : variable;
 	}
 	
 	public DimensionsAndVariables() {
-		this.dimension = new ArrayList<Dimension>();
-		this.variable  = new ArrayList<Variable>();
+		this.dimension = new ArrayList<>();
+		this.variable  = new ArrayList<>();
 	}
 }

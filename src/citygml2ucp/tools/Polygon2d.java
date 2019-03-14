@@ -40,7 +40,7 @@ public class Polygon2d extends ClosedSurface<Point2d> {
 	 * @throws IllegalArgumentException
 	 *             x and y do not have the same length
 	 */
-	public Polygon2d(double[] x, double[] y) throws IllegalArgumentException {
+	public Polygon2d(double[] x, double[] y) {
 		if (x.length != y.length) {
 			throw new IllegalArgumentException(
 					"x and y arrays have to be of the same size.");

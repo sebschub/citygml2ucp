@@ -107,7 +107,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 		List<WritableDimension> ldim2 = new LinkedList<>();
 		ldim2.add(this.n_uclass);
 
-		if (!(ke_uhl.length == n_uclass)) {
+		if (ke_uhl.length != n_uclass) {
 			throw new IllegalArgumentException(
 					"ke_uhl must be of length n_uclass");
 		}
@@ -230,7 +230,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 
 	}
 
-	public UrbanCLMConfiguration() throws IllegalArgumentException {
+	public UrbanCLMConfiguration() {
 		super();
 		initalizeUrbanFields(1, new double[] { -45., 0., 45., 90., },
 				new int[] { 10 }, new double[] { 0., 3., 7., 10., 13., 19.,
@@ -240,8 +240,7 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 	public UrbanCLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
 			int je_tot, int nuclasses, double[] streetdir, int[] ke_urban,
-			double[] height)
-			throws IllegalArgumentException {
+			double[] height) {
 		super(pollat, pollon, dlat, dlon, startlat_tot, startlon_tot, ie_tot,
 				je_tot);
 		initalizeUrbanFields(nuclasses, streetdir, ke_urban, height);

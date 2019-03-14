@@ -73,7 +73,6 @@ public class WritableRotatedPole extends RotatedPole implements NetCDFWritable {
 		Variable var = this.dimensionsAndVariablesAddedToNetcdf.get(ncfile).variable.get(0);
 		// character is written anyway so set it to ""
 		ArrayChar ac = new ArrayChar.D0();
-		// ac.setChar(0, ' ');
 		ncfile.write(var, ac);
 	}
 }

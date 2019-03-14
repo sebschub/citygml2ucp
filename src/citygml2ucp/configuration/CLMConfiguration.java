@@ -23,7 +23,7 @@ public class CLMConfiguration extends NetCDFData {
 	/**
 	 * Radius of earth in km
 	 */
-	public final static double r = 6371.229;
+	public static final double RADIUS_EARTH = 6371.229;
 
 	/**
 	 * Rotated pole
@@ -38,11 +38,6 @@ public class CLMConfiguration extends NetCDFData {
 	 * Longitude in rotated coordinate system
 	 */
 	protected final WritableAxis zonalAxis;
-
-	//	/**
-	//	 * Vertical dimension
-	//	 */
-	//	protected final WritableDimension verticalDimension;
 
 	/**
 	 * Area of a grid cell, a function of latitude
@@ -70,7 +65,7 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	public CLMConfiguration(double pollat, double pollon, double dlat,
 			double dlon, double startlat_tot, double startlon_tot, int ie_tot,
-			int je_tot) throws IllegalArgumentException {
+			int je_tot) {
 
 		rotpol = new WritableRotatedPole(pollat, pollon);
 		addToWrite(rotpol);
@@ -99,10 +94,6 @@ public class CLMConfiguration extends NetCDFData {
 			throw new IllegalArgumentException("je_tot out of range.");
 		}
 
-		// if (ke_tot < 0) {
-		// throw new IllegalArgumentException("ke_tot out of range.");
-		// }
-
 		zonalAxis = new WritableAxis("rlon", ie_tot, "rlon", "X",
 				"grid_longitude", "rotated longitude", "degrees", startlon_tot,
 				dlon);
@@ -112,9 +103,6 @@ public class CLMConfiguration extends NetCDFData {
 				"grid_latitude", "rotated latitude", "degrees", startlat_tot,
 				dlat);
 		addToWrite(meridionalAxis);
-
-		// verticalDimension = new WritableDimension("level", ke_tot);
-		// addToWrite(verticalDimension); //add in subclass if needed
 
 		List<WritableDimension> dimlist = new ArrayList<>();
 		dimlist.add(meridionalAxis);
@@ -143,7 +131,7 @@ public class CLMConfiguration extends NetCDFData {
 	 */
 	protected void calculateArea() {
 		Index ind = area.getIndex();
-		double fac = 2. * r * r * Math.toRadians(getDlon())
+		double fac = 2. * RADIUS_EARTH * RADIUS_EARTH * Math.toRadians(getDlon())
 				* Math.sin(Math.toRadians(getDlat() / 2.));
 		for (int i = 0; i < meridionalAxis.getLength(); i++) {
 			area.set(ind.set(i), fac * Math.cos(Math.toRadians(getRLat(i))));
@@ -224,15 +212,6 @@ public class CLMConfiguration extends NetCDFData {
 		return meridionalAxis.getLength();
 	}
 
-	//	/**
-	//	 * Get total number if grid points in vertical direction.
-	//	 * 
-	//	 * @return Number of grid points
-	//	 */
-	//	public int getKe_tot() {
-	//		return verticalDimension.getLength();
-	//	}
-
 	/**
 	 * Get geographical longitude of the rotated north pole.
 	 * 
@@ -304,7 +283,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * @throws IllegalArgumentException
 	 *             Latitude not in range
 	 */
-	public double getArea(int rlati) throws IllegalArgumentException {
+	public double getArea(int rlati) {
 		if (rlati >= getJe_tot() || rlati < 0) {
 			throw new IllegalArgumentException("rlati out of range.");
 		}
@@ -323,7 +302,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * @throws IllegalArgumentException
 	 *             Index not in range
 	 */
-	public double getLat(int j, int i) throws IllegalArgumentException {
+	public double getLat(int j, int i) {
 		if (j >= getJe_tot() || j < 0) {
 			throw new IllegalArgumentException("j out of range.");
 		}
@@ -345,7 +324,7 @@ public class CLMConfiguration extends NetCDFData {
 	 * @throws IllegalArgumentException
 	 *             Index not in range
 	 */
-	public double getLon(int j, int i) throws IllegalArgumentException {
+	public double getLon(int j, int i) {
 		if (j >= getJe_tot() || j < 0) {
 			throw new IllegalArgumentException("j out of range");
 		}

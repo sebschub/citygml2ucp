@@ -288,7 +288,6 @@ public class CityGMLConverterConf {
 
 			ie_tot = prop.getInt("ie_tot", ie_totDefault);
 			je_tot = prop.getInt("je_tot", je_totDefault);
-			// ke_tot = prop.getInt("ke_tot", ke_totDefault);
 
 			n_uclass = prop.getInt("n_uclass", n_uclassDefault);
 

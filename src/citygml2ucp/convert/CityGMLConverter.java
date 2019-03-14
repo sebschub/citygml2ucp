@@ -77,7 +77,7 @@ public class CityGMLConverter {
 			while (scanner.hasNextLine()) {
 				Scanner lScanner = new Scanner(scanner.nextLine());
 				lScanner.useDelimiter(conf.sepString);
-				List<Double> values = new LinkedList<Double>();
+				List<Double> values = new LinkedList<>();
 				while (lScanner.hasNext()) {
 					values.add(Double.parseDouble(lScanner.next()));
 				}
@@ -136,7 +136,7 @@ public class CityGMLConverter {
 					.filter((p) -> p.toFile().getAbsolutePath().toLowerCase().endsWith("gml")
 							|| p.toFile().getAbsolutePath().toLowerCase().endsWith("xml"))
 					.forEach((p) -> paths.add(p));
-			if (paths.size() == 0) {
+			if (paths.isEmpty()) {
 				System.err.println("No gml or xml files in " + conf.inputGMLFolder + " found");
 				System.err.println("Stopping now");
 				System.exit(10);

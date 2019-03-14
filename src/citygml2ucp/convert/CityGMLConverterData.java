@@ -172,7 +172,6 @@ class CityGMLConverterData {
 				} else if (building.isSetLod1Solid()) {
 					// add building parts
 					if (building.isSetConsistsOfBuildingPart()) {
-						//stats.addIgnoredBuildingPart(buildingId);
 						for (BuildingPartProperty buildingPartProperty : building.getConsistsOfBuildingPart()) {
 							addLod1DSolidToPolygons(buildingPartProperty.getBuildingPart(), buildingId,
 									buildingWalls, buildingRoofs, buildingGrounds);
@@ -201,7 +200,7 @@ class CityGMLConverterData {
 				}
 
 				double height;
-				if (buildingRoofs.size() > 0) {
+				if (!buildingRoofs.isEmpty()) {
 					// calculate weighted mean of heights of roofs and use it as
 					// height information
 					double sumRoofArea = 0.;
@@ -222,7 +221,7 @@ class CityGMLConverterData {
 				}
 
 				double area = 0.;
-				if (buildingGrounds.size() > 0) {
+				if (!buildingGrounds.isEmpty()) {
 					for (Polygon3d ground : buildingGrounds) {
 						area += ground.getXYProjectedArea();
 					}
@@ -232,7 +231,7 @@ class CityGMLConverterData {
 					stats.addNoGround(buildingId);
 				}
 
-				if (buildingWalls.size() > 0) {
+				if (!buildingWalls.isEmpty()) {
 					// check coplanarity
 					for (Polygon3dWithVisibilities wall : buildingWalls) {
 						if (!wall.checkCoplanarity()) {
@@ -315,7 +314,7 @@ class CityGMLConverterData {
 			String buildingId) {
 
 		// new array to include all these surfaces
-		List<Polygon3dWithVisibilities> polygons = new ArrayList<Polygon3dWithVisibilities>();
+		List<Polygon3dWithVisibilities> polygons = new ArrayList<>();
 
 		List<SurfaceProperty> surf = surface.getLod2MultiSurface().getMultiSurface().getSurfaceMember();
 		for (int i = 0; i < surf.size(); i++) {
@@ -385,7 +384,7 @@ class CityGMLConverterData {
 				if (sendingWall.isHorizontal())
 					continue;
 
-				if (sendingWall.visibilities.size() == 0) {
+				if (sendingWall.visibilities.isEmpty()) {
 					// add information for later
 					stats.addSurfaceWithoutDistance(building.id, sendingWall.id);
 					continue;

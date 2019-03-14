@@ -459,7 +459,7 @@ public class WritableAxis extends WritableDimension {
 	 * @throws IllegalArgumentException
 	 *             {@code value} is outside of the range of this axis
 	 */
-	public int getIndexOf(double value) throws IllegalArgumentException {
+	public int getIndexOf(double value) {
 		int returnValue;
 		if (isPBC) {
 			double[] expandedValues = new double[values.length + 2];
@@ -523,7 +523,7 @@ public class WritableAxis extends WritableDimension {
 	 * @throws IllegalArgumentException
 	 *             {@code i} is not in the range of the axis.
 	 */
-	public double getDValue(int i) throws IllegalArgumentException {
+	public double getDValue(int i) {
 		try {
 			return getDValue(i, this.values);
 		} catch (IllegalArgumentException exep) {
@@ -544,8 +544,7 @@ public class WritableAxis extends WritableDimension {
 	 * @throws IllegalArgumentException
 	 *             {@code i} is not in the range of the axis.
 	 */
-	private double getDValue(int i, double[] values)
-			throws IllegalArgumentException {
+	private double getDValue(int i, double[] values) {
 		if (i < 0 || i > values.length - 1)
 			throw new IllegalArgumentException("Axisindex " + i
 					+ " out of range of given values.");

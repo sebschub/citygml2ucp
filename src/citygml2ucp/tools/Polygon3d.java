@@ -74,15 +74,10 @@ public class Polygon3d extends ClosedSurface<Point3d> {
 
 		List<Double> coord = CityGMLTools.coordinatesFromSurfaceProperty(surfaceProperty);
 
-		points = new LinkedList<Point3d>();
-		// System.out.println(coord.size()/3);
+		points = new LinkedList<>();
 		for (int i = 0; i < coord.size(); i += 3) {
 			points.add(new Point3d(coord.get(i), coord.get(i + 1), coord.get(i + 2)));
 		}
-
-		/*
-		 * // for testing points2 = new LinkedList<Point3d>(points);
-		 */
 
 		// create list of all possible
 		List<Vector3dEnh> connectionsList = new LinkedList<>();
