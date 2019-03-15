@@ -681,12 +681,26 @@ public class UrbanCLMConfiguration extends CLMConfiguration {
 			for (int lat = 0; lat < getJe_tot(); lat++) {
 				for (int lon = 0; lon < getIe_tot(); lon++) {
 					boolean setUndef = true;
+					// output if one street direction is used
 					for (int id = 0; id < getNstreedir(); id++) {
 						if (getStreetFrac(uc, id, lat, lon) > 1.e-10) {
 							setUndef = false;
+							break;
+						}
+					}
+					// no output if one street direction has strange values
+					for (int id = 0; id < getNstreedir(); id++) {
+						if (getStreetWidth(uc, id, lat, lon) < 0.) {
+							setUndef = true;
+							break;
+						}
+						if (getBuildingWidth(uc, id, lat, lon) < 0.) {
+							setUndef = true;
+							break;
 						}
 					}
 					setUndef = (getBuildingFrac(uc, lat, lon) < 1.e-12)
+							|| (getBuildingFrac(uc, lat, lon) > 1.)
 							|| (getUrbanFrac(lat, lon) < frUrbLimit)
 							|| setUndef;
 					if (setUndef) {
