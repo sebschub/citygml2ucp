@@ -116,8 +116,10 @@ public class CityGMLVisibilityRunnable implements Runnable {
 							}
 						}
 						
-						wallSending.visibilities.add(wallReceiving);
-						wallReceiving.visibilities.add(wallSending);
+						if (vis) {
+							wallSending.visibilities.add(wallReceiving);
+							wallReceiving.visibilities.add(wallSending);
+						}
 
 					}
 				}
