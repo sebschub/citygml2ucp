@@ -53,7 +53,7 @@ public class CityGMLVisibilityRunnable implements Runnable {
 			}
 			SimpleBuilding buildingSending = citydata.buildings.get(iBuildingSending);
 
-			for (int iWallSending = 0; iWallSending < buildingSending.walls.size() - 1; iWallSending++) {
+			for (int iWallSending = 0; iWallSending < buildingSending.walls.size(); iWallSending++) {
 				Polygon3dWithVisibilities wallSending = buildingSending.walls.get(iWallSending);
 
 				// check other buildings, skip current
