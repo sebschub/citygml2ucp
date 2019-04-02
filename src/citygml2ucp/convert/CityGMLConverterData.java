@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 import javax.vecmath.Point3d;
 
@@ -77,6 +78,7 @@ class CityGMLConverterData {
 
 	final List<SimpleBuilding> buildings;
 
+	private final Lock lock;
 
 	/**
 	 * Constructor.
@@ -93,7 +95,7 @@ class CityGMLConverterData {
 	 * @throws PJException
 	 */
 	public CityGMLConverterData(UrbanCLMConfiguration uclm, CityGMLConverterConf conf, PJ sourcePJ, PJ targetPJ,
-			CityGMLConverterStats stats, DecimalFormat df) {
+			CityGMLConverterStats stats, DecimalFormat df, Lock lock) {
 		this.uclm = uclm;
 		this.conf = conf;
 		this.sourcePJ = sourcePJ;
@@ -103,6 +105,8 @@ class CityGMLConverterData {
 		this.buildings = new ArrayList<SimpleBuilding>();
 
 		this.df = df;
+		
+		this.lock = lock;
 	}
 
 	public void addBuildings(CityModel base) throws PJException {
@@ -365,101 +369,110 @@ class CityGMLConverterData {
 		return (uclm.rotpol.latLonToProj(xyz[1], xyz[0]));
 	}
 
+	void calcStreetPropertiesForBuilding(SimpleBuilding building) {
+		if (conf.debugOutput) {
+			if (building.name == "") {
+				System.out.println(" Building with ID " + building.id);
+			} else {
+				System.out.println(" Building with ID " + building.id + " and name " + building.name);
+			}
+		}
+		for (Polygon3dWithVisibilities sendingWall : building.walls) {
+
+			if (sendingWall.isHorizontal())
+				continue;
+
+			if (sendingWall.visibilities.isEmpty()) {
+				// add information for later
+				stats.addSurfaceWithoutDistance(building.id, sendingWall.id);
+				continue;
+			}
+
+			if (conf.debugOutput) {
+				System.out.println(
+						"  Wall with area " + df.format(sendingWall.getArea()) + " and ID " + sendingWall.id);
+			}
+
+			List<Polygon3dVisibility> visibilityList = sendingWall.generateVisibilityList(conf.effDist);
+			Collections.sort(visibilityList);
+
+			// mean until area of sending surface is reached
+			double maxArea = sendingWall.getArea();
+			double sumArea = 0;
+			double distance = 0;
+			int ind = 0;
+
+			while (ind < visibilityList.size() - 1
+					&& visibilityList.get(ind).distance < conf.mindist) {
+				ind++;
+			}
+
+			do {
+				if (Double.isNaN(visibilityList.get(ind).distance)) {
+					System.out.println("distance is nan");
+				}
+
+				if (conf.debugOutput) {
+					System.out.println("   Considering target with area "
+							+ df.format(visibilityList.get(ind).receiving.getArea()) + ", distance "
+							+ df.format(visibilityList.get(ind).distance) + ", and ID "
+							+ visibilityList.get(ind).receiving.id);
+				}
+
+				double weight = visibilityList.get(ind).receiving.getArea();
+				if (conf.effDist) {
+					weight *= Math.abs(visibilityList.get(ind).getCosAngle());
+				}
+				distance += visibilityList.get(ind).distance * weight;
+				sumArea += weight;
+
+				ind += 1;
+			} while (sumArea < maxArea && ind < visibilityList.size());
+			if (sumArea < 1.e-5)
+				continue;
+			distance /= sumArea;
+
+			int indexAngle = 0;
+			indexAngle = uclm.getStreetdirIndex(sendingWall.getAngle());
+
+			int indexHeight;
+			try {
+				indexHeight = uclm.getHeightIndex(building.height);
+			} catch (IllegalArgumentException e) {
+				// assume that building is too high for specified hhl_uhl so use highest possibility
+				indexHeight = uclm.getKe_urban(iuc) - 1;
+				lock.lock();
+				uclm.incBuildProbAdjusted(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
+				lock.unlock();
+				if (conf.debugOutput) {
+					System.out.println("   Building with height " 
+							+ df.format(building.height)
+							+ " reduced to " 
+							+ df.format(uclm.getUrbanHeight(indexHeight)));
+				}
+			}
+
+			lock.lock();
+			// Weight distance with surface size
+			uclm.incStreetWidth(iuc, indexAngle, building.irlat, building.irlon, distance * sendingWall.getArea());
+			uclm.incStreetSurfaceSum(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
+			
+			uclm.incBuildProb(iuc, indexAngle, indexHeight, building.irlat, building.irlon, sendingWall.getArea());
+			lock.unlock();
+		}
+		lock.lock();
+		uclm.incBuildingFrac(iuc, building.irlat, building.irlon, building.area);
+		lock.unlock();
+	}
+	
 	/**
 	 * Calculate urban parameters after visibility is know.
 	 */
 	public void calcStreetProperties() {
 		System.out.println("Averaging of surface properties to grid cells");
 		for (SimpleBuilding building : buildings) {
-			if (conf.debugOutput) {
-				if (building.name == "") {
-					System.out.println(" Building with ID " + building.id);
-				} else {
-					System.out.println(" Building with ID " + building.id + " and name " + building.name);
-				}
-			}
-
-			for (Polygon3dWithVisibilities sendingWall : building.walls) {
-
-				if (sendingWall.isHorizontal())
-					continue;
-
-				if (sendingWall.visibilities.isEmpty()) {
-					// add information for later
-					stats.addSurfaceWithoutDistance(building.id, sendingWall.id);
-					continue;
-				}
-
-				if (conf.debugOutput) {
-					System.out.println(
-							"  Wall with area " + df.format(sendingWall.getArea()) + " and ID " + sendingWall.id);
-				}
-
-				List<Polygon3dVisibility> visibilityList = sendingWall.generateVisibilityList(conf.effDist);
-				Collections.sort(visibilityList);
-
-				// mean until area of sending surface is reached
-				double maxArea = sendingWall.getArea();
-				double sumArea = 0;
-				double distance = 0;
-				int ind = 0;
-
-				while (ind < visibilityList.size() - 1
-						&& visibilityList.get(ind).distance < conf.mindist) {
-					ind++;
-				}
-
-				do {
-					if (Double.isNaN(visibilityList.get(ind).distance)) {
-						System.out.println("distance is nan");
-					}
-
-					if (conf.debugOutput) {
-						System.out.println("   Considering target with area "
-								+ df.format(visibilityList.get(ind).receiving.getArea()) + ", distance "
-								+ df.format(visibilityList.get(ind).distance) + ", and ID "
-								+ visibilityList.get(ind).receiving.id);
-					}
-
-					double weight = visibilityList.get(ind).receiving.getArea();
-					if (conf.effDist) {
-						weight *= Math.abs(visibilityList.get(ind).getCosAngle());
-					}
-					distance += visibilityList.get(ind).distance * weight;
-					sumArea += weight;
-
-					ind += 1;
-				} while (sumArea < maxArea && ind < visibilityList.size());
-				if (sumArea < 1.e-5)
-					continue;
-				distance /= sumArea;
-
-				int indexAngle = 0;
-				indexAngle = uclm.getStreetdirIndex(sendingWall.getAngle());
-
-				// Weight distance with surface size
-				uclm.incStreetWidth(iuc, indexAngle, building.irlat, building.irlon, distance * sendingWall.getArea());
-
-				uclm.incStreetSurfaceSum(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
-				
-				int indexHeight;
-				try {
-					indexHeight = uclm.getHeightIndex(building.height);
-				} catch (IllegalArgumentException e) {
-					// assume that building is too high for specified hhl_uhl so use highest possibility
-					indexHeight = uclm.getKe_urban(iuc) - 1;
-					uclm.incBuildProbAdjusted(iuc, indexAngle, building.irlat, building.irlon, sendingWall.getArea());
-					if (conf.debugOutput) {
-						System.out.println("   Building with height " 
-								+ df.format(building.height)
-								+ " reduced to " 
-								+ df.format(uclm.getUrbanHeight(indexHeight)));
-					}
-				}
-				uclm.incBuildProb(iuc, indexAngle, indexHeight, building.irlat, building.irlon, sendingWall.getArea());
-
-			}
-			uclm.incBuildingFrac(iuc, building.irlat, building.irlon, building.area);
+			calcStreetPropertiesForBuilding(building);
+			
 		}
 	}
 

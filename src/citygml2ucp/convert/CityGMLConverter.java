@@ -15,6 +15,8 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.jaxb.CityGMLBuilder;
@@ -149,7 +151,10 @@ public class CityGMLConverter {
 
 		readImpSurfaceFile(conf, uclm);
 
-		CityGMLConverterData cgml = new CityGMLConverterData(uclm, conf, sourcePJ, targetPJ, stats, df);
+		// lock for parallel execution
+		Lock lock = new ReentrantLock();
+		
+		CityGMLConverterData cgml = new CityGMLConverterData(uclm, conf, sourcePJ, targetPJ, stats, df, lock);
 		System.out.println("Reading files");
 
 		int pathsLengthLength = (int)(Math.log10(paths.size())+1);
@@ -208,13 +213,13 @@ public class CityGMLConverter {
 		for (int indexChunk = 0; indexChunk < nChunks; indexChunk++) {
 			exec.execute(new CityGMLVisibilityRunnable(cgml, indexChunk * conf.nBuildingsPerThread,
 					Math.min((indexChunk + 1) * nBuildingsPerThreadLocal, cgml.buildings.size()), indexChunk,
-					nChunks));
+					nChunks, conf));
 		}
 				
 		exec.shutdown();
 		exec.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 		
-		cgml.calcStreetProperties();
+		if (!conf.saveMemory) cgml.calcStreetProperties();
 		
 		System.out.println("Largest Building: " + df.format(Collections.max(stats.getBuildingHeights())) + " m");
 		System.out.println("Smallest Building: " + df.format(Collections.min(stats.getBuildingHeights())) + " m");

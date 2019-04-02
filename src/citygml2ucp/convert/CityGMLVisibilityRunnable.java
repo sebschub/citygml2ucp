@@ -15,20 +15,24 @@ public class CityGMLVisibilityRunnable implements Runnable {
 
 	private final CityGMLConverterData citydata;
 	
+	private final CityGMLConverterConf conf;
+	
 	private final int start, end;
 	
 	private final int chunkIndex, nChunks;
-	
+		
 	/**
 	 * 
 	 */
-	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int nChunks) {
+	public CityGMLVisibilityRunnable(CityGMLConverterData citydata, int start, int end, int chunkIndex, int nChunks, CityGMLConverterConf conf) {
 		this.citydata = citydata;
 		this.start = start;
 		this.end = end;
 		
 		this.chunkIndex = chunkIndex;
 		this.nChunks = nChunks;
+		
+		this.conf = conf;
 	}
 
 	@Override
@@ -53,12 +57,28 @@ public class CityGMLVisibilityRunnable implements Runnable {
 			}
 			SimpleBuilding buildingSending = citydata.buildings.get(iBuildingSending);
 
+//			int iWallSendingStart;
+//			if (conf.saveMemory) {
+//				iWallSendingStart = buildingSending.walls.size();
+//			} else {
+//				iWallSendingStart = buildingSending.walls.size() - 1;
+//			}
 			for (int iWallSending = 0; iWallSending < buildingSending.walls.size(); iWallSending++) {
 				Polygon3dWithVisibilities wallSending = buildingSending.walls.get(iWallSending);
 
 				// check other buildings, skip current
-				for (int iBuildingReceiving = iBuildingSending + 1; iBuildingReceiving < citydata.buildings
+				int iBuildReceivingStart;
+				if (conf.saveMemory) {
+					iBuildReceivingStart = 0;
+				} else {
+					iBuildReceivingStart = iBuildingSending + 1;
+				}
+					
+				for (int iBuildingReceiving = iBuildReceivingStart ; iBuildingReceiving < citydata.buildings
 						.size(); iBuildingReceiving++) {
+					
+					if (iBuildingSending == iBuildingReceiving)	continue;
+					
 					SimpleBuilding buildingReceiving = citydata.buildings.get(iBuildingReceiving);
 
 					// if buildings are too far away, skip:
@@ -120,12 +140,23 @@ public class CityGMLVisibilityRunnable implements Runnable {
 						
 						if (vis) {
 							wallSending.visibilities.add(wallReceiving);
-							wallReceiving.visibilities.add(wallSending);
+							if (!conf.saveMemory) {
+								wallReceiving.visibilities.add(wallSending);
+							}
 						}
 
 					}
 				}
 			}
+			
+			if (conf.saveMemory) {
+				citydata.calcStreetPropertiesForBuilding(buildingSending);
+				// remove stored visibilities
+				for (Polygon3dWithVisibilities sending : buildingSending.walls) {
+					sending.visibilities = null;
+				}
+			}
+			
 		}
 		if (nChunks > 1) {
 			System.out.println(

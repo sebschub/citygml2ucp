@@ -238,6 +238,11 @@ public class CityGMLConverterConf {
 	boolean debugOutput;
 	private static boolean debugOutputDefault = false;
 
+	boolean saveMemory;
+	private static boolean saveMemoryDefault = false;
+
+	
+	
 	List<String> confItems = new LinkedList<String>();
 	List<String> confValues = new LinkedList<String>();
 		
@@ -345,6 +350,9 @@ public class CityGMLConverterConf {
 			debugOutput = prop.getBoolean("debugOutput",
 					debugOutputDefault);
 
+			saveMemory = prop.getBoolean("saveMemory",
+					saveMemoryDefault);
+			
 
 		} else {
 			if (explicitlyGivenFile) {
