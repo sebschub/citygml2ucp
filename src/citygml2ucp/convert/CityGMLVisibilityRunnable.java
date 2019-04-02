@@ -95,6 +95,8 @@ public class CityGMLVisibilityRunnable implements Runnable {
 
 							// check wall surfaces
 							for (Polygon3dWithVisibilities wallChecking : buildingChecking.walls) {
+								// skip check surface if it is sending or receiving
+								if (wallChecking == wallSending || wallChecking == wallReceiving) continue;
 								if (wallChecking.isHitBy(wallSending.getCentroid(), wallReceiving.getCentroid())) {
 									vis = false;
 									break;
